@@ -348,68 +348,63 @@ const techGradient = [
     '#20B2AA', '#00CED1', '#00E5EE', '#00F5FF', '#00CED1', '#2ECC71', '#00F5FF'
 ];
 
-axionbot.forEach((line, i) => {
+Axionbot.forEach((line, i) => {
     const color = techGradient[i] || techGradient[techGradient.length - 1];
-    // Grassetto e colore applicati direttamente a ogni riga per un effetto tech
     console.log(chalk.hex(color).bold(line));
 });
 
-        Global.isLogoPrinted = true;
-// Rimuovi eventuali graffe extra qui se l'if sotto deve stare nello stesso blocco
+Global.isLogoPrinted = true;
 
 if (connection === 'close') {
     const reason = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode;
-    // ... logica di riconnessione
-}
-        
-        if (reason === DisconnectReason.badSession) {
-            if (!global.connectionMessagesPrinted.badSession) {
-                console.log(chalk.bold.hex('#FF4742')(`\n ⚠️ [SESSION ERROR] Sessione non valida. Elimina la cartella ${global.authFile} e riavvia.`));
-                global.connectionMessagesPrinted.badSession = true;
-            }
-            await global.reloadHandler(true).catch(console.error);
-        } else if (reason === DisconnectReason.connectionLost) {
-            if (!global.connectionMessagesPrinted.connectionLost) {
-                console.log(chalk.hex('#00F5FF').bold(`\n 📡 [SIGNAL LOST] Connessione persa. Riconnessione in corso...\n 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓`));
-                global.connectionMessagesPrinted.connectionLost = true;
-            }
-            await global.reloadHandler(true).catch(console.error);
-        } else if (reason === DisconnectReason.connectionReplaced) {
-            if (!global.connectionMessagesPrinted.connectionReplaced) {
-                console.log(chalk.hex('#00CED1').bold(` 📑 [REPLACED] Un'altra sessione è stata aperta. Chiudi quella attuale.\n 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓`));
-                global.connectionMessagesPrinted.connectionReplaced = true;
-            }
-        } else if (reason === DisconnectReason.loggedOut) {
-            console.log(chalk.bold.hex('#FF4742')(`\n ⚠️ [LOGOUT] Disconnessione effettuata. Cartella ${global.authFile} rimossa. Riavvia per il nuovo login.`));
-            try {
-                if (fs.existsSync(global.authFile)) {
-                    fs.rmSync(global.authFile, { recursive: true, force: true });
-                }
-            } catch (e) {
-                console.error('Errore reset sessione:', e);
-            }
-            process.exit(1);
-        } else if (reason === DisconnectReason.restartRequired) {
-            if (!global.connectionMessagesPrinted.restartRequired) {
-                console.log(chalk.hex('#00F5FF').bold(`\n 🔄 [RESTART] Sincronizzazione con il server in corso...`));
-                global.connectionMessagesPrinted.restartRequired = true;
-            }
-            await global.reloadHandler(true).catch(console.error);
-        } else if (reason === DisconnectReason.timedOut) {
-            if (!global.connectionMessagesPrinted.timedOut) {
-                console.log(chalk.hex('#00CED1').bold(`\n ⏳ [TIMEOUT] Tempo di connessione scaduto. Ripristino in corso...\n 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓`));
-                global.connectionMessagesPrinted.timedOut = true;
-            }
-            await global.reloadHandler(true).catch(console.error);
-        } else if (reason !== DisconnectReason.connectionClosed) {
-            if (!global.connectionMessagesPrinted.unknown) {
-                console.log(chalk.bold.hex('#FF4742')(`\n ⚠️ [UNKNOWN] Errore critico: ${reason || '???'} >> ${connection || '???'}`));
-                global.connectionMessagesPrinted.unknown = true;
-            }
-            await global.reloadHandler(true).catch(console.error);
+
+    if (reason === DisconnectReason.badSession) {
+        if (!global.connectionMessagesPrinted.badSession) {
+            console.log(chalk.bold.hex('#FF4742')(`\n ⚠️ [SESSION ERROR] Sessione non valida. Elimina la cartella ${global.authFile} e riavvia.`));
+            global.connectionMessagesPrinted.badSession = true;
         }
+        await global.reloadHandler(true).catch(console.error);
+    } else if (reason === DisconnectReason.connectionLost) {
+        if (!global.connectionMessagesPrinted.connectionLost) {
+            console.log(chalk.hex('#00F5FF').bold(`\n 📡 [SIGNAL LOST] Connessione persa. Riconnessione in corso...\n 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓`));
+            global.connectionMessagesPrinted.connectionLost = true;
+        }
+        await global.reloadHandler(true).catch(console.error);
+    } else if (reason === DisconnectReason.connectionReplaced) {
+        if (!global.connectionMessagesPrinted.connectionReplaced) {
+            console.log(chalk.hex('#00CED1').bold(` 📑 [REPLACED] Un'altra sessione è stata aperta. Chiudi quella attuale.\n 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓`));
+            global.connectionMessagesPrinted.connectionReplaced = true;
+        }
+    } else if (reason === DisconnectReason.loggedOut) {
+        console.log(chalk.bold.hex('#FF4742')(`\n ⚠️ [LOGOUT] Disconnessione effettuata. Cartella ${global.authFile} rimossa. Riavvia per il nuovo login.`));
+        try {
+            if (fs.existsSync(global.authFile)) {
+                fs.rmSync(global.authFile, { recursive: true, force: true });
+            }
+        } catch (e) {
+            console.error('Errore reset sessione:', e);
+        }
+        process.exit(1);
+    } else if (reason === DisconnectReason.restartRequired) {
+        if (!global.connectionMessagesPrinted.restartRequired) {
+            console.log(chalk.hex('#00F5FF').bold(`\n 🔄 [RESTART] Sincronizzazione con il server in corso...`));
+            global.connectionMessagesPrinted.restartRequired = true;
+        }
+        await global.reloadHandler(true).catch(console.error);
+    } else if (reason === DisconnectReason.timedOut) {
+        if (!global.connectionMessagesPrinted.timedOut) {
+            console.log(chalk.hex('#00CED1').bold(`\n ⏳ [TIMEOUT] Tempo di connessione scaduto. Ripristino in corso...\n 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓`));
+            global.connectionMessagesPrinted.timedOut = true;
+        }
+        await global.reloadHandler(true).catch(console.error);
+    } else if (reason !== DisconnectReason.connectionClosed) {
+        if (!global.connectionMessagesPrinted.unknown) {
+            console.log(chalk.bold.hex('#FF4742')(`\n ⚠️ [UNKNOWN] Errore critico: ${reason || '???'} >> ${connection || '???'}`));
+            global.connectionMessagesPrinted.unknown = true;
+        }
+        await global.reloadHandler(true).catch(console.error);
     }
-}
+} // <--- Questa ora chiude correttamente il blocco "if (connection === 'close')"
 
 process.on('uncaughtException', console.error);
 
