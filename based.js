@@ -115,22 +115,22 @@ if (!methodCodeQR && !methodCode && !fs.existsSync(`./${authFile}/creds.json`)) 
     const whiteSoft = chalk.hex('#ECF0F1'); // Soft white
     const redSoft = chalk.hex('#E74C3C');   // Soft red
 
-    const a = cyan1('╭━━━━━━━━━━━━━• ACCESS PANEL •━━━━━━━━━━━━━');
-    const b = cyan1('╰━━━━━━━━━━━━━• END SESSION •━━━━━━━━━━━━━');
-    const linea = cyan2('   ────────┼┼────────┼────────┼┼────────');
-    const sm = cyan3.bold('SELEZIONE MODALITÀ DI ACCESSO');
+        const a = cyan1('╭━━━━━━━━━━━━━• 𝛥𝐗𝐈𝚶𝐍 𝐂𝐎𝐑𝐄 •━━━━━━━━━━━━━');
+    const b = cyan1('╰━━━━━━━━━━━━━• 𝛥𝐗𝐈𝚶𝐍 𝐄𝐍𝐃 •━━━━━━━━━━━━━');
+    const linea = cyan2('   ─────────◈────────◈─────────◈─────────');
+    const sm = cyan3.bold('   ⚡ SISTEMA DI AUTENTICAZIONE ⚡');
 
-    const qr = cyan3(' ┌─⭓') + ' ' + chalk.bold.white('1. Login tramite QR');
-    const codice = cyan3(' └─⭓') + ' ' + chalk.bold.white('2. Login con codice');
+    const qr = cyan3(' ⌬') + ' ' + chalk.bold.white('MODALITÀ [1]: Sincronizzazione QR');
+    const codice = cyan3(' ⌬') + ' ' + chalk.bold.white('MODALITÀ [2]: Link tramite Codice');
 
     const istruzioni = [
-        cyan3(' ┌─⭓') + whiteSoft.italic(' Seleziona una modalità disponibile.'),
-        cyan3(' └─⭓') + whiteSoft.italic(' Premi Invio per continuare.'),
+        cyan3(' ❯') + whiteSoft.italic(' Inizializzazione protocollo di accesso...'),
+        cyan3(' ❯') + whiteSoft.italic(' Scegli un\'opzione per stabilire il link.'),
         whiteSoft.italic(''),
-        cyan1.italic('                access system • deadly'),
+        cyan1.italic('                𝛥𝐗𝐈𝚶𝐍 𝐒𝐘𝐒𝐓𝐄𝐌 • 𝐕𝟏.𝟎.𝟎'),
     ];
 
-    const prompt = green.bold('\n⌯ selezione ➤ ');
+    const prompt = green.bold('\n⌬ axion-auth ➤ ');
 
     opzione = await question(`\n
 ${a}
@@ -148,13 +148,13 @@ ${b}
 ${prompt}`);
 
     if (!/^[1-2]$/.test(opzione)) {
-        console.log(`\n${redSoft.bold('✖ SELEZIONE NON VALIDA')}
+        console.log(`\n${redSoft.bold('✖ ERRORE DI PROTOCOLLO: 𝛥𝐗𝐈𝚶𝐍-𝟒𝟎𝟒')}
 
 ${whiteSoft('   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')}
-${redSoft.bold('⚠️ Sono ammessi solo i numeri')} ${chalk.bold.green('1')} ${redSoft.bold('o')} ${chalk.bold.green('2')}
-${whiteSoft('┌─⭓ Nessuna lettera o simbolo')}
-${whiteSoft('└─⭓ Copia il numero dell\'opzione desiderata e incollalo')}
-${green.italic('\n✧ Suggerimento: Se hai dubbi, scrivi al creatore +393476686131')}
+${redSoft.bold('⚠️ Input non riconosciuto dal Core.')} 
+${whiteSoft('┌─⭓ Sono validi solo i parametri')} ${chalk.bold.green('1')} ${whiteSoft('o')} ${chalk.bold.green('2')}
+${whiteSoft('└─⭓ Non inserire simboli, spazi o lettere.')}
+${green.italic('\nSupporto Tecnico: Contatta lo sviluppatore deadly lo trovi nei gruppi oppure nel confing')}
 `);
     }
     } while ((opzione !== '1' && opzione !== '2') || fs.existsSync(`./${authFile}/creds.json`));
