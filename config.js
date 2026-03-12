@@ -28,12 +28,10 @@ global.autore    = '𝕯𝖊ⱥ𝖉𝖑𝐲'
 global.dev       = '𝕯𝖊ⱥ𝖉𝖑𝐲'
 global.versione  = pkg.version
 global.testobot  = `AXION-CORE-V${pkg.version}`
-global.errore    = '⚠️ *[SYSTEM ERROR]* Usa `.segnala` per inviare il log allo staff.'
 
-// 🌐 SOCIAL & LINKS
+// 🌐 LINK
 global.repobot   = 'https://github.com/axion-bot/axion-bot'
-global.gruppo    = 'in arrivo' 
-global.canale    = 'in arrivo'
+global.canale    = 'https://whatsapp.com/channel/0029Vb8MQ3U1CYoMEtU1832d'
 global.insta     = 'https://www.instagram.com/darius._.n'
 
 global.cheerio   = cheerio
