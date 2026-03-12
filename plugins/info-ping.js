@@ -1,39 +1,42 @@
-import fs from 'fs';
-import os from 'os';
-import { performance } from 'perf_hooks';
+import fs from 'fs'
+import os from 'os'
+import { performance } from 'perf_hooks'
 
 const toMathematicalAlphanumericSymbols = number => {
   const map = {
-    '0': '𝟎', '1': '𝟏', '2': '𝟐', '3': '𝟑', '4': '𝟒', '5': '𝟓', '6': '𝟔', '7': '𝟕', '8': '𝟖', '9': '𝟗', '.': '.'
-  };
-  return number.toString().split('').map(digit => map[digit] || digit).join('');
-};
+    '0': '𝟎','1': '𝟏','2': '𝟐','3': '𝟑','4': '𝟒',
+    '5': '𝟓','6': '𝟔','7': '𝟕','8': '𝟖','9': '𝟗','.': '.'
+  }
+  return number.toString().split('').map(d => map[d] || d).join('')
+}
 
 const clockString = ms => {
-  const days = Math.floor(ms / 86400000);
-  const hours = Math.floor((ms % 86400000) / 3600000);
-  const minutes = Math.floor((ms % 3600000) / 60000);
-  const seconds = Math.floor((ms % 60000) / 1000);
+  const days = Math.floor(ms / 86400000)
+  const hours = Math.floor((ms % 86400000) / 3600000)
+  const minutes = Math.floor((ms % 3600000) / 60000)
 
-  return `${toMathematicalAlphanumericSymbols(days.toString().padStart(2, '0'))}d ${toMathematicalAlphanumericSymbols(hours.toString().padStart(2, '0'))}h ${toMathematicalAlphanumericSymbols(minutes.toString().padStart(2, '0'))}m`;
-};
+  return `${toMathematicalAlphanumericSymbols(days.toString().padStart(2,'0'))}d ${toMathematicalAlphanumericSymbols(hours.toString().padStart(2,'0'))}h ${toMathematicalAlphanumericSymbols(minutes.toString().padStart(2,'0'))}m`
+}
 
-const handler = async (m, { conn }) => {
-  const _uptime = process.uptime() * 1000;
-  const uptime = clockString(_uptime);
+const handler = async (m, { conn, usedPrefix }) => {
 
-  const start = performance.now();
-  const end = performance.now();
-  const speed = (end - start).toFixed(4);
-  const speedWithFont = toMathematicalAlphanumericSymbols(speed);
+  // SOLO GRUPPI
+  if (!m.isGroup) return conn.reply(m.chat, '❌ Questo comando funziona solo nei gruppi.', m)
 
-  const totalMem = (os.totalmem() / (1024 * 1024)).toFixed(0);
-  const usedMem = ((os.totalmem() - os.freemem()) / (1024 * 1024)).toFixed(0);
-  
-  const processMemory = process.memoryUsage();
-  const heapUsed = (processMemory.heapUsed / (1024 * 1024)).toFixed(1);
+  const _uptime = process.uptime() * 1000
+  const uptime = clockString(_uptime)
 
-  // Layout del messaggio stile "System Card"
+  const start = performance.now()
+  const end = performance.now()
+  const speed = (end - start).toFixed(4)
+  const speedWithFont = toMathematicalAlphanumericSymbols(speed)
+
+  const totalMem = (os.totalmem() / (1024 * 1024)).toFixed(0)
+  const usedMem = ((os.totalmem() - os.freemem()) / (1024 * 1024)).toFixed(0)
+
+  const processMemory = process.memoryUsage()
+  const heapUsed = (processMemory.heapUsed / (1024 * 1024)).toFixed(1)
+
   const info = `
 『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐒𝐓𝐀𝐓𝐔𝐒 』
 
@@ -48,11 +51,21 @@ const handler = async (m, { conn }) => {
 ╰➤ Engine: ${heapUsed} MB
 
 🛰️ 𝐒𝐘𝐒𝐓𝐄𝐌 𝐎𝐍𝐋𝐈𝐍𝐄
-`.trim();
+`.trim()
 
-  // Risposta semplice e pulita senza icone esterne
-  conn.reply(m.chat, info, m);
-};
+  const buttons = [
+    { buttonId: `${usedPrefix}ping`, buttonText: { displayText: '🔄 Rifai Ping' }, type: 1 },
+    { buttonId: `${usedPrefix}menu`, buttonText: { displayText: '📋 Menu' }, type: 1 }
+  ]
 
-handler.command = /^(ping)$/i;
-export default handler;
+  await conn.sendMessage(m.chat, {
+    text: info,
+    footer: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 𝐒𝐘𝐒𝐓𝐄𝐌',
+    buttons: buttons,
+    headerType: 1
+  }, { quoted: m })
+}
+
+handler.command = /^(ping)$/i
+
+export default handler
