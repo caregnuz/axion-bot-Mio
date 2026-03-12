@@ -2,7 +2,7 @@
   "name": "axionbot",
   "version": "1.0.0",
   "description": "Bot zozzap by deadly",
-  "main": "based.js",
+  "main": "main.js",
   "type": "module",
   "license": "Apache-2.0",
   "author": {
@@ -23,7 +23,7 @@
     "bot-MD",
     "javascript",
     "nodejs",
-    "based",
+    "main",
     "baileys",
     "whatsapp-bot",
     "varebot",
@@ -36,9 +36,9 @@
     "media": "media"
   },
   "scripts": {
-    "start": "node based.js",
-    "code": "node based.js code",
-    "qr": "node based.js qr"
+    "start": "node main.js",
+    "code": "node main.js code",
+    "qr": "node main.js qr"
   },
   "dependencies": {
     "@realvare/baileys": "latest",
