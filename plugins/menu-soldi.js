@@ -18,10 +18,8 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 
 ╭━━━〔 💰 sɪsᴛᴇᴍᴀ sᴏʟᴅɪ 〕━⬣
 ┃ 👛 ${usedPrefix}wallet
-┃ 🏦 ${usedPrefix}banca
 ┃ 💰 ${usedPrefix}deposita
 ┃ 🏧 ${usedPrefix}prelievo
-┃
 ┃ 🎰 ${usedPrefix}slot
 ┃ 🥷 ${usedPrefix}crimine
 ┃ 😅 ${usedPrefix}elemosina
