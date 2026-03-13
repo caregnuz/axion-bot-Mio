@@ -35,6 +35,8 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 🩵 ${usedPrefix}onlyfans <nome>
 ┃ 💼 ${usedPrefix}curriculum
 ┃ 🏬 ${usedPrefix}shop
+┃ 🎒 ${usedPrefix}zaino
+┃ 🤑 ${usedPrefix}vedioggetto <numero>
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 💍 ғᴀᴍɪɢʟɪᴀ 〕━⬣
