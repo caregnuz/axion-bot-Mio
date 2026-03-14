@@ -22,7 +22,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ ✅ ${usedPrefix}richieste
 ╰━━━━━━━━━━━━━━━━⬣
 
-╭━━━〔 ⚠️ ᴡᴀʀɴ & ᴅɪsᴄɪᴘʟɪɴᴀ 〕━⬣
+╭━━━〔 ⚠️ ᴡᴀʀɴ 〕━⬣
 ┃ ⚠️ ${usedPrefix}warn
 ┃ 📄 ${usedPrefix}listwarn
 ┃ ✅ ${usedPrefix}unwarn
@@ -30,20 +30,20 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 🔄 ${usedPrefix}resetwarn
 ╰━━━━━━━━━━━━━━━━⬣
 
-╭━━━〔 🔇 ᴄᴏɴᴛʀᴏʟʟᴏ ᴄʜᴀᴛ 〕━⬣
+╭━━━〔 🔇 ᴄᴏɴᴛʀᴏʟʟᴏ 〕━⬣
 ┃ 🤫 ${usedPrefix}muta
 ┃ 🔊 ${usedPrefix}smuta
 ┃ 🏹 ${usedPrefix}tag
 ┃ 🚨 ${usedPrefix}setname
 ╰━━━━━━━━━━━━━━━━⬣
 
-╭━━━〔 🔒 ɪᴍᴘᴏsᴛᴀᴢɪᴏɴɪ ɢʀᴜᴘᴘᴏ 〕━⬣
+╭━━━〔 🔒 ɪᴍᴘᴏsᴛᴀᴢɪᴏɴɪ 〕━⬣
 ┃ 🌙 ${usedPrefix}aperto
 ┃ 🔐 ${usedPrefix}chiuso
-┃ 📳 ${usedPrefix}modlist
+┃ 📳 ${usedPrefix}listamod
 ╰━━━━━━━━━━━━━━━━⬣
 
-╭━━━〔 👥 ɢᴇsᴛɪᴏɴᴇ ᴜᴛᴇɴᴛɪ 〕━⬣
+╭━━━〔 👥 ɢᴇsᴛɪᴏɴᴇ 〕━⬣
 ┃ ⚔️ ${usedPrefix}kick
 ┃ 🚨 ${usedPrefix}nuke
 ┃ 🔮 ${usedPrefix}resucita
