@@ -1,107 +1,72 @@
+import os from 'os'
+import { performance } from 'perf_hooks'
+
+const toMathematicalAlphanumericSymbols = number => {
+  const map = {
+    '0':'𝟎','1':'𝟏','2':'𝟐','3':'𝟑','4':'𝟒',
+    '5':'𝟓','6':'𝟔','7':'𝟕','8':'𝟖','9':'𝟗','.':'.'
+  }
+  return number.toString().split('').map(d => map[d] || d).join('')
+}
+
+const clockString = ms => {
+  const d = Math.floor(ms / 86400000)
+  const h = Math.floor(ms % 86400000 / 3600000)
+  const m = Math.floor(ms % 3600000 / 60000)
+  return `${toMathematicalAlphanumericSymbols(d.toString().padStart(2,'0'))}d ${toMathematicalAlphanumericSymbols(h.toString().padStart(2,'0'))}h ${toMathematicalAlphanumericSymbols(m.toString().padStart(2,'0'))}m`
+}
+
 let handler = async (m, { conn, usedPrefix }) => {
 
-let user = m.sender
-if (!global.db.data.users[user]) global.db.data.users[user] = {}
+  if (!m.isGroup) 
+    return conn.reply(m.chat,'❌ Questo comando funziona solo nei gruppi.',m)
 
-let u = global.db.data.users[user]
+  const uptime = clockString(process.uptime()*1000)
 
-if (!u.euro) u.euro = 0
-if (!u.xp) u.xp = 0
-if (!u.level) u.level = 1
+  const start = performance.now()
+  const end = performance.now()
+  const speed = toMathematicalAlphanumericSymbols((end-start).toFixed(4))
 
-const scenarios = [
-{
-txt:"👵 Una vecchietta ti vede e sorride.\nCosa fai?",
-options:["Chiedi gentilmente","Ignori"],
-bonus:[randomNum(5,15),0]
-},
-{
-txt:"🧔 Un uomo ti guarda sospettoso.\nCosa fai?",
-options:["Racconti la tua storia","Fingi di nulla"],
-bonus:[randomNum(5,20),0]
-},
-{
-txt:"👦 Un bambino ti offre delle monete.\nCosa fai?",
-options:["Accetti con gratitudine","Rifiuti"],
-bonus:[randomNum(2,10),0]
-},
-{
-txt:"💼 Una persona ti offre una banconota grande.\nAccetti?",
-options:["Accetto","Rifiuto"],
-bonus:[randomNum(15,30),0]
-}
-]
+  const totalMem = (os.totalmem()/1024/1024).toFixed(0)
+  const usedMem = ((os.totalmem()-os.freemem())/1024/1024).toFixed(0)
 
-let ev = scenarios[Math.floor(Math.random()*scenarios.length)]
+  const heapUsed = (process.memoryUsage().heapUsed/1024/1024).toFixed(1)
 
-global.begGame = global.begGame || {}
-global.begGame[user] = ev
+  const info = `
+『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐒𝐓𝐀𝐓𝐔𝐒 』
 
-await conn.sendMessage(m.chat,{
-text:`🙏 *ELEMSOINA*\n\n${ev.txt}`,
-footer:"Scegli cosa fare",
-buttons:[
-{
-buttonId:`beg_0`,
-buttonText:{displayText:ev.options[0]},
-type:1
-},
-{
-buttonId:`beg_1`,
-buttonText:{displayText:ev.options[1]},
-type:1
-}
-],
-headerType:1
-},{quoted:m})
+🚀 𝐋𝐀𝐓𝐄𝐍𝐙𝐀
+╰➤ ${speed} ms
+
+⏱️ 𝐔𝐏𝐓𝐈𝐌𝐄
+╰➤ ${uptime}
+
+💻 𝐑𝐄𝐒𝐎𝐔𝐑𝐂𝐄𝐒
+╰➤ Server: ${usedMem}/${totalMem} MB
+╰➤ Engine: ${heapUsed} MB
+
+🛰️ 𝐒𝐘𝐒𝐓𝐄𝐌 𝐎𝐍𝐋𝐈𝐍𝐄
+`.trim()
+
+  await conn.sendMessage(m.chat,{
+    text: info,
+    footer: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 𝐒𝐘𝐒𝐓𝐄𝐌',
+    buttons:[
+      {
+        buttonId: `${usedPrefix}ping`,
+        buttonText:{displayText:'🔄 Rifai Ping'},
+        type:1
+      },
+      {
+        buttonId: `${usedPrefix}menu`,
+        buttonText:{displayText:'📋 Apri Menu'},
+        type:1
+      }
+    ],
+    headerType:1
+  },{ quoted:m })
 
 }
 
-handler.command = /^(beg|elemosina)$/i
+handler.command = /^(ping)$/i
 export default handler
-
-
-export async function before(m,{ conn }){
-
-if(!global.begGame) return
-let user = m.sender
-if(!global.begGame[user]) return
-
-let id = m.text || m.message?.buttonsResponseMessage?.selectedButtonId
-if(!id) return
-if(!id.startsWith('beg_')) return
-
-let choice = Number(id.split('_')[1])
-
-let ev = global.begGame[user]
-let bonus = ev.bonus[choice]
-
-let u = global.db.data.users[user]
-
-u.euro += bonus
-let xpGain = randomNum(1,5)
-u.xp += xpGain
-
-let lvlUp = false
-if(u.xp >= u.level*50){
-u.level++
-u.xp = 0
-lvlUp = true
-}
-
-await conn.reply(m.chat,
-`💰 Hai guadagnato *${bonus}€*
-
-💶 Saldo: ${u.euro}€
-🏅 Livello: ${u.level}
-⭐ XP: ${u.xp}/${u.level*50}
-${lvlUp ? "\n🎉 LEVEL UP!" : ""}`,
-m)
-
-delete global.begGame[user]
-
-}
-
-function randomNum(min,max){
-return Math.floor(Math.random()*(max-min+1))+min
-}
