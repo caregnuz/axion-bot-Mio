@@ -1,7 +1,8 @@
-let handler = async (m, { conn }) => {
+let handler = async (m, { conn, usedPrefix }) => {
 
 let user = m.sender
 if (!global.db.data.users[user]) global.db.data.users[user] = {}
+
 let u = global.db.data.users[user]
 
 if (!u.euro) u.euro = 0
@@ -10,52 +11,69 @@ if (!u.level) u.level = 1
 
 const scenarios = [
 {
-txt:"👵 Una vecchietta ti vede e sorride.\n\n1️⃣ Chiedi gentilmente\n2️⃣ Ignori",
+txt:"👵 Una vecchietta ti vede e sorride.\nCosa fai?",
+options:["Chiedi gentilmente","Ignori"],
 bonus:[randomNum(5,15),0]
 },
 {
-txt:"🧔 Un uomo ti guarda sospettoso.\n\n1️⃣ Racconti la tua storia\n2️⃣ Fingi di nulla",
+txt:"🧔 Un uomo ti guarda sospettoso.\nCosa fai?",
+options:["Racconti la tua storia","Fingi di nulla"],
 bonus:[randomNum(5,20),0]
 },
 {
-txt:"👦 Un bambino ti offre delle monete.\n\n1️⃣ Accetti con gratitudine\n2️⃣ Rifiuti",
+txt:"👦 Un bambino ti offre delle monete.\nCosa fai?",
+options:["Accetti con gratitudine","Rifiuti"],
 bonus:[randomNum(2,10),0]
 },
 {
-txt:"💼 Una persona ti offre una banconota grande.\n\n1️⃣ Accetto\n2️⃣ Rifiuto",
+txt:"💼 Una persona ti offre una banconota grande.\nAccetti?",
+options:["Accetto","Rifiuto"],
 bonus:[randomNum(15,30),0]
 }
 ]
 
 let ev = scenarios[Math.floor(Math.random()*scenarios.length)]
 
-await conn.reply(m.chat,
-`🙏 *ELEMSOINA*
+global.begGame = global.begGame || {}
+global.begGame[user] = ev
 
-${ev.txt}
-
-Rispondi con *1* o *2*`,
-m)
-
-global.begChoice = global.begChoice || {}
-global.begChoice[user] = ev
+await conn.sendMessage(m.chat,{
+text:`🙏 *ELEMSOINA*\n\n${ev.txt}`,
+footer:"Scegli cosa fare",
+buttons:[
+{
+buttonId:`beg_0`,
+buttonText:{displayText:ev.options[0]},
+type:1
+},
+{
+buttonId:`beg_1`,
+buttonText:{displayText:ev.options[1]},
+type:1
+}
+],
+headerType:1
+},{quoted:m})
 
 }
 
-handler.command = /^beg|elemosina$/i
+handler.command = /^(beg|elemosina)$/i
 export default handler
 
-// risposta scelta
+
 export async function before(m,{ conn }){
 
+if(!global.begGame) return
 let user = m.sender
-if(!global.begChoice) return
-if(!global.begChoice[user]) return
+if(!global.begGame[user]) return
 
-if(!/^[12]$/.test(m.text)) return
+let id = m.text || m.message?.buttonsResponseMessage?.selectedButtonId
+if(!id) return
+if(!id.startsWith('beg_')) return
 
-let ev = global.begChoice[user]
-let choice = Number(m.text)-1
+let choice = Number(id.split('_')[1])
+
+let ev = global.begGame[user]
 let bonus = ev.bonus[choice]
 
 let u = global.db.data.users[user]
@@ -77,13 +95,13 @@ await conn.reply(m.chat,
 💶 Saldo: ${u.euro}€
 🏅 Livello: ${u.level}
 ⭐ XP: ${u.xp}/${u.level*50}
-${lvlUp ? "\n🎉 *LEVEL UP!*" : ""}`,
+${lvlUp ? "\n🎉 LEVEL UP!" : ""}`,
 m)
 
-delete global.begChoice[user]
+delete global.begGame[user]
+
 }
 
-// funzioni
 function randomNum(min,max){
 return Math.floor(Math.random()*(max-min+1))+min
 }
