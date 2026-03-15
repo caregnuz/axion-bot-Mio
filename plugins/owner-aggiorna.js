@@ -1,35 +1,33 @@
-import { execSync } from 'child_process'
+import { exec } from 'child_process';
 
 let handler = async (m, { conn, text }) => {
-  if (conn.user.jid == conn.user.jid) {
-    try {
-      let checkUpdates = execSync('git fetch && git status -uno', { encoding: 'utf-8' })
+    const MY_SIGN = "𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓";
+    
+    // Se non scrivi cosa hai aggiornato, ti avvisa
+    if (!text) return m.reply(`『 📝 』- *Specifica cosa hai aggiornato!*\n\nEsempio: .aggiorna Aggiunto menu sticker\n\n${MY_SIGN}`);
 
-      if (checkUpdates.includes('Your branch is up to date') || checkUpdates.includes('nothing to commit')) {
-        await conn.reply(m.chat, '✅ Il bot è già aggiornato all\'ultima versione!', m)
-        await m.react('✅')
-        return
-      }
-      if (checkUpdates.includes('Your branch is behind')) {
-        let hoodangels = execSync('git reset --hard && git pull' + (m.fromMe && text ? ' ' + text : ''), { encoding: 'utf-8' })
-        await conn.reply(m.chat, `${hoodangels}`, m)
-        await m.react('🔮')
-      } else {
-        await conn.reply(m.chat, '⚠️ Stato repository non chiaro. Forzando aggiornamento...', m)
-        let hoodangels = execSync('git reset --hard && git pull' + (m.fromMe && text ? ' ' + text : ''), { encoding: 'utf-8' })
-        await conn.reply(m.chat, `🔄 Aggiornamento forzato completato!\n\n${hoodangels}`, m)
-        await m.react('🔮')
-      }
+    await m.react('🔄');
+    let msg = await conn.reply(m.chat, `『 ⚙️ 』- *Eseguendo aggiornamento interno per ${MY_SIGN}...*`, m);
 
-    } catch (err) {
-      await conn.reply(m.chat, `${global.errore}\n\nDettaglio errore: ${err.message}`, m)
-      await m.react('❌')
-    }
-  }
-}
+    // Esegue il comando di aggiornamento (git pull)
+    exec('git pull', (err, stdout, stderr) => {
+        if (err) {
+            return conn.reply(m.chat, `『 ❌ 』- *Errore durante l'aggiornamento:*\n${stderr}`, m);
+        }
+        
+        let response = `『 ✅ 』- *Aggiornamento completato con successo!*\n\n` +
+                       `*Modifiche apportate:*\n> ${text}\n\n` +
+                       `*Log di sistema:*\n\`\`\`${stdout.slice(0, 200)}\`\`\`\n\n` +
+                       `${MY_SIGN}`;
+        
+        conn.sendMessage(m.chat, { delete: msg.key }).catch(e => {});
+        conn.reply(m.chat, response, m);
+    });
+};
 
-handler.help = ['aggiorna']
-handler.tags = ['creatore']
-handler.command = ['aggiorna', 'update', 'aggiornabot']
-handler.owner = true
-export default handler
+handler.help = ['aggiorna <messaggio>'];
+handler.tags = ['owner'];
+handler.command = ['aggiorna', 'update'];
+handler.rowner = true; // Solo il proprietario può usarlo
+
+export default handler;
