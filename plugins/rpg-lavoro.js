@@ -1,85 +1,126 @@
-let handler = async (m, { conn, usedPrefix, command }) => {
-    let user = m.sender
-    if (!global.db.data.users[user]) global.db.data.users[user] = {}
-    let u = global.db.data.users[user]
-    if (!u.euro) u.euro = 0
-    if (!u.level) u.level = 1
-    if (!u.xp) u.xp = 0
+global.workSession = global.workSession || {}
 
-    // Lavori
-    const jobs = [
-        {nome:'🍔 Cameriere', min:50, max:100},
-        {nome:'💻 Freelance', min:100, max:200},
-        {nome:'🧹 Pulizie', min:30, max:60},
-        {nome:'🚗 Corriere', min:80, max:160},
-        {nome:'🛠️ Manovale', min:60, max:120}
-    ]
+const jobs = [
+{nome:'🍔 Cameriere', min:50, max:100},
+{nome:'💻 Freelance', min:100, max:200},
+{nome:'🧹 Pulizie', min:30, max:60},
+{nome:'🚗 Corriere', min:80, max:160},
+{nome:'🛠️ Manovale', min:60, max:120}
+]
 
-    const job = random(jobs)
-    let basePaga = randomNum(job.min, job.max)
+const events = [
+{txt:`Il cliente ti chiede qualcosa di speciale.\n\n1️⃣ Accetti\n2️⃣ Ignori`, bonus:[10,0]},
+{txt:`C'è traffico durante la consegna.\n\n1️⃣ Forza il passo\n2️⃣ Aspetti`, bonus:[20,5]},
+{txt:`Trovi un oggetto smarrito.\n\n1️⃣ Lo restituisci\n2️⃣ Lo tieni`, bonus:[15,0]},
+{txt:`Un collega ti chiede aiuto.\n\n1️⃣ Aiuti\n2️⃣ Rifiuti`, bonus:[10,0]}
+]
 
-    // Mini-story eventi
-    const events = [
-        {txt:`Il cliente ti chiede qualcosa di speciale. Che fai?`, options:['Accetti','Ignori'], bonus:[10,0]},
-        {txt:`C'è traffico durante la consegna. Come procedi?`, options:['Forza il passo','Aspetti pazientemente'], bonus:[20,5]},
-        {txt:`Trovi un oggetto smarrito. Lo restituisci?`, options:['Sì','No'], bonus:[15,0]},
-        {txt:`Un collega ti chiede aiuto. Aiuti?`, options:['Aiuto','Rifiuto'], bonus:[10,0]},
-    ]
+let handler = async (m,{conn})=>{
 
-    let total = basePaga
-    await conn.sendMessage(m.chat, { text: `💼 Hai iniziato a lavorare come *${job.nome}*.\nGuadagno base: ${basePaga}€` }, { quoted:m })
+const user = m.sender
 
-    // scegli 2 eventi casuali
-    let chosenEvents = shuffle(events).slice(0,2)
+if(!global.db.data.users[user])
+global.db.data.users[user] = {euro:0,xp:0,level:1}
 
-    for (let ev of chosenEvents){
-        let buttons = ev.options.map((o,i)=>({buttonId:`work_choice_${i}`, buttonText:{displayText:o}, type:1}))
-        await conn.sendMessage(m.chat,{
-            text: ev.txt,
-            buttons,
-            headerType:1
-        })
+const u = global.db.data.users[user]
 
-        // Attesa risposta con promise
-        let choice = await new Promise(resolve => {
-            let handlerChoice = async (msg) => {
-                if(msg.sender !== user) return
-                let id = parseInt(msg.text.replace(/\D/g,''))
-                if(isNaN(id)) id = 0
-                resolve(id)
-                conn.removeListener('message', handlerChoice)
-            }
-            conn.on('message', handlerChoice)
-        })
+let job = random(jobs)
+let base = randomNum(job.min,job.max)
 
-        total += ev.bonus[choice] || 0
-        await conn.sendMessage(m.chat, { text:`Hai scelto: *${ev.options[choice]}*. Guadagno extra: ${ev.bonus[choice] || 0}€` })
-    }
+let chosenEvents = shuffle(events).slice(0,2)
 
-    // Aggiorna saldo e XP
-    u.euro += total
-    let xpGain = randomNum(5,15)
-    u.xp += xpGain
-    let lvlUp = false
-    if(u.xp >= u.level*100){
-        u.level += 1
-        u.xp = 0
-        lvlUp = true
-    }
-
-    await conn.sendMessage(m.chat,{ text:
-        `✅ Turno completato come *${job.nome}*\n` +
-        `💰 Guadagno totale: ${total}€\n` +
-        `💶 Saldo attuale: ${u.euro}€\n` +
-        `🏅 Livello: ${u.level} (XP: ${u.xp}/${u.level*100})` +
-        (lvlUp ? `\n🎉 Complimenti! Sei salito di livello!` : '')
-    })
+global.workSession[user] = {
+step:0,
+job:job,
+base:base,
+events:chosenEvents,
+total:base
 }
 
-handler.command = /^work|lavora$/i
+let txt = `💼 *NUOVO LAVORO*\n\n`
+txt += `Lavoro: ${job.nome}\n`
+txt += `💰 Paga base: ${base}€\n\n`
+txt += `📌 Evento 1\n${chosenEvents[0].txt}`
+
+return conn.reply(m.chat,txt,m)
+
+}
+
+handler.before = async (m,{conn})=>{
+
+const user = m.sender
+const input = m.text?.trim()
+
+if(!global.workSession[user]) return
+if(!/^[12]$/.test(input)) return
+
+const session = global.workSession[user]
+const u = global.db.data.users[user]
+
+let ev = session.events[session.step]
+let choice = input-1
+let bonus = ev.bonus[choice] || 0
+
+session.total += bonus
+
+await conn.reply(m.chat,
+`Hai scelto: *${choice===0?"1":"2"}*\n💰 Bonus: ${bonus}€`,
+m)
+
+session.step++
+
+if(session.step < session.events.length){
+
+let next = session.events[session.step]
+
+let txt = `📌 Evento ${session.step+1}\n${next.txt}`
+
+return conn.reply(m.chat,txt,m)
+
+}
+
+/* ===== FINE LAVORO ===== */
+
+let total = session.total
+
+u.euro += total
+
+let xpGain = randomNum(5,15)
+u.xp += xpGain
+
+let lvlUp=false
+if(u.xp >= u.level*100){
+u.level++
+u.xp=0
+lvlUp=true
+}
+
+delete global.workSession[user]
+
+let msg = `✅ Turno completato come *${session.job.nome}*\n\n`
+msg += `💰 Guadagno totale: ${total}€\n`
+msg += `💶 Saldo: ${u.euro}€\n`
+msg += `🏅 Livello: ${u.level}\n`
+msg += `⭐ XP: ${u.xp}/${u.level*100}`
+
+if(lvlUp) msg += `\n\n🎉 *LEVEL UP!*`
+
+return conn.reply(m.chat,msg,m)
+
+}
+
+handler.command = /^(work|lavora)$/i
 export default handler
 
-// Funzioni helper
-function random(arr){ return arr[Math.floor(Math.random()*arr.length)] }
-function randomNum(min,max){ return Math.floor(Math.random()*(max-min+1))+min }
-function shuffle(arr){ return arr.sort(()=>0.5-Math.random()) }
+
+function random(arr){
+return arr[Math.floor(Math.random()*arr.length)]
+}
+
+function randomNum(min,max){
+return Math.floor(Math.random()*(max-min+1))+min
+}
+
+function shuffle(arr){
+return arr.sort(()=>0.5-Math.random())
+}
