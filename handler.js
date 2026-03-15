@@ -821,13 +821,9 @@ global.dfail = async (type, m, conn) => {
     const nome = m.pushName || 'sam'
     const etarandom = Math.floor(Math.random() * 21) + 13
     const msg = {
-  sam:      '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐒𝐘𝐒𝐓𝐄𝐌 』\n\n🔒 *ACCESSO NEGATO*\n╰➤ *Livello:* Creatore Supremo\n\n⚠️ _Questo comando è protetto da protocolli di sicurezza esclusivi._',
-  
   rowner:   '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐎𝐖𝐍𝐄𝐑 』\n\n👑 *RANGO INSUFFICIENTE*\n╰➤ *Richiesto:* Owner Fondatore\n\n⚡ _Solo chi ha dato vita al bot può evocare questo potere._',
   
   owner:    '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐀𝐔𝐓𝐇 』\n\n🛡️ *MODALITÀ OWNER*\n╰➤ *Stato:* Accesso Riservato\n\n💎 _Comando sbloccabile solo dagli sviluppatori autorizzati._',
-  
-  mods:     '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐒𝐓𝐀𝐅𝐅 』\n\n⚙️ *PANNELLO MODERATORI*\n╰➤ *Target:* Staff di Sistema\n\n🛠️ _Permessi di moderazione non rilevati sul tuo profilo._',
   
   premium:  '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐏𝐑𝐄𝐌𝐈𝐔𝐌 』\n\n💎 *CONTENUTO ESCLUSIVO*\n╰➤ *Vantaggio:* Utente Elite\n\n✨ _Passa a Premium per sbloccare funzioni avanzate e limiti rimossi!_',
   
