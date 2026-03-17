@@ -7,7 +7,7 @@ import path from 'path';
 import os from 'os';
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
-  if (!text) return m.reply(`⚡ *𝙋𝙡𝙖𝙮 𝘿𝙖𝙣𝙜𝙚𝙧𝙗𝙤𝙩*\n\n💡 _Scrivi:_ ${usedPrefix + command} nome canzone`);
+  if (!text) return m.reply(`⚡ *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*\n\n💡 _Scrivi:_ ${usedPrefix + command} nome canzone`);
 
   try {
     const search = await yts(text);
@@ -17,9 +17,9 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     const url = vid.url;
 
     if (command === 'play') {
-        let infoMsg = `┏━━━━━━━━━━━━━━━━━━━━┓\n`;
-        infoMsg += `   🎧  *𝙋𝙡𝙖𝙮 𝘿𝙖𝙣𝙜𝙚𝙧𝙗𝙤𝙩* 🎧\n`;
-        infoMsg += `┗━━━━━━━━━━━━━━━━━━━━┛\n\n`;
+        let infoMsg = `┏━━━━━━━━━━━━━━━━━━━┓\n`;
+        infoMsg += `   🎧  *𝙋𝙡𝙖𝙮 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓* 🎧\n`;
+        infoMsg += `┗━━━━━━━━━━━━━━━━━━━┛\n\n`;
         infoMsg += `◈ 📌 *𝗧𝗶𝘁𝗼𝗹𝗼:* ${vid.title}\n`;
         infoMsg += `◈ ⏱️ *𝗗𝘂𝗿𝗮𝘁𝗮:* ${vid.timestamp}\n\n`;
         infoMsg += `*𝗦𝗲𝗹𝗲𝘇𝗶𝗼𝗻𝗮 𝗶𝗹 𝗳𝗼𝗿𝗺𝗮𝘁𝗼:*`;
@@ -27,7 +27,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         return await conn.sendMessage(m.chat, {
             image: { url: vid.thumbnail },
             caption: infoMsg,
-            footer: '𝙋𝙡𝙖𝙮 𝘿𝙖𝙣𝙜𝙚𝙧𝙗𝙤𝙩',
+            footer: '𝙋𝙡𝙖𝙮 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
             buttons: [
                 { buttonId: `${usedPrefix}playaud ${url}`, buttonText: { displayText: '🎵 𝗔𝗨𝗗𝗜𝗢 (𝗠𝗣𝟯)' }, type: 1 },
                 { buttonId: `${usedPrefix}playvid ${url}`, buttonText: { displayText: '🎬 𝗩𝗜𝗗𝗘𝗢 (𝗠𝗣𝟰)' }, type: 1 }
@@ -82,7 +82,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         await conn.sendMessage(m.chat, {
             video: fs.readFileSync(inputPath),
             mimetype: 'video/mp4',
-            caption: `✅ *𝐒𝐜𝐚𝐫𝐢𝐜𝐚𝐭𝐨 𝐝𝐚 𝙋𝙡𝙖𝙮 𝘿𝙖𝙣𝙜𝙚𝙧𝙗𝙤𝙩*`,
+            caption: `✅ *𝐒𝐜𝐚𝐫𝐢𝐜𝐚𝐭𝐨 𝐝𝐚 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`,
         }, { quoted: m });
     }
 
@@ -93,7 +93,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
   } catch (e) {
     console.error(e);
-    m.reply('🚀 *𝙋𝙡𝙖𝙮 𝘿𝙖𝙣𝙜𝙚𝙧𝙗𝙤𝙩 𝙀𝙧𝙧𝙤𝙧:* File non disponibile o server offline.');
+    m.reply('🚀 *𝙋𝙡𝙖𝙮 𝙀𝙧𝙧𝙤𝙧:* File non disponibile o server offline.');
   }
 };
 
