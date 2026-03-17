@@ -22,7 +22,7 @@ let handler = async (m, { conn, command, usedPrefix }) => {
 │
 │─ׄ─『 📌 \`Info Utili\` 』 ─ׄ─⭒
 │
-│ • \`GitHub:\` *github.com/realvare*
+│ • \`GitHub:\` *github.com/axion-bot*
 │ • \`Supporto:\` @393509594333
 │
 *╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*`;
