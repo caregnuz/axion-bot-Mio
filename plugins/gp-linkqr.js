@@ -39,6 +39,6 @@ const handler = async (m, { conn }) => {
   }
 };
 
-handler.command = ['qrgruppo'];
+handler.command = ['linkqr'];
 
 export default handler;
