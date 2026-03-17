@@ -23,7 +23,7 @@ let handler = async (m, { conn, command, usedPrefix }) => {
 │─ׄ─『 📌 \`Info Utili\` 』 ─ׄ─⭒
 │
 │ • \`GitHub:\` *github.com/axion-bot*
-│ • \`Supporto:\` @393509594333
+│ • \`Supporto:\` @+393509594333
 │
 *╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*`;
     await conn.reply(
