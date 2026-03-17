@@ -1,32 +1,34 @@
 let handler = async (m, { conn, command, usedPrefix }) => {
     let staff = `
-ㅤㅤ⋆｡˚『 ╭ \`STAFF 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓\` ╯ 』˚｡⋆\n╭
+⋆｡˚✦『 𝐒𝐓𝐀𝐅𝐅 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 』✦˚｡⋆
+
+╭───────────────╮
+│ 🤖 Bot: ${global.nomebot}
+│ 🆚 Versione: ${global.versione}
+╰───────────────╯
+
+╭─── 👑 SVILUPPATORE ───╮
+│ ✦ Nome: Deadly
+│ ✦ Ruolo: Creatore / Dev
+│ ✦ Contatto: @212778494602
+╰────────────────────────╯
+
+╭─── 🛡️ MODERATORI ───╮
+│ ✦ Luxifer
+│   ├ Ruolo: Moderatore
+│   └ Contatto: @212781816909
 │
-│ 『 🤖 』 \`Bot:\` *${global.nomebot}*
-│ 『 🍥 』 \`Versione:\` *${global.versione}*
-│
-│⭒─ׄ─『 👑 \`Sviluppatore\` 』 ─ׄ─⭒
-│
-│ • \`Nome:\` *Deadly*
-│ • \`Ruolo:\` *Creatore / dev*
-│ • \`Contatto:\` @212778494602
-│
-│⭒─ׄ─『 🛡️ \`Moderatori\` 』 ─ׄ─⭒
-│
-│ • \`Nome:\` *Luxifer*
-│ • \`Ruolo:\` *Moderatore*
-│ • \`Contatto:\` @212781816909
-│
-│ • \`Nome:\` *Bonzino*
-│ • \`Ruolo:\` *Moderatore*
-│ • \`Contatto:\` @639350468907
-│
-│─ׄ─『 📌 \`Info Utili\` 』 ─ׄ─⭒
-│
-│ • \`GitHub:\` *github.com/axion-bot*
-│ • \`Supporto:\` @+393509594333
-│
-*╰⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*`;
+│ ✦ Bonzino
+│   ├ Ruolo: Moderatore
+│   └ Contatto: @639350468907
+╰────────────────────────╯
+
+╭─── 📌 INFO UTILI ───╮
+│ ✦ GitHub: github.com/axion-bot
+│ ✦ Supporto: @+393509594333
+╰────────────────────────╯
+
+⋆｡˚✦ 𝛥𝐗𝐈𝚶𝐍 𝐁𝐎𝐓 ✦˚｡⋆`;
 
     await conn.reply(
         m.chat, 
