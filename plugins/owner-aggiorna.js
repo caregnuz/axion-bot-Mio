@@ -16,7 +16,7 @@ let handler = async (m, { conn }) => {
       return `📄 ${file} (+${ins}/-${del})`
     }).join('\n')
 
-    let resultMsg = '✅ Aggiornamento completato!\n\n' + (files)
+    let resultMsg = '✅ Aggiornamento completato!' + (files)
 
     await conn.reply(m.chat, resultMsg, m)
     await m.react('✅')
