@@ -37,8 +37,12 @@ const certificazioni = ["Google Certified","AWS","Meta Ads","Azure","OpenAI Expe
 const livelliExp = ["Junior","Mid","Senior","Esperto"]
 
 // 🔘 BOTTONI
-const buttons = (prefix) => [
+const buttonsCurriculum = (prefix) => [
     { buttonId: `${prefix}cercalavoro`, buttonText: { displayText: '💼 Cerca Lavoro' }, type: 1 },
+    { buttonId: `${prefix}profilowork`, buttonText: { displayText: '👤 Profilo' }, type: 1 }
+]
+
+const buttonProfilo = (prefix) => [
     { buttonId: `${prefix}profilowork`, buttonText: { displayText: '👤 Profilo' }, type: 1 }
 ]
 
@@ -63,7 +67,7 @@ let handler = async (m, { conn, command, usedPrefix }) => {
         let cert = random(certificazioni)
         let exp = random(livelliExp)
 
-        let txt = `╔═══ 📄 *CURRICULUM VITAE* ═══╗
+        let txt = `╔═══ 📄 *CURRICULUM* ═══╗
 
 👤 ${nome}
 
@@ -82,14 +86,12 @@ let handler = async (m, { conn, command, usedPrefix }) => {
 🎯 Obiettivo:
 → Guadagnare sempre di più 💸
 
-━━━━━━━━━━━━━━━━━━
-
-╚══════════════════════╝`
+╚══════════════════╝`
 
         return await conn.sendMessage(chat, {
             text: txt,
             footer: "Scegli cosa fare",
-            buttons: buttons(usedPrefix),
+            buttons: buttonsCurriculum(usedPrefix),
             headerType: 1
         }, { quoted: m })
     }
@@ -99,7 +101,7 @@ let handler = async (m, { conn, command, usedPrefix }) => {
         let lista = []
         let used = new Set()
 
-        let txt = `╔═══ 💼 *OFFERTE DI LAVORO* ═══╗
+        let txt = `╔═══ 💼 *LAVORO* ═══╗
 
 _Rispondi con 1-5_
 
@@ -152,8 +154,8 @@ _Rispondi con 1-5_
     }
 }
 
-// 🎯 SCELTA
-handler.before = async (m, { conn }) => {
+// 🎯 SCELTA LAVORO
+handler.before = async (m, { conn, usedPrefix }) => {
     const chat = m.chat
     const user = m.sender
 
@@ -195,7 +197,13 @@ handler.before = async (m, { conn }) => {
 
 ╚══════════════════╝`
 
-    await conn.reply(chat, txt, m)
+    // ✅ Bottone solo “Profilo” dopo assunzione
+    await conn.sendMessage(chat, {
+        text: txt,
+        footer: "Visualizza il tuo profilo",
+        buttons: buttonProfilo(usedPrefix),
+        headerType: 1
+    }, { quoted: m })
 
     delete global.curriculumGame[chat][user]
 }
