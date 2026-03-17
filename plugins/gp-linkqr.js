@@ -6,14 +6,6 @@ const handler = async (m, { conn }) => {
     return m.reply('❌ Questo comando funziona solo nei gruppi.');
   }
 
-  // Controllo owner reale
-  const sender = m.sender;
-  const BOT_OWNERS = global.owner.map(o => o[0] + '@s.whatsapp.net');
-
-  if (!BOT_OWNERS.includes(sender)) {
-    return m.reply('❌ Comando riservato al vero Owner del bot.');
-  }
-
   // Il bot deve essere admin
   const metadata = await conn.groupMetadata(m.chat);
   const botJid = conn.user.id.split(':')[0] + '@s.whatsapp.net';
