@@ -7,26 +7,26 @@ let handler = async (m, { conn, command, usedPrefix }) => {
 │ 🆚 Versione: ${global.versione}
 ╰───────────────╯
 
-╭─── 👑 SVILUPPATORE ───╮
+╭─── 👑 *_CREATORE_* ───╮
 │ ✦ Nome: Deadly
 │ ✦ Ruolo: Creatore / Dev
 │ ✦ Contatto: @212778494602
-╰────────────────────────╯
+╰────────────────────╯
 
-╭─── 🛡️ MODERATORI ───╮
+╭─── 🛡️ *_STAFF_* ───╮
 │ ✦ Luxifer
-│   ├ Ruolo: Moderatore
+│   ├ Ruolo: *Staffer*
 │   └ Contatto: @212781816909
 │
 │ ✦ Bonzino
-│   ├ Ruolo: Moderatore
+│   ├ Ruolo: *Staffer*
 │   └ Contatto: @639350468907
-╰────────────────────────╯
+╰────────────────────╯
 
 ╭─── 📌 INFO UTILI ───╮
 │ ✦ GitHub: github.com/axion-bot
 │ ✦ Supporto: @+393509594333
-╰────────────────────────╯
+╰────────────────────╯
 
 ⋆｡˚✦ 𝛥𝐗𝐈𝚶𝐍 𝐁𝐎𝐓 ✦˚｡⋆`;
 
@@ -56,7 +56,7 @@ END:VCARD`
                     vcard: `BEGIN:VCARD
 VERSION:3.0
 FN:Luxifer
-ORG:𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 - Moderatore
+ORG:𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 - Staffer
 TEL;type=CELL;type=VOICE;waid=212781816909:+212781816909
 END:VCARD`
                 },
@@ -64,7 +64,7 @@ END:VCARD`
                     vcard: `BEGIN:VCARD
 VERSION:3.0
 FN:Bonzino
-ORG:𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 - Moderatore
+ORG:𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 - Staffer
 TEL;type=CELL;type=VOICE;waid=639350468907:+639350468907
 END:VCARD`
                 }
@@ -72,7 +72,7 @@ END:VCARD`
         }
     }, { quoted: m });
 
-    m.react('🉐');
+    m.react('👑');
 };
 
 handler.help = ['staff'];
