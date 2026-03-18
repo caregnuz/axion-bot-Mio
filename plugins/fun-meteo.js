@@ -101,7 +101,6 @@ let handler = async (m, { conn, text }) => {
           externalAdReply: {
             title: boldUnicode('Meteo aggiornato ☀️'),
             body: '',
-            mediaType: 1,
             showAdAttribution: false
           }
         }
