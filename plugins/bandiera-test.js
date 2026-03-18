@@ -510,9 +510,9 @@ let handler = async (m, { conn, command, isAdmin }) => {
 
 ⏱️ *Tempo disponibile:* ${Math.round(TEMPO_QUIZ_MS / 1000)} secondi
 
-*Buon divertimento!*`
+*Buon divertimento!*
 
-  > ("Dev by Bonzino")}`
+ *Dev by Bonzino*`*
 
     try {
       const sent = url
