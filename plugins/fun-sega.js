@@ -1,3 +1,4 @@
+// plugins/fun-sega.js by Bonzino-bot
 import { performance } from 'perf_hooks'
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
