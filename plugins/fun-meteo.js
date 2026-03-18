@@ -2,7 +2,6 @@ import axios from 'axios'
 import https from 'https'
 
 const API_KEY = '2d61a72574c11c4f36173b627f8cb177'
-const ICON_URL = 'https://i.imgur.com/JbQ9mQK.png'
 
 function boldUnicode(s = '') {
   let o = ''
@@ -28,17 +27,11 @@ function fetchBuf(url) {
 }
 
 async function buildContextMsg(title) {
-  let thumb = null
-  try {
-    thumb = await fetchBuf(ICON_URL)
-  } catch {}
-
   return {
     key: { participants: '0@s.whatsapp.net', fromMe: false, id: 'CTX' },
     message: {
       locationMessage: {
         name: boldUnicode(title),
-        ...(thumb ? { jpegThumbnail: thumb } : {})
       }
     },
     participant: '0@s.whatsapp.net'
@@ -109,8 +102,6 @@ let handler = async (m, { conn, text }) => {
             title: boldUnicode('Meteo aggiornato ☀️'),
             body: '',
             mediaType: 1,
-            thumbnailUrl: ICON_URL,
-            renderLargerThumbnail: false,
             showAdAttribution: false
           }
         }
