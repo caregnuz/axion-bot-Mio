@@ -1,50 +1,79 @@
-// Plugin: bacia (tagga entrambi)
+// plugins bacia by Bonzino
 
-let handler = async (m, { conn, command, usedPrefix }) => {
-  try {
-    let target =
-      m.mentionedJid?.[0] ||
-      m.msg?.contextInfo?.mentionedJid?.[0] ||
-      m.quoted?.sender;
+const S = v => String(v || '')
+const tag = (jid = '') => '@' + S(jid).split('@')[0].split(':')[0]
 
-    if (!target) {
-      return conn.sendMessage(
-        m.chat,
-        { text: `💋 Usa così: *${usedPrefix + command} @utente* oppure rispondi a un messaggio.` },
-        { quoted: m }
-      );
-    }
-
-    const sender = m.sender
-    const senderTag = `@${sender.split('@')[0]}`
-    const targetTag = `@${target.split('@')[0]}`
-
-    const frasi = [
-      `💋  ${senderTag} ha baciato ${targetTag}`,
-    ];
-
-    const frase = frasi[Math.floor(Math.random() * frasi.length)];
-
-    // Reazione
-    await conn.sendMessage(m.chat, { react: { text: '💋', key: m.key } });
-
-    // Messaggio con MENZIONE DI ENTRAMBI
-    await conn.sendMessage(
-      m.chat,
-      {
-        text: frase,
-        mentions: [sender, target],
-      },
-      { quoted: m }
-    );
-
-  } catch (e) {
-    console.error('Errore plugin bacia:', e);
+function boldUnicode(s = '') {
+  let o = ''
+  for (const ch of s) {
+    const c = ch.codePointAt(0)
+    if (c >= 0x41 && c <= 0x5a) o += String.fromCodePoint(0x1D400 + (c - 0x41))
+    else if (c >= 0x61 && c <= 0x7a) o += String.fromCodePoint(0x1D41A + (c - 0x61))
+    else if (c >= 0x30 && c <= 0x39) o += String.fromCodePoint(0x1D7CE + (c - 0x30))
+    else o += ch
   }
-};
+  return o
+}
 
-handler.help = ['bacia @tag', 'bacia (in reply)'];
-handler.tags = ['fun'];
-handler.command = /^(bacia|kiss|bacino)$/i;
+const buildContextMsg = title => ({
+  key: { participants: '0@s.whatsapp.net', fromMe: false, id: 'CTX' },
+  message: {
+    locationMessage: { name: boldUnicode(title) }
+  },
+  participant: '0@s.whatsapp.net'
+})
 
-export default handler;
+function resolveTarget(m) {
+  const ctx = m.message?.extendedTextMessage?.contextInfo || {}
+
+  if (Array.isArray(m.mentionedJid) && m.mentionedJid.length) return m.mentionedJid[0]
+  if (Array.isArray(ctx.mentionedJid) && ctx.mentionedJid.length) return ctx.mentionedJid[0]
+
+  if (m.quoted?.sender) return m.quoted.sender
+  if (m.quoted?.participant) return m.quoted.participant
+  if (ctx.participant) return ctx.participant
+
+  return null
+}
+
+let handler = async (m, { conn }) => {
+  const chat = m.chat || m.key?.remoteJid
+  if (!chat) return
+
+  const sender = S(
+    m.sender ||
+    m.key?.participant ||
+    m.participant ||
+    (m.key?.fromMe ? conn?.user?.id : '')
+  )
+
+  const target = resolveTarget(m)
+
+  if (!target) {
+    const q = buildContextMsg('*bacio*')
+    await conn.sendMessage(chat, {
+      text: `${boldUnicode('*⚠️ Devi menzionare qualcuno o rispondere a un messaggio per baciarlo 💋*')}\n\n${boldUnicode('Esempio:')}\n\`.bacia @utente\``
+    }, { quoted: q })
+    return
+  }
+
+  const msg = `💋 ${tag(sender)} ${boldUnicode('*ha baciato*')} ${tag(target)} 😘`
+  const q = buildContextMsg('*bacio*')
+
+  await conn.sendMessage(chat, {
+    text: msg,
+    contextInfo: {
+      isForwarded: true,
+      forwardingScore: 1,
+      mentionedJid: [sender, target]
+    },
+    mentions: [sender, target]
+  }, { quoted: q })
+}
+
+handler.help = ['bacia @user']
+handler.tags = ['fun']
+handler.command = ['bacia', 'bacio', 'bacino']
+handler.group = true
+
+export default handler
