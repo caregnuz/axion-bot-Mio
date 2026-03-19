@@ -45,7 +45,7 @@ const handler = async (m, { conn }) => {
 
 handler.help = ['listmod']
 handler.tags = ['group']
-handler.command = ['listmod']
+handler.command = ['listamod']
 handler.group = true
 
 export default handler
