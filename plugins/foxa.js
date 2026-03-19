@@ -20,7 +20,7 @@ let handler = async (m, { conn }) => {
     m.chat,
     {
       audio: audioBuffer,
-      mimetype: "audio/aac"
+      mimetype: "audio/aac",
       ptt: true
     },
     { quoted: m }
