@@ -44,7 +44,7 @@ END:VCARD`
   }
 
   // ================= WARN MOD =================
-  if (command === 'warnmod') {
+  if (command === 'warnm') {
     user.warn = (user.warn || 0) + 1
 
     // messaggio warn
@@ -73,7 +73,7 @@ END:VCARD`
   }
 
   // ================= UNWARN MOD =================
-  if (command === 'unwarnmod') {
+  if (command === 'unwarnm') {
     user.warn = 0
     await conn.reply(
       m.chat,
@@ -85,8 +85,8 @@ END:VCARD`
   }
 }
 
-handler.help = ['warnmod', 'unwarnmod']
-handler.command = ['warnmod', 'unwarnmod']
+handler.help = ['warnm', 'unwarnm']
+handler.command = ['warnm', 'unwarnm']
 handler.group = true
 handler.premium = false
 handler.botAdmin = true
