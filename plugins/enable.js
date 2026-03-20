@@ -59,7 +59,7 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner }) => 
   *sɪᴄᴜʀᴇᴢᴢᴀ:*
   🛡️ antilink, antispam, antibot
   🔞 antiporno, antigore, antitrava
-  🔒 antinuke, antitag, antiprivato
+  🔒 antitag, antiprivato
   
   **ʀᴇᴛᴇ:**
   📱 antiinsta, antitelegram, antitiktok
@@ -102,12 +102,6 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner }) => 
       if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin);
       chat.antiTag = isEnable;
       result = box('ᴀɴᴛɪ-ᴛᴀɢ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), 'Protezione tag invasivi');
-      break;
-
-    case 'antinuke':
-      if (!isOwner && !isROwner) return m.reply(noOwner);
-      chat.antinuke = isEnable;
-      result = box('ᴀɴᴛɪ-ɴᴜᴋᴇ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), 'Integrità gruppo garantita');
       break;
 
     case 'antigore':
