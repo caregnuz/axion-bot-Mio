@@ -181,12 +181,11 @@ await conn.sendMessage(chatId, {
   contextInfo: {
     externalAdReply: {
       title: displayName,
-      body: '𝐈𝐧𝐟𝐨 𝐔𝐭𝐞𝐧𝐭𝐞',
+      body: '*𝐈𝐧𝐟𝐨 𝐔𝐭𝐞𝐧𝐭𝐞*',
       thumbnailUrl: pp,
       mediaType: 1,
       renderLargerThumbnail: false,
-      showAdAttribution: false,
-      sourceUrl: 
+      showAdAttribution: true,
     }
   }
 }, { quoted: m })
