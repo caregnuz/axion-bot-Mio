@@ -1,7 +1,5 @@
 //Infoutente.js plugin by Bonzino
 
-// plugins/infoutente.js
-
 import { getDevice } from '@realvare/baileys'
 
 const S = v => String(v || '')
@@ -170,25 +168,27 @@ let handler = async (m, { conn }) => {
 *⚠️ 𝐖𝐚𝐫𝐧:* ${warn}/𝟑
 *🔇 𝐌𝐮𝐭𝐞:* ${muted ? '*𝐒𝐢*' : '*𝐍𝐨*'}`
 
-let pp = 'https://i.ibb.co/2kR7x9J/avatar.png'
-try {
-  pp = await conn.profilePictureUrl(target, 'image')
-} catch {}
+  let pp = 'https://i.ibb.co/2kR7x9J/avatar.png'
+  try {
+    pp = await conn.profilePictureUrl(target, 'image')
+  } catch {}
 
-await conn.sendMessage(chatId, {
-  text,
-  mentions: [target],
-  contextInfo: {
-    externalAdReply: {
-      title: displayName,
-      body: '*𝐈𝐧𝐟𝐨 𝐔𝐭𝐞𝐧𝐭𝐞*',
-      thumbnailUrl: pp,
-      mediaType: 1,
-      renderLargerThumbnail: false,
-      showAdAttribution: false,
+  await conn.sendMessage(chatId, {
+    text,
+    mentions: [target],
+    contextInfo: {
+      ...global.fake.contextInfo,
+      externalAdReply: {
+        title: displayName,
+        body: '',
+        thumbnailUrl: pp,
+        sourceUrl: '',
+        mediaType: 1,
+        renderLargerThumbnail: false,
+        showAdAttribution: false
+      }
     }
-  }
-}, { quoted: m })
+  }, { quoted: m })
 }
 
 handler.help = ['infoutente', 'userinfo', 'whoami', 'info']
