@@ -174,21 +174,20 @@ let handler = async (m, { conn }) => {
   } catch {}
 
   await conn.sendMessage(chatId, {
-    text,
-    mentions: [target],
-    contextInfo: {
-      ...global.fake.contextInfo,
-      externalAdReply: {
-        title: displayName,
-        body: '',
-        thumbnailUrl: pp,
-        sourceUrl: '',
-        mediaType: 1,
-        renderLargerThumbnail: false,
-        showAdAttribution: false
-      }
+  text,
+  mentions: [target],
+  contextInfo: {
+    externalAdReply: {
+      title: displayName,
+      body: '',
+      thumbnailUrl: pp,
+      sourceUrl: '',
+      mediaType: 1,
+      renderLargerThumbnail: false,
+      showAdAttribution: false
     }
-  }, { quoted: m })
+  }
+}, { quoted: m })
 }
 
 handler.help = ['infoutente', 'userinfo', 'whoami', 'info']
