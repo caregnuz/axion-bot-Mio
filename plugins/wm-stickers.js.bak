@@ -33,6 +33,6 @@ let handler = async (m, { conn, text, usedPrefix }) => {
 
 handler.help = ['wm']
 handler.tags = ['sticker', 'strumenti']
-handler.command = ['take', 'wm']
+handler.command = ['wm']
 
 export default handler
