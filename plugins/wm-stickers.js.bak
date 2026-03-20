@@ -1,3 +1,5 @@
+//wm-sticker plugin by Deadly e Bonzino
+
 import { addExif } from '../lib/sticker.js'
 
 let handler = async (m, { conn, text, usedPrefix }) => {

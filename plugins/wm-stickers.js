@@ -1,4 +1,4 @@
-//wm-sticker plugin by Deadly e Bonzino
+//wm-sticker plugin by Deadly e Bonzino.
 
 import { addExif } from '../lib/sticker.js'
 
