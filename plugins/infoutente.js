@@ -109,24 +109,24 @@ let handler = async (m, { conn }) => {
         : 'Non disponibile'
 
   const roles = []
-  if (isOwner) roles.push('⭐ 𝐎𝐰𝐧𝐞𝐫')
-  if (isAdmin) roles.push('🛡️ 𝐀𝐝𝐦𝐢𝐧')
-  if (isSuperAdmin) roles.push('👑 𝐒𝐮𝐩𝐞𝐫𝐀𝐝𝐦𝐢𝐧')
-  if (!roles.length) roles.push('👤 𝐌𝐞𝐦𝐛𝐫𝐨')
+  if (isOwner) roles.push('*⭐ 𝐎𝐰𝐧𝐞𝐫*')
+  if (isAdmin) roles.push('*🛡️ 𝐀𝐝𝐦𝐢𝐧*')
+  if (isSuperAdmin) roles.push('*👑 𝐒𝐮𝐩𝐞𝐫𝐀𝐝𝐦𝐢𝐧*')
+  if (!roles.length) roles.push('*👤 𝐌𝐞𝐦𝐛𝐫𝐨*')
 
   const tag = '@' + bare(target)
 
-  const text = `╭━━━━━━━📌━━━━━━━╮
-   ✦ 𝐈𝐍𝐅𝐎 𝐔𝐓𝐄𝐍𝐓𝐄 ✦
-╰━━━━━━━📌━━━━━━━╯
+  const text = `*╭━━━━━━━📌━━━━━━━╮*
+   *✦ 𝐈𝐍𝐅𝐎 𝐔𝐓𝐄𝐍𝐓𝐄 ✦*
+*╰━━━━━━━📌━━━━━━━╯*
 
-👤 𝐍𝐨𝐦𝐞: ${displayName}
-🆔 𝐈𝐃: ${tag}
-🔑 𝐑𝐮𝐨𝐥𝐢: ${roles.join(' | ')}
-💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢: ${messages}
-📅 𝐄𝐧𝐭𝐫𝐚𝐭𝐚: ${joinedAt}
-⚠️ 𝐖𝐚𝐫𝐧: ${warn}/𝟑
-🔇 𝐌𝐮𝐭𝐞: ${muted ? '𝐒𝐢' : '𝐍𝐨'}`
+*👤 𝐍𝐨𝐦𝐞:* ${displayName}
+*🆔 𝐈𝐃:* ${tag}
+*🔑 𝐑𝐮𝐨𝐥𝐢:* ${roles.join(' | ')}
+*💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢:* ${messages}
+*📅 𝐄𝐧𝐭𝐫𝐚𝐭𝐚:* ${joinedAt}
+*⚠️ 𝐖𝐚𝐫𝐧:* ${warn}/𝟑
+*🔇 𝐌𝐮𝐭𝐞:* ${muted ? '*𝐒𝐢*' : '*𝐍𝐨*'}`
 
   await conn.sendMessage(chatId, {
     text,
