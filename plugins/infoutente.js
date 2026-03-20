@@ -14,6 +14,22 @@ function resolveTargetJid(m) {
   return m.sender
 }
 
+function isRealOwner(jid) {
+  try {
+    const num = bare(jid)
+    if (!Array.isArray(global.owner)) return false
+
+    const owners = global.owner
+      .map(o => Array.isArray(o) ? o[0] : o)
+      .map(v => bare(v))
+      .filter(Boolean)
+
+    return owners.includes(num)
+  } catch {
+    return false
+  }
+}
+
 async function getDisplayName(conn, jid, meta, m) {
   const dbName = global?.db?.data?.users?.[jid]?.name
   if (dbName) return dbName
@@ -28,7 +44,7 @@ async function getDisplayName(conn, jid, meta, m) {
 
   try {
     if (Array.isArray(meta?.participants)) {
-      const p = meta.participants.find(v => v.id === jid || v.jid === jid)
+      const p = meta.participants.find(v => bare(v.id || v.jid) === bare(jid))
       if (p?.name || p?.notify) return p.name || p.notify
     }
   } catch {}
@@ -57,16 +73,13 @@ let handler = async (m, { conn }) => {
 
   let isAdmin = false
   let isSuperAdmin = false
-  let isOwner = false
-
-  if (Array.isArray(global.owner)) {
-    const ownerJids = global.owner.map(o => o[0] + '@s.whatsapp.net')
-    isOwner = ownerJids.includes(target)
-  }
+  const isOwner = isRealOwner(target)
 
   try {
     if (Array.isArray(meta?.participants)) {
-      const participant = meta.participants.find(u => u.id === target || u.jid === target)
+      const participant = meta.participants.find(
+        u => bare(u.id || u.jid) === bare(target)
+      )
 
       if (participant?.admin === 'admin') isAdmin = true
       if (participant?.admin === 'superadmin') {
