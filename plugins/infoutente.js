@@ -86,6 +86,12 @@ let handler = async (m, { conn }) => {
         isAdmin = true
         isSuperAdmin = true
       }
+
+      if (participant?.isAdmin === true) isAdmin = true
+      if (participant?.isSuperAdmin === true) {
+        isAdmin = true
+        isSuperAdmin = true
+      }
     }
   } catch {}
 
@@ -102,10 +108,11 @@ let handler = async (m, { conn }) => {
         ? formatDate(user.firstTime)
         : 'Non disponibile'
 
-  let roleText = '👤 𝐌𝐞𝐦𝐛𝐫𝐨'
-  if (isOwner) roleText = '⭐ 𝐎𝐰𝐧𝐞𝐫'
-  else if (isSuperAdmin) roleText = '👑 𝐒𝐮𝐩𝐞𝐫𝐀𝐝𝐦𝐢𝐧'
-  else if (isAdmin) roleText = '🛡️ 𝐀𝐝𝐦𝐢𝐧'
+  const roles = []
+  if (isOwner) roles.push('⭐ 𝐎𝐰𝐧𝐞𝐫')
+  if (isAdmin) roles.push('🛡️ 𝐀𝐝𝐦𝐢𝐧')
+  if (isSuperAdmin) roles.push('👑 𝐒𝐮𝐩𝐞𝐫𝐀𝐝𝐦𝐢𝐧')
+  if (!roles.length) roles.push('👤 𝐌𝐞𝐦𝐛𝐫𝐨')
 
   const tag = '@' + bare(target)
 
@@ -115,7 +122,7 @@ let handler = async (m, { conn }) => {
 
 👤 𝐍𝐨𝐦𝐞: ${displayName}
 🆔 𝐈𝐃: ${tag}
-🔑 𝐑𝐮𝐨𝐥𝐨: ${roleText}
+🔑 𝐑𝐮𝐨𝐥𝐢: ${roles.join(' | ')}
 💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢: ${messages}
 📅 𝐄𝐧𝐭𝐫𝐚𝐭𝐚: ${joinedAt}
 ⚠️ 𝐖𝐚𝐫𝐧: ${warn}/𝟑
