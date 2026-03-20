@@ -42,13 +42,13 @@ function getDevice(m) {
       ).toLowerCase()
 
     if (raw.includes('ios') || raw.includes('iphone')) return '🍏 *𝐢𝐎𝐒*'
-    if (raw.includes('android')) return '🤖 *𝐀𝐧𝐝𝐫𝐨𝐢𝐝*'
+    if (raw.includes('android')) return '📱 *𝐀𝐧𝐝𝐫𝐨𝐢𝐝*'
     if (raw.includes('web')) return '💻 *𝐖𝐞𝐛*'
     if (raw.includes('desktop') || raw.includes('windows') || raw.includes('mac')) return '🖥️ *𝐃𝐞𝐬𝐤𝐭𝐨𝐩*'
 
     const id = String(m?.key?.id || '')
 
-    if (/^3A/i.test(id)) return '🤖 *𝐀𝐧𝐝𝐫𝐨𝐢𝐝*'
+    if (/^3A/i.test(id)) return '📱 *𝐀𝐧𝐝𝐫𝐨𝐢𝐝*'
     if (/^3E/i.test(id)) return '🍏 *𝐢𝐎𝐒*'
     if (/^BAE/i.test(id)) return '💻 *𝐖𝐞𝐛*'
 
