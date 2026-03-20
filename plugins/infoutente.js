@@ -186,7 +186,7 @@ await conn.sendMessage(chatId, {
       mediaType: 1,
       renderLargerThumbnail: false,
       showAdAttribution: false,
-      sourceUrl: 'https://example.com'
+      sourceUrl: 
     }
   }
 }, { quoted: m })
