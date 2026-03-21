@@ -52,7 +52,8 @@ let handler = async (m, { conn }) => {
   if (!target) {
     const q = buildContextMsg('*bacio*')
     await conn.sendMessage(chat, {
-      text: `${boldUnicode('*⚠️ Devi menzionare qualcuno o rispondere a un messaggio per baciarlo 💋*')}\n\n${boldUnicode('Esempio:')}\n\`.bacia @utente\``
+      text: `${boldUnicode('*⚠️ Devi menzionare qualcuno o rispondere a un messaggio per baciarlo 💋*')}\n\n${boldUnicode('Esempio:')}\n\`.bacia @utente\``,
+      ...global.rcanal
     }, { quoted: q })
     return
   }
@@ -63,8 +64,7 @@ let handler = async (m, { conn }) => {
   await conn.sendMessage(chat, {
     text: msg,
     contextInfo: {
-      isForwarded: true,
-      forwardingScore: 1,
+      ...(global.rcanal?.contextInfo || {}),
       mentionedJid: [sender, target]
     },
     mentions: [sender, target]
