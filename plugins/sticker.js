@@ -41,5 +41,5 @@ let handler = async (m, { conn }) => {
 
 handler.help = ['sticker']
 handler.tags = ['sticker']
-handler.command = ['s','sticker']
+handler.command = ['s']
 
