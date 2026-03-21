@@ -1,4 +1,4 @@
- plugins bacia by Bonzino
+ // plugins bacia by Bonzino
 
 const S = v => String(v || '')
 const tag = (jid = '') => '@' + S(jid).split('@')[0].split(':')[0]
@@ -53,7 +53,15 @@ let handler = async (m, { conn }) => {
     const q = buildContextMsg('*bacio*')
     await conn.sendMessage(chat, {
       text: `${boldUnicode('*⚠️ Devi menzionare qualcuno o rispondere a un messaggio per baciarlo 💋*')}\n\n${boldUnicode('Esempio:')}\n\`.bacia @utente\``,
-      ...global.rcanal
+      contextInfo: {
+        forwardingScore: 999,
+        isForwarded: true,
+        forwardedNewsletterMessageInfo: {
+          newsletterJid: '120363424041538498@newsletter',
+          newsletterName: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
+          serverMessageId: 1
+        }
+      }
     }, { quoted: q })
     return
   }
@@ -64,7 +72,13 @@ let handler = async (m, { conn }) => {
   await conn.sendMessage(chat, {
     text: msg,
     contextInfo: {
-      ...(global.rcanal?.contextInfo || {}),
+      forwardingScore: 999,
+      isForwarded: true,
+      forwardedNewsletterMessageInfo: {
+        newsletterJid: '120363424041538498@newsletter',
+        newsletterName: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
+        serverMessageId: 1
+      },
       mentionedJid: [sender, target]
     },
     mentions: [sender, target]
