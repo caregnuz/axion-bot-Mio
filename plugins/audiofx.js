@@ -146,7 +146,7 @@ const EFFECTS = {
     description: 'Riproduzione al contrario',
     build: () => ({
       type: 'filter_complex',
-      value: `areverse`
+      value: 'areverse'
     })
   }
 }
@@ -176,7 +176,7 @@ function getPanel(effectKey, intensity) {
 *🎛️ 𝐋𝐢𝐯𝐞𝐥𝐥𝐨:* ${getLevelName(intensity)}
 *📊 ${getBar(intensity)}*
 
-*📌 Rispondi a un audio e premi Applica.*`
+*📌 Rispondi a un audio e usa questo pannello.*`
 }
 
 function getMenu(prefix) {
@@ -226,6 +226,7 @@ function getMime(q) {
     q?.mimetype ||
     q?.msg?.mimetype ||
     q?.message?.audioMessage?.mimetype ||
+    q?.message?.documentMessage?.mimetype ||
     ''
   )
 }
@@ -244,26 +245,37 @@ function runFfmpeg(input, output, effectConfig) {
   })
 }
 
+function saveState(sender, effect, intensity, sourceMessage) {
+  global.audiofx[sender] = {
+    effect,
+    intensity,
+    source: sourceMessage || null
+  }
+}
+
 let handler = async (m, { conn, args, usedPrefix, command }) => {
   try {
     const cmd = String(command || '').toLowerCase()
 
-    // compatibilità: .eco .robot .alien ecc.
+    if (cmd === 'effetti') {
+      return m.reply(getMenu(usedPrefix))
+    }
+
     if (EFFECTS[cmd]) {
-      global.audiofx[m.sender] = {
-        effect: cmd,
-        intensity: 50
+      const q = m.quoted || m
+      const mime = getMime(q)
+
+      if (!/audio/.test(mime)) {
+        return m.reply(`*❌ Rispondi a un audio o a una nota vocale prima di scegliere l'effetto.*`)
       }
+
+      saveState(m.sender, cmd, 50, q)
 
       return conn.sendMessage(m.chat, {
         text: getPanel(cmd, 50),
         buttons: getButtons(usedPrefix, cmd),
         headerType: 1
       }, { quoted: m })
-    }
-
-    if (cmd === 'effetti') {
-      return m.reply(getMenu(usedPrefix))
     }
 
     if (cmd === 'fx') {
@@ -277,10 +289,14 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
         return m.reply(`*❌ Effetto non valido.*\n\nUsa *${usedPrefix}effetti* per vedere la lista.`)
       }
 
-      global.audiofx[m.sender] = {
-        effect: effectKey,
-        intensity: 50
+      const q = m.quoted || m
+      const mime = getMime(q)
+
+      if (!/audio/.test(mime)) {
+        return m.reply(`*❌ Rispondi a un audio o a una nota vocale prima di aprire il pannello.*`)
       }
+
+      saveState(m.sender, effectKey, 50, q)
 
       return conn.sendMessage(m.chat, {
         text: getPanel(effectKey, 50),
@@ -301,12 +317,13 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
         return m.reply(`*❌ Livello non valido.* Usa: *basso, medio, alto, massimo*`)
       }
 
-      const intensity = LEVELS[levelKey]
-
-      global.audiofx[m.sender] = {
-        effect: effectKey,
-        intensity
+      const state = global.audiofx[m.sender]
+      if (!state || state.effect !== effectKey || !state.source) {
+        return m.reply(`*⚠️ Apri prima un effetto rispondendo a un audio con* *${usedPrefix}fx ${effectKey}*`)
       }
+
+      const intensity = LEVELS[levelKey]
+      saveState(m.sender, effectKey, intensity, state.source)
 
       return conn.sendMessage(m.chat, {
         text: getPanel(effectKey, intensity),
@@ -317,15 +334,15 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
     if (cmd === 'fxapply') {
       const state = global.audiofx[m.sender]
-      if (!state) {
-        return m.reply(`*⚠️ Apri prima un effetto con* *${usedPrefix}fx nomeeffetto*`)
+      if (!state || !state.effect || !state.source) {
+        return m.reply(`*⚠️ Apri prima un effetto rispondendo a un audio con* *${usedPrefix}fx nomeeffetto*`)
       }
 
-      const q = m.quoted || m
+      const q = state.source
       const mime = getMime(q)
 
       if (!/audio/.test(mime)) {
-        return m.reply('*❌ Rispondi a un audio o a una nota vocale.*')
+        return m.reply('*❌ L’audio sorgente non è più valido. Rispondi di nuovo a un audio e riapri il pannello.*')
       }
 
       await m.react('⏳')
@@ -343,7 +360,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
         await conn.sendFile(
           m.chat,
           buff,
-          `${state.effect}.mp3`,
+          `${state.effect}.ogg`,
           null,
           m,
           true,
@@ -372,8 +389,8 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
   }
 }
 
-handler.help = ['effetti', 'fx', 'fxset', 'fxapplica']
+handler.help = ['effetti', 'fx', 'fxset', 'fxapply']
 handler.tags = ['strumenti']
-handler.command = /^(effetti|fx|fxset|fxapplica|eco|basso|acuto|grave|radio|telefono|robot|alien|demone|vinile|nightcore|vibrato|tremolo|inverso)$/i
+handler.command = /^(effetti|fx|fxset|fxapply|eco|basso|acuto|grave|radio|telefono|robot|alien|demone|vinile|nightcore|vibrato|tremolo|inverso)$/i
 
 export default handler
