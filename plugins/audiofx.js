@@ -245,11 +245,11 @@ function runFfmpeg(input, output, effectConfig) {
   })
 }
 
-function saveState(sender, effect, intensity, sourceMessage) {
+function saveState(sender, effect, intensity, sourceFile) {
   global.audiofx[sender] = {
     effect,
     intensity,
-    source: sourceMessage || null
+    sourceFile: sourceFile || null
   }
 }
 
@@ -269,7 +269,8 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
         return m.reply(`*❌ Rispondi a un audio o a una nota vocale prima di scegliere l'effetto.*`)
       }
 
-      saveState(m.sender, cmd, 50, q)
+      const input = await q.download(true)
+      saveState(m.sender, cmd, 50, input)
 
       return conn.sendMessage(m.chat, {
         text: getPanel(cmd, 50),
@@ -296,7 +297,8 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
         return m.reply(`*❌ Rispondi a un audio o a una nota vocale prima di aprire il pannello.*`)
       }
 
-      saveState(m.sender, effectKey, 50, q)
+      const input = await q.download(true)
+      saveState(m.sender, effectKey, 50, input)
 
       return conn.sendMessage(m.chat, {
         text: getPanel(effectKey, 50),
@@ -318,12 +320,12 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
       }
 
       const state = global.audiofx[m.sender]
-      if (!state || state.effect !== effectKey || !state.source) {
+      if (!state || state.effect !== effectKey || !state.sourceFile) {
         return m.reply(`*⚠️ Apri prima un effetto rispondendo a un audio con* *${usedPrefix}fx ${effectKey}*`)
       }
 
       const intensity = LEVELS[levelKey]
-      saveState(m.sender, effectKey, intensity, state.source)
+      saveState(m.sender, effectKey, intensity, state.sourceFile)
 
       return conn.sendMessage(m.chat, {
         text: getPanel(effectKey, intensity),
@@ -334,21 +336,14 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
     if (cmd === 'fxapply') {
       const state = global.audiofx[m.sender]
-      if (!state || !state.effect || !state.source) {
+      if (!state || !state.effect || !state.sourceFile) {
         return m.reply(`*⚠️ Apri prima un effetto rispondendo a un audio con* *${usedPrefix}fx nomeeffetto*`)
-      }
-
-      const q = state.source
-      const mime = getMime(q)
-
-      if (!/audio/.test(mime)) {
-        return m.reply('*❌ L’audio sorgente non è più valido. Rispondi di nuovo a un audio e riapri il pannello.*')
       }
 
       await m.react('⏳')
 
       const tempDir = ensureTempDir()
-      const input = await q.download(true)
+      const input = state.sourceFile
       const output = join(tempDir, `${Date.now()}-${Math.floor(Math.random() * 9999)}.mp3`)
 
       try {
@@ -360,7 +355,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
         await conn.sendFile(
           m.chat,
           buff,
-          `${state.effect}.ogg`,
+          `${state.effect}.mp3`,
           null,
           m,
           true,
@@ -378,6 +373,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
       } finally {
         safeUnlink(input)
         safeUnlink(output)
+        delete global.audiofx[m.sender]
       }
 
       return
