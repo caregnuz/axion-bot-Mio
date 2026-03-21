@@ -2,7 +2,6 @@ import { sticker } from '../lib/sticker.js'
 
 let handler = async (m, { conn }) => {
   try {
-    // reazione non bloccante
     conn.sendMessage(m.chat, {
       react: { text: '⏳', key: m.key }
     }).catch(() => null)
@@ -16,7 +15,7 @@ let handler = async (m, { conn }) => {
       }).catch(() => null)
 
       return await conn.sendMessage(m.chat, {
-        text: '*『 ⚠️ 』- 𝐑𝐢𝐬𝐩𝐨𝐧𝐝𝐢 𝐚 𝐮𝐧’𝐢𝐦𝐦𝐚𝐠𝐢𝐧𝐞 𝐨 𝐚 𝐮𝐧 𝐯𝐢𝐝𝐞𝐨.*'
+        text: '*⚠️𝐑𝐢𝐬𝐩𝐨𝐧𝐝𝐢 𝐚 𝐮𝐧’𝐢𝐦𝐦𝐚𝐠𝐢𝐧𝐞 𝐨 𝐚 𝐮𝐧 𝐯𝐢𝐝𝐞𝐨.*'
       }, { quoted: m })
     }
 
@@ -35,13 +34,12 @@ let handler = async (m, { conn }) => {
     }).catch(() => null)
 
     await conn.sendMessage(m.chat, {
-      text: '*『 ⚠️ 』- 𝐒𝐢 è 𝐯𝐞𝐫𝐢𝐟𝐢𝐜𝐚𝐭𝐨 𝐮𝐧 𝐞𝐫𝐫𝐨𝐫𝐞.*'
+      text: '*⚠️ 𝐒𝐢 è 𝐯𝐞𝐫𝐢𝐟𝐢𝐜𝐚𝐭𝐨 𝐮𝐧 𝐞𝐫𝐫𝐨𝐫𝐞.*'
     }, { quoted: m })
   }
 }
 
-handler.help = ['s2']
+handler.help = ['sticker']
 handler.tags = ['sticker']
-handler.command = ['s']
+handler.command = ['s','sticker']
 
-export default handler
