@@ -9,7 +9,7 @@ var handler = async (m, { conn, text, command, isOwner }) => {
   if (command === 'gruppi') {
     if (groups.length === 0) return conn.reply(m.chat, '⚠️ Nessun gruppo trovato.', m)
 
-    let txt = `🏢 *GESTIONE GRUPPI NEXUS*\n\n`
+    let txt = `🏢 *GESTIONE GRUPPI*\n\n`
     txt += `Usa: \`.esci [numero] [si/no]\`\n`
     txt += `_Esempio: .esci 2 si (tagga 4 volte ed esce)_\n\n`
 
