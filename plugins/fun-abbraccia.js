@@ -49,16 +49,14 @@ let handler = async (m, { conn }) => {
   const target = resolveTarget(m)
 
   if (!target) {
-    const q = buildContextMsg('*abbraccio*')
     await conn.sendMessage(chat, {
       text: `${boldUnicode('*⚠️ Devi menzionare qualcuno o rispondere a un messaggio per abbracciarlo 🤗*')}\n\n${boldUnicode('Esempio:')}\n\`.abbraccia @utente\``,
       ...global.rcanal
-    }, { quoted: q })
+    })
     return
   }
 
   const msg = `🤗 ${tag(sender)} ${boldUnicode('*ha abbracciato*')} ${tag(target)} 🫂`
-  const q = buildContextMsg('*abbraccio*')
 
   await conn.sendMessage(chat, {
     text: msg,
@@ -70,7 +68,7 @@ let handler = async (m, { conn }) => {
           mentionedJid: [sender, target]
         }),
     mentions: [sender, target]
-  }, { quoted: q })
+  })
 }
 
 handler.help = ['abbraccia @utente']
