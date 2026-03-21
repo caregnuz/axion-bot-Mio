@@ -10,8 +10,6 @@ let handler = async (m, { conn, usedPrefix }) => {
     const endTime = performance.now()
     const speed = (endTime - startTime).toFixed(4)
 
-    const botName = "𝐀𝐗𝐈𝐎𝐍 𝐁𝐎𝐓"
-
     const textMsg = `⟦ 𝙿𝙸𝙽𝙶·𝙱𝙾𝚃 ⟧
 │
 ├─ 🕒 𝚄𝙿𝚃𝙸𝙼𝙴  : ${uptimeStr}
@@ -19,25 +17,16 @@ let handler = async (m, { conn, usedPrefix }) => {
 
     await conn.sendMessage(m.chat, {
       text: textMsg,
-      footer: "𝑷𝑰𝑵𝑮 𝑩𝒀 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓",
+      footer: '𝑷𝑰𝑵𝑮 𝑩𝒀 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
       buttons: [
-        { buttonId: usedPrefix + "pingm", buttonText: { displayText: "📡 𝐑𝐢𝐟𝐚𝐢 𝐩𝐢𝐧𝐠" }, type: 1 }
+        {
+          buttonId: usedPrefix + 'pingm',
+          buttonText: { displayText: '📡 𝐑𝐢𝐟𝐚𝐢 𝐩𝐢𝐧𝐠' },
+          type: 1
+        }
       ],
       headerType: 1,
-
-      contextInfo: {
-        forwardingScore: 999,
-        isForwarded: true,
-        externalAdReply: {
-          title: botName,
-          body: "𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓",
-          sourceUrl: "https://whatsapp.com/channel/0029Vb8MQ3U1CYoMEtU1832d",
-          mediaType: 1,
-          renderLargerThumbnail: false,
-          showAdAttribution: false
-        }
-      }
-
+      contextInfo: global.rcanal.contextInfo
     }, { quoted: m })
 
   } catch (err) {

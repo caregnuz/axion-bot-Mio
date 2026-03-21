@@ -7,6 +7,25 @@ import chalk from 'chalk'
 import NodeCache from 'node-cache'
 import { getAggregateVotesInPollMessage, toJid } from '@realvare/baileys'
 
+global.rcanal = {
+  contextInfo: {
+    forwardingScore: 999,
+    isForwarded: true,
+    externalAdReply: {
+      title: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
+      body: '',
+      sourceUrl: 'https://whatsapp.com/channel/0029Vb8MQ3U1CYoMEtU1832d',
+      mediaType: 1,
+      renderLargerThumbnail: false,
+      showAdAttribution: false
+    }
+  }
+}
+
+global.ignoredUsersGlobal = new Set()
+global.ignoredUsersGroup = {}
+global.groupSpam = {}
+
 global.ignoredUsersGlobal = new Set()
 global.ignoredUsersGroup = {}
 global.groupSpam = {}
