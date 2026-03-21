@@ -359,7 +359,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
           m.chat,
           {
             audio: buff,
-            mimetype: 'audio/mpeg',
+            mimetype: 'audio/mp3',
             ptt: true
           },
           { quoted: m }
