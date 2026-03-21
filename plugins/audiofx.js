@@ -273,7 +273,7 @@ const EFFECTS = {
 function getBar(intensity = 50) {
   const total = 10
   const filled = Math.max(0, Math.min(total, Math.round(intensity / 10)))
-  return '▰'.repeat(filled) + '▱'.repeat(total - filled)
+  return '🟩'.repeat(filled) + '⬜'.repeat(total - filled)
 }
 
 function getLevelName(intensity = 50) {
