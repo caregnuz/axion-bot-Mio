@@ -1,96 +1,58 @@
 import { sticker } from '../lib/sticker.js'
 
-const isUrl = (text = '') => {
-  return /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)(jpe?g|gif|png|webp)/gi.test(text)
-}
-
-let handler = async (m, { conn, args }) => {
-  let stiker = false
-
-  await conn.sendMessage(m.chat, {
-    react: { text: '⚙️', key: m.key }
-  })
-
+let handler = async (m, { conn }) => {
   try {
-    const q = m.quoted ? m.quoted : m
-    const mime = (q.msg || q).mimetype || q.mediaType || ''
+    await conn.sendMessage(m.chat, {
+      react: { text: '⚙️', key: m.key }
+    })
 
-    if (/webp|image|video/g.test(mime)) {
-      if (/video/g.test(mime) && (q.msg || q).seconds > 10) {
-        await conn.sendMessage(m.chat, {
-          react: { text: '❌', key: m.key }
-        })
+    let q = m.quoted ? m.quoted : m
+    let mime = (q.msg || q).mimetype || ''
 
-        return await conn.sendMessage(m.chat, {
-          text: '*ℹ️ 𝐈𝐥 𝐯𝐢𝐝𝐞𝐨 𝐝𝐞𝐯𝐞 𝐝𝐮𝐫𝐚𝐫𝐞 𝐦𝐞𝐧𝐨 𝐝𝐢 𝟏𝟎 𝐬𝐞𝐜𝐨𝐧𝐝𝐢.*',
-          ...global.rcanal
-        }, { quoted: m })
-      }
+    if (!/image|video|webp/.test(mime)) {
+      await conn.sendMessage(m.chat, {
+        react: { text: '❌', key: m.key }
+      })
 
-      const media = await q.download?.()
-      if (!media) {
-        await conn.sendMessage(m.chat, {
-          react: { text: '❌', key: m.key }
-        })
-
-        return await conn.sendMessage(m.chat, {
-          text: '*⚠️ 𝐈𝐧𝐯𝐢𝐚 𝐮𝐧’𝐢𝐦𝐦𝐚𝐠𝐢𝐧𝐞, 𝐯𝐢𝐝𝐞𝐨 𝐨 𝐆𝐈𝐅.*',
-          ...global.rcanal
-        }, { quoted: m })
-      }
-
-      const packName = global.authsticker || '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
-      const authorName = global.nomepack || '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
-
-      stiker = await sticker(media, false, packName, authorName)
-    } else if (args[0]) {
-      if (!isUrl(args[0])) {
-        await conn.sendMessage(m.chat, {
-          react: { text: '❌', key: m.key }
-        })
-
-        return await conn.sendMessage(m.chat, {
-          text: '*『 🔗 』- 𝐔𝐑𝐋 𝐧𝐨𝐧 𝐯𝐚𝐥𝐢𝐝𝐨.*',
-          ...global.rcanal
-        }, { quoted: m })
-      }
-
-      const packName = global.authsticker || '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
-      const authorName = global.nomepack || '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
-
-      stiker = await sticker(false, args[0], packName, authorName)
+      return await conn.sendMessage(m.chat, {
+        text: '*『 ⚠️ 』- 𝐑𝐢𝐬𝐩𝐨𝐧𝐝𝐢 𝐚 𝐮𝐧’𝐢𝐦𝐦𝐚𝐠𝐢𝐧𝐞 𝐨 𝐚 𝐮𝐧 𝐯𝐢𝐝𝐞𝐨.*',
+        ...global.rcanal
+      }, { quoted: m })
     }
-  } catch (e) {
-    console.error('Errore sticker:', e)
-    stiker = false
-  }
 
-  if (stiker && stiker !== true) {
+    if (/video/.test(mime) && (q.msg || q).seconds > 10) {
+      await conn.sendMessage(m.chat, {
+        react: { text: '❌', key: m.key }
+      })
+
+      return await conn.sendMessage(m.chat, {
+        text: '*『 ⚠️ 』- 𝐈𝐥 𝐯𝐢𝐝𝐞𝐨 𝐝𝐞𝐯𝐞 𝐝𝐮𝐫𝐚𝐫𝐞 𝐦𝐞𝐧𝐨 𝐝𝐢 𝟏𝟎 𝐬𝐞𝐜𝐨𝐧𝐝𝐢.*',
+        ...global.rcanal
+      }, { quoted: m })
+    }
+
+    let media = await q.download()
+    let stiker = await sticker(media, false, '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓', '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓')
+
     await conn.sendMessage(m.chat, {
       react: { text: '✅', key: m.key }
     })
 
-    await conn.sendFile(
-      m.chat,
-      stiker,
-      'sticker.webp',
-      null,
-      m,
-      true
-    )
-  } else {
+    await conn.sendFile(m.chat, stiker, 'sticker.webp', null, m, true)
+
+  } catch (e) {
     await conn.sendMessage(m.chat, {
       react: { text: '❌', key: m.key }
     })
 
     await conn.sendMessage(m.chat, {
-      text: '*⚠️ 𝐑𝐢𝐬𝐩𝐨𝐧𝐝𝐢 𝐚 𝐮𝐧’𝐢𝐦𝐦𝐚𝐠𝐢𝐧𝐞 𝐨 𝐢𝐧𝐯𝐢𝐚 𝐮𝐧 𝐥𝐢𝐧𝐤.*',
+      text: '*『 ⚠️ 』- 𝐒𝐢 è 𝐯𝐞𝐫𝐢𝐟𝐢𝐜𝐚𝐭𝐨 𝐮𝐧 𝐞𝐫𝐫𝐨𝐫𝐞.*',
       ...global.rcanal
     }, { quoted: m })
   }
 }
 
-handler.help = ['s', 'sticker', 'stiker']
+handler.help = ['s']
 handler.tags = ['sticker']
 handler.command = ['s', 'sticker', 'stiker']
 handler.register = true
