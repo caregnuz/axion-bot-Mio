@@ -23,7 +23,6 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 🤣 ${usedPrefix}meme
 ┃ 🍣 ${usedPrefix}cibo
 ┃ 🚩 ${usedPrefix}bandiera
-┃ 🏆 ${usedPrefix}classificabandiera
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 🎲 ғᴜɴ 〕━⬣
