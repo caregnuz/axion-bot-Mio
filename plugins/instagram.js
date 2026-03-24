@@ -1,10 +1,7 @@
 // by Bonzino
 
-const IG_THUMB = 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png'
-
 function extractInstagramUsername(input = '') {
   let text = String(input || '').trim()
-
   if (!text) return null
 
   if (text.startsWith('@')) text = text.slice(1)
@@ -64,7 +61,7 @@ let handler = async (m, { text, command, conn }) => {
         externalAdReply: {
           title: `@${username}`,
           body: 'Instagram',
-          thumbnailUrl: IG_THUMB,
+          thumbnailUrl: `https://unavatar.io/instagram/${username}`,
           sourceUrl: `https://instagram.com/${username}`,
           mediaType: 1,
           renderLargerThumbnail: true,
@@ -94,7 +91,7 @@ let handler = async (m, { text, command, conn }) => {
         externalAdReply: {
           title: `@${ig}`,
           body: 'Instagram',
-          thumbnailUrl: IG_THUMB,
+          thumbnailUrl: `https://unavatar.io/instagram/${ig}`,
           sourceUrl: `https://instagram.com/${ig}`,
           mediaType: 1,
           renderLargerThumbnail: true,
@@ -116,8 +113,8 @@ let handler = async (m, { text, command, conn }) => {
 
     return conn.sendMessage(m.chat, {
       text: '*🗑️ 𝐈𝐧𝐬𝐭𝐚𝐠𝐫𝐚𝐦 𝐫𝐢𝐦𝐨𝐬𝐬𝐨*',
-      contextInfo: global.rcanal?.contextInfo || {}
-    }, { quoted: m })
+        contextInfo: global.rcanal?.contextInfo || {}
+      }, { quoted: m })
   }
 }
 
