@@ -1,6 +1,7 @@
 // by Bonzino
 
 import { getDevice } from '@realvare/baileys'
+import fetch from 'node-fetch'
 
 const S = v => String(v || '')
 
@@ -37,12 +38,7 @@ function isRealOwner(jid) {
 }
 
 function getMessageId(m) {
-  return (
-    m?.quoted?.id ||
-    m?.quoted?.key?.id ||
-    m?.key?.id ||
-    ''
-  )
+  return m?.quoted?.id || m?.quoted?.key?.id || m?.key?.id || ''
 }
 
 function mapDeviceName(device) {
@@ -67,13 +63,6 @@ async function getDisplayName(conn, jid, meta, m) {
     if (n) return n
   } catch {}
 
-  try {
-    if (Array.isArray(meta?.participants)) {
-      const p = meta.participants.find(v => bare(v.id || v.jid) === bare(jid))
-      if (p?.name || p?.notify) return p.name || p.notify
-    }
-  } catch {}
-
   return bare(jid)
 }
 
@@ -92,93 +81,35 @@ let handler = async (m, { conn }) => {
   } catch {}
 
   const target = resolveTargetJid(m)
-  if (!target) {
-    return conn.sendMessage(chatId, {
-      text: '*⚠️ 𝐑𝐢𝐬𝐩𝐨𝐧𝐝𝐢 𝐚 𝐮𝐧 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐨 𝐭𝐚𝐠𝐠𝐚 𝐮𝐧 𝐮𝐭𝐞𝐧𝐭𝐞*',
-      contextInfo: global.rcanal?.contextInfo || {}
-    }, { quoted: m })
-  }
+  if (!target) return
 
-  const user = global?.db?.data?.users?.[target] || {}
-  const chat = global?.db?.data?.chats?.[chatId] || {}
-  const chatUsers = chat?.users || {}
+  const user = global.db.data.users[target] || {}
+  const chat = global.db.data.chats?.[chatId] || {}
   const oggiCount = chat?.archivioMessaggi?.utenti?.[target]?.conteggio || 0
-  const messaggiGruppo = Number(chatUsers?.[target]?.messages || 0)
-  const instagram = user.profile?.instagram
-    ? `instagram.com/${user.profile.instagram}`
-    : '𝐍𝐨𝐧 𝐢𝐦𝐩𝐨𝐬𝐭𝐚𝐭𝐨'
-
-  let isAdmin = false
-  let isSuperAdmin = false
-  const isOwner = isRealOwner(target)
-
-  try {
-    if (Array.isArray(meta?.participants)) {
-      const participant = meta.participants.find(
-        u => bare(u.id || u.jid) === bare(target)
-      )
-
-      if (participant?.admin === 'admin') isAdmin = true
-      if (participant?.admin === 'superadmin') {
-        isAdmin = true
-        isSuperAdmin = true
-      }
-
-      if (participant?.isAdmin === true) isAdmin = true
-      if (participant?.isSuperAdmin === true) {
-        isAdmin = true
-        isSuperAdmin = true
-      }
-    }
-  } catch {}
+  const messaggiGruppo = chat?.users?.[target]?.messages || 0
 
   const displayName = await getDisplayName(conn, target, meta, m)
 
-  const warn = Number(user.warn || 0)
+  const warn = user.warn || 0
   const muted = !!user.muto
-  const totalMessages = Number(user.messages || 0)
-  const monete = Number(user.euro || 0)
+  const totalMessages = user.messages || 0
+  const monete = user.euro || 0
 
-  const joinedAt =
-    user.regTime > 0
-      ? formatDate(user.regTime)
-      : user.firstTime > 0
-        ? formatDate(user.firstTime)
-        : '𝐍𝐨𝐧 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞'
-
-  const sourceMsg = m.quoted || m
-  const msgId = getMessageId(sourceMsg)
+  const joinedAt = formatDate(user.regTime || user.firstTime)
 
   let device = '❓ *𝐒𝐜𝐨𝐧𝐨𝐬𝐜𝐢𝐮𝐭𝐨*'
   try {
-    device = mapDeviceName(getDevice(msgId))
-  } catch (e) {
-    console.error('infoutente-device error:', e)
-  }
-
-  const roles = []
-  if (isOwner) roles.push('*⭐ 𝐎𝐰𝐧𝐞𝐫*')
-  if (isAdmin) roles.push('*🛡️ 𝐀𝐝𝐦𝐢𝐧*')
-  if (isSuperAdmin) roles.push('*👑 𝐒𝐮𝐩𝐞𝐫𝐀𝐝𝐦𝐢𝐧*')
-  if (!roles.length) roles.push('*👤 𝐌𝐞𝐦𝐛𝐫𝐨*')
+    device = mapDeviceName(getDevice(getMessageId(m)))
+  } catch {}
 
   const tag = '@' + bare(target)
-
-  let rankGruppo = '𝐍/𝐃'
-  try {
-    const ranking = Object.entries(chatUsers)
-      .map(([id, data]) => [id, Number(data?.messages || 0)])
-      .filter(([, count]) => count > 0)
-      .sort((a, b) => b[1] - a[1])
-
-    const posizione = ranking.findIndex(([id]) => bare(id) === bare(target))
-    if (posizione >= 0) rankGruppo = `#${posizione + 1}`
-  } catch {}
 
   let pp = 'https://i.ibb.co/2kR7x9J/avatar.png'
   try {
     pp = await conn.profilePictureUrl(target, 'image')
   } catch {}
+
+  const thumbnailBuffer = await (await fetch(pp)).buffer()
 
   const text = `*╭━━━━━━━📌━━━━━━━╮*
    *✦ 𝐈𝐍𝐅𝐎 𝐔𝐓𝐄𝐍𝐓𝐄 ✦*
@@ -187,15 +118,12 @@ let handler = async (m, { conn }) => {
 *👤 𝐍𝐨𝐦𝐞:* ${displayName}
 *🆔 𝐈𝐃:* ${tag}
 *📱 𝐃𝐞𝐯𝐢𝐜𝐞:* ${device}
-*🔑 𝐑𝐮𝐨𝐥𝐢:* ${roles.join(' | ')}
 *💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐭𝐨𝐭𝐚𝐥𝐢:* ${totalMessages}
-*🫂 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐠𝐫𝐮𝐩𝐩𝐨:* ${messaggiGruppo}
 *📅 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐨𝐠𝐠𝐢:* ${oggiCount}
-*🏆 𝐑𝐚𝐧𝐤 𝐠𝐫𝐮𝐩𝐩𝐨:* ${rankGruppo}
+*🫂 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐠𝐫𝐮𝐩𝐩𝐨:* ${messaggiGruppo}
 *🪙 𝐌𝐨𝐧𝐞𝐭𝐞:* ${monete}
-*📸 𝐈𝐧𝐬𝐭𝐚𝐠𝐫𝐚𝐦:* ${instagram}
 *📅 𝐄𝐧𝐭𝐫𝐚𝐭𝐚:* ${joinedAt}
-*⚠️ 𝐖𝐚𝐫𝐧:* ${warn}/𝟑
+*⚠️ 𝐖𝐚𝐫𝐧:* ${warn}/3
 *🔇 𝐌𝐮𝐭𝐞:* ${muted ? '*𝐒𝐢*' : '*𝐍𝐨*'}`
 
   await conn.sendMessage(chatId, {
@@ -203,22 +131,18 @@ let handler = async (m, { conn }) => {
     mentions: [target],
     contextInfo: {
       ...(global.rcanal?.contextInfo || {}),
+      mentionedJid: [target],
       externalAdReply: {
         title: displayName,
         body: '',
-        thumbnailUrl: pp,
-        sourceUrl: '',
-        mediaType: 1,
-        renderLargerThumbnail: false,
+        thumbnail: thumbnailBuffer,
         showAdAttribution: false
       }
     }
   }, { quoted: m })
 }
 
-handler.help = ['infoutente', 'userinfo', 'whoami', 'info']
-handler.tags = ['info']
-handler.command = /^(infoutente|userinfo|whoami|info)$/i
+handler.command = /^(infoutente|info)$/i
 handler.owner = true
 
 export default handler
