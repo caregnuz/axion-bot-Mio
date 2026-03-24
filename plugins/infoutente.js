@@ -100,6 +100,9 @@ let handler = async (m, { conn }) => {
   }
 
   const user = global?.db?.data?.users?.[target] || {}
+  const instagram = user.profile?.instagram
+  ? `instagram.com/${user.profile.instagram}`
+  : '𝐍𝐨𝐧 𝐢𝐦𝐩𝐨𝐬𝐭𝐚𝐭𝐨'
   const chat = global?.db?.data?.chats?.[chatId] || {}
   const chatUsers = chat?.users || {}
   const oggiCount = chat?.archivioMessaggi?.utenti?.[target]?.conteggio || 0
@@ -193,12 +196,13 @@ let handler = async (m, { conn }) => {
 *🏆 𝐑𝐚𝐧𝐤 𝐠𝐫𝐮𝐩𝐩𝐨:* ${rankGruppo}
 *📊 𝐀𝐭𝐭𝐢𝐯𝐢𝐭à:* ${percentualeAttivita}%
 *🧠 𝐋𝐢𝐯𝐞𝐥𝐥𝐨:* ${lvl.level} (${lvl.icon} ${lvl.name})
-*📈 𝐏𝐫𝐨𝐠𝐫𝐞𝐬𝐬𝐨:* ${lvl.bar} ${lvl.percent}%
+*📈 𝐏𝐫𝐨𝐠𝐫𝐞𝐬𝐬𝐨:*${lvl.percent}%
 *⬆️ 𝐏𝐫𝐨𝐬𝐬𝐢𝐦𝐨:* ${lvl.isMax ? '*𝐌𝐀𝐗*' : `${lvl.nextName} (${lvl.remaining} msg)`}
 *🪙 𝐌𝐨𝐧𝐞𝐭𝐞:* ${monete}
 *📅 𝐄𝐧𝐭𝐫𝐚𝐭𝐚:* ${joinedAt}
 *⚠️ 𝐖𝐚𝐫𝐧:* ${warn}/𝟑
-*🔇 𝐌𝐮𝐭𝐞:* ${muted ? '*𝐒𝐢*' : '*𝐍𝐨*'}`
+*🔇 𝐌𝐮𝐭𝐞:* ${muted ? '*𝐒𝐢*' : '*𝐍𝐨*'}
+*📸 𝐈𝐧𝐬𝐭𝐚𝐠𝐫𝐚𝐦:* ${instagram}`
 
   let pp = 'https://i.ibb.co/2kR7x9J/avatar.png'
   try {
