@@ -1,7 +1,6 @@
-// Infoutente.js plugin by Bonzino
+// by Bonzino
 
 import { getDevice } from '@realvare/baileys'
-import { getLevelFull } from '../lib/levels.js'
 
 const S = v => String(v || '')
 
@@ -79,7 +78,7 @@ async function getDisplayName(conn, jid, meta, m) {
 }
 
 function formatDate(ts) {
-  if (!ts || isNaN(ts)) return 'Non disponibile'
+  if (!ts || isNaN(ts)) return '𝐍𝐨𝐧 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞'
   return new Date(ts).toLocaleString('it-IT')
 }
 
@@ -95,17 +94,19 @@ let handler = async (m, { conn }) => {
   const target = resolveTargetJid(m)
   if (!target) {
     return conn.sendMessage(chatId, {
-      text: '*⚠️ Rispondi a un messaggio o tagga un utente.*'
+      text: '*⚠️ 𝐑𝐢𝐬𝐩𝐨𝐧𝐝𝐢 𝐚 𝐮𝐧 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐨 𝐭𝐚𝐠𝐠𝐚 𝐮𝐧 𝐮𝐭𝐞𝐧𝐭𝐞*',
+      contextInfo: global.rcanal?.contextInfo || {}
     }, { quoted: m })
   }
 
   const user = global?.db?.data?.users?.[target] || {}
-  const instagram = user.profile?.instagram
-  ? `instagram.com/${user.profile.instagram}`
-  : '𝐍𝐨𝐧 𝐢𝐦𝐩𝐨𝐬𝐭𝐚𝐭𝐨'
   const chat = global?.db?.data?.chats?.[chatId] || {}
   const chatUsers = chat?.users || {}
   const oggiCount = chat?.archivioMessaggi?.utenti?.[target]?.conteggio || 0
+  const messaggiGruppo = Number(chatUsers?.[target]?.messages || 0)
+  const instagram = user.profile?.instagram
+    ? `instagram.com/${user.profile.instagram}`
+    : '𝐍𝐨𝐧 𝐢𝐦𝐩𝐨𝐬𝐭𝐚𝐭𝐨'
 
   let isAdmin = false
   let isSuperAdmin = false
@@ -137,14 +138,13 @@ let handler = async (m, { conn }) => {
   const muted = !!user.muto
   const totalMessages = Number(user.messages || 0)
   const monete = Number(user.euro || 0)
-  const lvl = getLevelFull(totalMessages)
 
   const joinedAt =
     user.regTime > 0
       ? formatDate(user.regTime)
       : user.firstTime > 0
         ? formatDate(user.firstTime)
-        : 'Non disponibile'
+        : '𝐍𝐨𝐧 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞'
 
   const sourceMsg = m.quoted || m
   const msgId = getMessageId(sourceMsg)
@@ -164,9 +164,7 @@ let handler = async (m, { conn }) => {
 
   const tag = '@' + bare(target)
 
-  let rankGruppo = 'N/D'
-  let percentualeAttivita = '0.00'
-
+  let rankGruppo = '𝐍/𝐃'
   try {
     const ranking = Object.entries(chatUsers)
       .map(([id, data]) => [id, Number(data?.messages || 0)])
@@ -175,12 +173,11 @@ let handler = async (m, { conn }) => {
 
     const posizione = ranking.findIndex(([id]) => bare(id) === bare(target))
     if (posizione >= 0) rankGruppo = `#${posizione + 1}`
+  } catch {}
 
-    const totaleGruppo = ranking.reduce((acc, [, count]) => acc + count, 0)
-    const messaggiGruppoUtente = Number(chatUsers?.[target]?.messages || 0)
-    if (totaleGruppo > 0) {
-      percentualeAttivita = ((messaggiGruppoUtente / totaleGruppo) * 100).toFixed(2)
-    }
+  let pp = 'https://i.ibb.co/2kR7x9J/avatar.png'
+  try {
+    pp = await conn.profilePictureUrl(target, 'image')
   } catch {}
 
   const text = `*╭━━━━━━━📌━━━━━━━╮*
@@ -191,23 +188,15 @@ let handler = async (m, { conn }) => {
 *🆔 𝐈𝐃:* ${tag}
 *📱 𝐃𝐞𝐯𝐢𝐜𝐞:* ${device}
 *🔑 𝐑𝐮𝐨𝐥𝐢:* ${roles.join(' | ')}
-*💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢:* ${totalMessages}
-*📅 𝐎𝐠𝐠𝐢:* ${oggiCount}
+*💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐭𝐨𝐭𝐚𝐥𝐢:* ${totalMessages}
+*🫂 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐠𝐫𝐮𝐩𝐩𝐨:* ${messaggiGruppo}
+*📅 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐨𝐠𝐠𝐢:* ${oggiCount}
 *🏆 𝐑𝐚𝐧𝐤 𝐠𝐫𝐮𝐩𝐩𝐨:* ${rankGruppo}
-*📊 𝐀𝐭𝐭𝐢𝐯𝐢𝐭à:* ${percentualeAttivita}%
-*🧠 𝐋𝐢𝐯𝐞𝐥𝐥𝐨:* ${lvl.level} (${lvl.icon} ${lvl.name})
-*📈 𝐏𝐫𝐨𝐠𝐫𝐞𝐬𝐬𝐨:*${lvl.percent}%
-*⬆️ 𝐏𝐫𝐨𝐬𝐬𝐢𝐦𝐨:* ${lvl.isMax ? '*𝐌𝐀𝐗*' : `${lvl.nextName} (${lvl.remaining} msg)`}
 *🪙 𝐌𝐨𝐧𝐞𝐭𝐞:* ${monete}
+*📸 𝐈𝐧𝐬𝐭𝐚𝐠𝐫𝐚𝐦:* ${instagram}
 *📅 𝐄𝐧𝐭𝐫𝐚𝐭𝐚:* ${joinedAt}
 *⚠️ 𝐖𝐚𝐫𝐧:* ${warn}/𝟑
-*🔇 𝐌𝐮𝐭𝐞:* ${muted ? '*𝐒𝐢*' : '*𝐍𝐨*'}
-*📸 𝐈𝐧𝐬𝐭𝐚𝐠𝐫𝐚𝐦:* ${instagram}`
-
-  let pp = 'https://i.ibb.co/2kR7x9J/avatar.png'
-  try {
-    pp = await conn.profilePictureUrl(target, 'image')
-  } catch {}
+*🔇 𝐌𝐮𝐭𝐞:* ${muted ? '*𝐒𝐢*' : '*𝐍𝐨*'}`
 
   await conn.sendMessage(chatId, {
     text,
