@@ -41,7 +41,9 @@ function formatDate(ts) {
 }
 
 let handler = async (m, { conn }) => {
-  const target = m.mentionedJid?.[0] || m.quoted?.sender || m.sender
+  const target = resolveTargetJid(m)
+  if (!target) return
+
   const user = global.db.data.users[target] || {}
   const chat = global.db.data.chats?.[m.chat] || {}
 
@@ -55,13 +57,15 @@ let handler = async (m, { conn }) => {
   const monete = user.euro || 0
   const warn = user.warn || 0
   const muted = !!user.muto
-
   const device = mapDeviceName(getDevice(getMessageId(m)))
-
   const joinedAt = formatDate(user.regTime || user.firstTime)
 
-  const pp = await conn.profilePictureUrl(target, 'image')
+  const profilo = await conn.profilePictureUrl(target, 'image')
     .catch(() => 'https://i.ibb.co/2kR7x9J/avatar.png')
+
+  const thumbnailBuffer = typeof profilo === 'string'
+    ? await (await fetch(profilo)).buffer()
+    : profilo
 
   const text = `*╭━━━━━━━📌━━━━━━━╮*
    *✦ 𝐈𝐍𝐅𝐎 𝐔𝐓𝐄𝐍𝐓𝐄 ✦*
@@ -87,16 +91,18 @@ let handler = async (m, { conn }) => {
       externalAdReply: {
         title: nome,
         body: ' ',
+        thumbnail: thumbnailBuffer,
         mediaType: 1,
         renderLargerThumbnail: false,
-        showAdAttribution: false,
-        thumbnailUrl: pp
+        showAdAttribution: false
       }
     }
   }, { quoted: m })
 }
 
-handler.command = /^(infoutente|info)$/i
+handler.help = ['infoutente', 'userinfo', 'whoami', 'info']
+handler.tags = ['info']
+handler.command = /^(infoutente|userinfo|whoami|info)$/i
 handler.owner = true
 
-export default handler-
+export default handler

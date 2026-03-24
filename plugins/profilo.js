@@ -1,7 +1,7 @@
 // by Bonzino
 
-import { getLevelFull } from '../lib/levels.js'
 import fetch from 'node-fetch'
+import { getLevelFull } from '../lib/levels.js'
 
 const S = v => String(v || '')
 
@@ -10,23 +10,26 @@ function bare(j = '') {
 }
 
 let handler = async (m, { conn }) => {
-  let target = m.sender
-  let user = global.db.data.users[target] || {}
-  let chat = global.db.data.chats?.[m.chat] || {}
+  const target = m.sender
+  const user = global.db.data.users[target] || {}
+  const chat = global.db.data.chats?.[m.chat] || {}
 
-  let oggiCount = chat?.archivioMessaggi?.utenti?.[target]?.conteggio || 0
+  const oggiCount = chat?.archivioMessaggi?.utenti?.[target]?.conteggio || 0
+  const nome = await conn.getName(target)
+  const totalMessages = user.messages || 0
+  const monete = user.euro || 0
+  const lvl = getLevelFull(totalMessages)
 
-  let nome = await conn.getName(target)
-  let totalMessages = user.messages || 0
-  let monete = user.euro || 0
-  let lvl = getLevelFull(totalMessages)
-
-  let instagram = user.profile?.instagram
+  const instagram = user.profile?.instagram
     ? `instagram.com/${user.profile.instagram}`
     : '𝐍𝐨𝐧 𝐢𝐦𝐩𝐨𝐬𝐭𝐚𝐭𝐨'
 
-  const pp = await conn.profilePictureUrl(target, 'image')
+  const profilo = await conn.profilePictureUrl(target, 'image')
     .catch(() => 'https://i.ibb.co/2kR7x9J/avatar.png')
+
+  const thumbnailBuffer = typeof profilo === 'string'
+    ? await (await fetch(profilo)).buffer()
+    : profilo
 
   const text = `*╭━━━━━━━✨━━━━━━━╮*
    *✦ 𝐏𝐑𝐎𝐅𝐈𝐋𝐎 ✦*
@@ -43,21 +46,24 @@ let handler = async (m, { conn }) => {
 
   await conn.sendMessage(m.chat, {
     text,
+    mentions: [target],
     contextInfo: {
       ...(global.rcanal?.contextInfo || {}),
       mentionedJid: [target],
       externalAdReply: {
         title: nome,
         body: ' ',
+        thumbnail: thumbnailBuffer,
         mediaType: 1,
         renderLargerThumbnail: false,
-        showAdAttribution: false,
-        thumbnailUrl: pp
+        showAdAttribution: false
       }
     }
   }, { quoted: m })
 }
 
+handler.help = ['profilo', 'profile']
+handler.tags = ['info']
 handler.command = /^(profilo|profile)$/i
 
 export default handler
