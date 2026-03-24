@@ -21,22 +21,6 @@ function resolveTargetJid(m) {
   return m.sender || m.key?.participant || m.participant || null
 }
 
-function isRealOwner(jid) {
-  try {
-    const num = bare(jid)
-    if (!Array.isArray(global.owner)) return false
-
-    const owners = global.owner
-      .map(o => Array.isArray(o) ? o[0] : o)
-      .map(v => bare(v))
-      .filter(Boolean)
-
-    return owners.includes(num)
-  } catch {
-    return false
-  }
-}
-
 function getMessageId(m) {
   return m?.quoted?.id || m?.quoted?.key?.id || m?.key?.id || ''
 }
@@ -51,71 +35,39 @@ function mapDeviceName(device) {
   }
 }
 
-async function getDisplayName(conn, jid, meta, m) {
-  const dbName = global?.db?.data?.users?.[jid]?.name
-  if (dbName) return dbName
-
-  if (bare(m.sender) === bare(jid) && m.pushName) return m.pushName
-
-  try {
-    const c = conn?.contacts?.[jid]
-    const n = c?.name || c?.verifiedName || c?.notify || c?.pushName
-    if (n) return n
-  } catch {}
-
-  return bare(jid)
-}
-
 function formatDate(ts) {
   if (!ts || isNaN(ts)) return '𝐍𝐨𝐧 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞'
   return new Date(ts).toLocaleString('it-IT')
 }
 
 let handler = async (m, { conn }) => {
-  const chatId = m.chat
-  if (!chatId) return
-
-  let meta = null
-  try {
-    if (m.isGroup) meta = await conn.groupMetadata(chatId)
-  } catch {}
-
-  const target = resolveTargetJid(m)
-  if (!target) return
-
+  const target = m.mentionedJid?.[0] || m.quoted?.sender || m.sender
   const user = global.db.data.users[target] || {}
-  const chat = global.db.data.chats?.[chatId] || {}
+  const chat = global.db.data.chats?.[m.chat] || {}
+
   const oggiCount = chat?.archivioMessaggi?.utenti?.[target]?.conteggio || 0
   const messaggiGruppo = chat?.users?.[target]?.messages || 0
 
-  const displayName = await getDisplayName(conn, target, meta, m)
+  const nome = await conn.getName(target)
+  const tag = '@' + bare(target)
 
-  const warn = user.warn || 0
-  const muted = !!user.muto
   const totalMessages = user.messages || 0
   const monete = user.euro || 0
+  const warn = user.warn || 0
+  const muted = !!user.muto
+
+  const device = mapDeviceName(getDevice(getMessageId(m)))
 
   const joinedAt = formatDate(user.regTime || user.firstTime)
 
-  let device = '❓ *𝐒𝐜𝐨𝐧𝐨𝐬𝐜𝐢𝐮𝐭𝐨*'
-  try {
-    device = mapDeviceName(getDevice(getMessageId(m)))
-  } catch {}
-
-  const tag = '@' + bare(target)
-
-  let pp = 'https://i.ibb.co/2kR7x9J/avatar.png'
-  try {
-    pp = await conn.profilePictureUrl(target, 'image')
-  } catch {}
-
-  const thumbnailBuffer = await (await fetch(pp)).buffer()
+  const pp = await conn.profilePictureUrl(target, 'image')
+    .catch(() => 'https://i.ibb.co/2kR7x9J/avatar.png')
 
   const text = `*╭━━━━━━━📌━━━━━━━╮*
    *✦ 𝐈𝐍𝐅𝐎 𝐔𝐓𝐄𝐍𝐓𝐄 ✦*
 *╰━━━━━━━📌━━━━━━━╯*
 
-*👤 𝐍𝐨𝐦𝐞:* ${displayName}
+*👤 𝐍𝐨𝐦𝐞:* ${nome}
 *🆔 𝐈𝐃:* ${tag}
 *📱 𝐃𝐞𝐯𝐢𝐜𝐞:* ${device}
 *💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐭𝐨𝐭𝐚𝐥𝐢:* ${totalMessages}
@@ -126,17 +78,19 @@ let handler = async (m, { conn }) => {
 *⚠️ 𝐖𝐚𝐫𝐧:* ${warn}/3
 *🔇 𝐌𝐮𝐭𝐞:* ${muted ? '*𝐒𝐢*' : '*𝐍𝐨*'}`
 
-  await conn.sendMessage(chatId, {
+  await conn.sendMessage(m.chat, {
     text,
     mentions: [target],
     contextInfo: {
       ...(global.rcanal?.contextInfo || {}),
       mentionedJid: [target],
       externalAdReply: {
-        title: displayName,
-        body: '',
-        thumbnail: thumbnailBuffer,
-        showAdAttribution: false
+        title: nome,
+        body: ' ',
+        mediaType: 1,
+        renderLargerThumbnail: false,
+        showAdAttribution: false,
+        thumbnailUrl: pp
       }
     }
   }, { quoted: m })
@@ -145,4 +99,4 @@ let handler = async (m, { conn }) => {
 handler.command = /^(infoutente|info)$/i
 handler.owner = true
 
-export default handler
+export default handler-

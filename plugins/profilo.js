@@ -1,7 +1,7 @@
 // by Bonzino
 
-import fetch from 'node-fetch'
 import { getLevelFull } from '../lib/levels.js'
+import fetch from 'node-fetch'
 
 const S = v => String(v || '')
 
@@ -25,12 +25,8 @@ let handler = async (m, { conn }) => {
     ? `instagram.com/${user.profile.instagram}`
     : '𝐍𝐨𝐧 𝐢𝐦𝐩𝐨𝐬𝐭𝐚𝐭𝐨'
 
-  let pp = 'https://i.ibb.co/2kR7x9J/avatar.png'
-  try {
-    pp = await conn.profilePictureUrl(target, 'image')
-  } catch {}
-
-  const thumbnailBuffer = await (await fetch(pp)).buffer()
+  const pp = await conn.profilePictureUrl(target, 'image')
+    .catch(() => 'https://i.ibb.co/2kR7x9J/avatar.png')
 
   const text = `*╭━━━━━━━✨━━━━━━━╮*
    *✦ 𝐏𝐑𝐎𝐅𝐈𝐋𝐎 ✦*
@@ -52,9 +48,11 @@ let handler = async (m, { conn }) => {
       mentionedJid: [target],
       externalAdReply: {
         title: nome,
-        body: '',
-        thumbnail: thumbnailBuffer,
-        showAdAttribution: false
+        body: ' ',
+        mediaType: 1,
+        renderLargerThumbnail: false,
+        showAdAttribution: false,
+        thumbnailUrl: pp
       }
     }
   }, { quoted: m })
