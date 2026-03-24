@@ -2,7 +2,7 @@ let handler = async (m, { conn, command, usedPrefix }) => {
   let chat = global.db.data.chats[m.chat]
 
   if (!chat || !chat.archivioMessaggi || chat.archivioMessaggi.totali === 0) {
-    return m.reply("📊 *𝐂𝐋𝐀𝐒𝐒𝐈𝐅𝐈𝐂𝐀*\n\nNessun messaggio registrato oggi in questo gruppo.")
+    return m.reply("📊 *𝐂𝐋𝐀𝐒𝐒𝐈𝐅𝐈𝐂𝐀*\n\n𝐍𝐞𝐬𝐬𝐮𝐧 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐫𝐞𝐠𝐢𝐬𝐭𝐫𝐚𝐭𝐨 𝐨𝐠𝐠𝐢 𝐢𝐧 𝐪𝐮𝐞𝐬𝐭𝐨 𝐠𝐫𝐮𝐩𝐩𝐨")
   }
 
   let dati = chat.archivioMessaggi
@@ -18,7 +18,7 @@ let handler = async (m, { conn, command, usedPrefix }) => {
   const medaglie = ['🥇', '🥈', '🥉', '🏅', '🏅', '🏅', '🏅', '🏅', '🏅', '🏅']
 
   let testo = `╭━〔 📊 *𝐂𝐋𝐀𝐒𝐒𝐈𝐅𝐈𝐂𝐀* 📊 〕━⬣\n`
-  testo += `┃ 💬 Messaggi totali: ${dati.totali}\n`
+  testo += `┃ 💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐭𝐨𝐭𝐚𝐥𝐢: ${dati.totali}\n`
   testo += `╰━━━━━━━━━━━━━━━━━⬣\n\n`
 
   testo += `🏆 *𝐓𝐎𝐏 ${limite} 𝐃𝐈 𝐎𝐆𝐆𝐈*\n\n`
@@ -30,11 +30,11 @@ let handler = async (m, { conn, command, usedPrefix }) => {
     let conteggio = u[1].conteggio
 
     testo += `${medaglie[i]} @${id.split("@")[0]}\n`
-    testo += `   ${conteggio} messaggi\n\n`
+    testo += `   ${conteggio} 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢\n\n`
   })
 
   testo += `──────────────────\n`
-  testo += `⏳ Il conteggio si azzera al cambio giorno`
+  testo += `⏳ 𝐈𝐥 𝐜𝐨𝐧𝐭𝐞𝐠𝐠𝐢𝐨 𝐬𝐢 𝐚𝐳𝐳𝐞𝐫𝐚 𝐚𝐥 𝐜𝐚𝐦𝐛𝐢𝐨 𝐠𝐢𝐨𝐫𝐧𝐨`
 
   const buttons = [
     { buttonId: `${usedPrefix}top5`, buttonText: { displayText: '🏆 Top 5' }, type: 1 },
@@ -64,6 +64,10 @@ handler.before = async function (m) {
       utenti: {},
       ultimoReset: oggi
     }
+  }
+
+  if (!chat.archivioMessaggi.ultimoReset) {
+    chat.archivioMessaggi.ultimoReset = oggi
   }
 
   if (chat.archivioMessaggi.ultimoReset !== oggi) {
@@ -108,17 +112,17 @@ if (!global.topResetInterval) {
             .slice(0, 3)
 
           let testo = `╭━〔 🏆 *𝐅𝐈𝐍𝐀𝐋𝐄* 🏆 〕━⬣\n`
-          testo += `┃ 📊 Totale messaggi: ${dati.totali}\n`
+          testo += `┃ 📊 𝐓𝐨𝐭𝐚𝐥𝐞 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢: ${dati.totali}\n`
           testo += `╰━━━━━━━━━━━━━━━━━⬣\n\n`
 
           let menzioni = classifica.map(u => u[0])
           const medaglie = ['🥇', '🥈', '🥉']
 
           classifica.forEach((u, i) => {
-            testo += `${medaglie[i]} @${u[0].split("@")[0]} — ${u[1].conteggio} messaggi\n`
+            testo += `${medaglie[i]} @${u[0].split("@")[0]} — ${u[1].conteggio} 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢\n`
           })
 
-          testo += `\n🔄 Classifica resettata`
+          testo += `\n🔄 𝐂𝐥𝐚𝐬𝐬𝐢𝐟𝐢𝐜𝐚 𝐫𝐞𝐬𝐞𝐭𝐭𝐚𝐭𝐚`
 
           if (global.conn) {
             await global.conn.sendMessage(jid, {
@@ -135,7 +139,7 @@ if (!global.topResetInterval) {
         }
       }
     } catch (e) {
-      console.error('Errore reset classifica:', e)
+      console.error(e)
     }
   }, 60000)
 }
