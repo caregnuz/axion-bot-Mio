@@ -1,6 +1,7 @@
-//Infoutente.js plugin by Bonzino
+// Infoutente.js plugin by Bonzino
 
 import { getDevice } from '@realvare/baileys'
+import { getLevelFull } from '../lib/levels.js'
 
 const S = v => String(v || '')
 
@@ -99,6 +100,9 @@ let handler = async (m, { conn }) => {
   }
 
   const user = global?.db?.data?.users?.[target] || {}
+  const chat = global?.db?.data?.chats?.[chatId] || {}
+  const chatUsers = chat?.users || {}
+  const oggiCount = chat?.archivioMessaggi?.utenti?.[target]?.conteggio || 0
 
   let isAdmin = false
   let isSuperAdmin = false
@@ -129,6 +133,8 @@ let handler = async (m, { conn }) => {
   const warn = Number(user.warn || 0)
   const muted = !!user.muto
   const totalMessages = Number(user.messages || 0)
+  const monete = Number(user.euro || 0)
+  const lvl = getLevelFull(totalMessages)
 
   const joinedAt =
     user.regTime > 0
@@ -155,6 +161,25 @@ let handler = async (m, { conn }) => {
 
   const tag = '@' + bare(target)
 
+  let rankGruppo = 'N/D'
+  let percentualeAttivita = '0.00'
+
+  try {
+    const ranking = Object.entries(chatUsers)
+      .map(([id, data]) => [id, Number(data?.messages || 0)])
+      .filter(([, count]) => count > 0)
+      .sort((a, b) => b[1] - a[1])
+
+    const posizione = ranking.findIndex(([id]) => bare(id) === bare(target))
+    if (posizione >= 0) rankGruppo = `#${posizione + 1}`
+
+    const totaleGruppo = ranking.reduce((acc, [, count]) => acc + count, 0)
+    const messaggiGruppoUtente = Number(chatUsers?.[target]?.messages || 0)
+    if (totaleGruppo > 0) {
+      percentualeAttivita = ((messaggiGruppoUtente / totaleGruppo) * 100).toFixed(2)
+    }
+  } catch {}
+
   const text = `*╭━━━━━━━📌━━━━━━━╮*
    *✦ 𝐈𝐍𝐅𝐎 𝐔𝐓𝐄𝐍𝐓𝐄 ✦*
 *╰━━━━━━━📌━━━━━━━╯*
@@ -164,6 +189,13 @@ let handler = async (m, { conn }) => {
 *📱 𝐃𝐞𝐯𝐢𝐜𝐞:* ${device}
 *🔑 𝐑𝐮𝐨𝐥𝐢:* ${roles.join(' | ')}
 *💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢:* ${totalMessages}
+*📅 𝐎𝐠𝐠𝐢:* ${oggiCount}
+*🏆 𝐑𝐚𝐧𝐤 𝐠𝐫𝐮𝐩𝐩𝐨:* ${rankGruppo}
+*📊 𝐀𝐭𝐭𝐢𝐯𝐢𝐭à:* ${percentualeAttivita}%
+*🧠 𝐋𝐢𝐯𝐞𝐥𝐥𝐨:* ${lvl.level} (${lvl.icon} ${lvl.name})
+*📈 𝐏𝐫𝐨𝐠𝐫𝐞𝐬𝐬𝐨:* ${lvl.bar} ${lvl.percent}%
+*⬆️ 𝐏𝐫𝐨𝐬𝐬𝐢𝐦𝐨:* ${lvl.isMax ? '*𝐌𝐀𝐗*' : `${lvl.nextName} (${lvl.remaining} msg)`}
+*🪙 𝐌𝐨𝐧𝐞𝐭𝐞:* ${monete}
 *📅 𝐄𝐧𝐭𝐫𝐚𝐭𝐚:* ${joinedAt}
 *⚠️ 𝐖𝐚𝐫𝐧:* ${warn}/𝟑
 *🔇 𝐌𝐮𝐭𝐞:* ${muted ? '*𝐒𝐢*' : '*𝐍𝐨*'}`
@@ -174,20 +206,21 @@ let handler = async (m, { conn }) => {
   } catch {}
 
   await conn.sendMessage(chatId, {
-  text,
-  mentions: [target],
-  contextInfo: {
-    externalAdReply: {
-      title: displayName,
-      body: '',
-      thumbnailUrl: pp,
-      sourceUrl: '',
-      mediaType: 1,
-      renderLargerThumbnail: false,
-      showAdAttribution: false
+    text,
+    mentions: [target],
+    contextInfo: {
+      ...(global.rcanal?.contextInfo || {}),
+      externalAdReply: {
+        title: displayName,
+        body: '',
+        thumbnailUrl: pp,
+        sourceUrl: '',
+        mediaType: 1,
+        renderLargerThumbnail: false,
+        showAdAttribution: false
+      }
     }
-  }
-}, { quoted: m })
+  }, { quoted: m })
 }
 
 handler.help = ['infoutente', 'userinfo', 'whoami', 'info']
