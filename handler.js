@@ -294,7 +294,7 @@ const txt = (
 
 if (global.db.data.settings.botOff) {
   const prefixes = Array.isArray(global.prefix) ? global.prefix : [global.prefix || '.']
-  const canWake = prefixes.some(p => txt === `${String(p).toLowerCase()}on`)
+  const canWake = prefixes.some(p => txt.toLowerCase() === `${String(p).toLowerCase()}on`)
   if (!canWake) return
 }
 
