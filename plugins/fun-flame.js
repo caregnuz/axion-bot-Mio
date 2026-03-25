@@ -1,6 +1,27 @@
+Perfetto — ti rimando il plugin già sistemato con:
+
+sharp caricato in modo dinamico
+
+messaggio in chat se manca
+
+fallback al template base
+
+.stopflame incluso
+
+stato sessione corretto
+
+
 import fs from 'fs'
-import sharp from 'sharp'
 import fetch from 'node-fetch'
+
+let sharp = null
+let sharpOk = true
+
+try {
+  sharp = (await import('sharp')).default
+} catch {
+  sharpOk = false
+}
 
 const TEMPLATE_PATH = './media/flame.png'
 const FALLBACK_AVATAR = 'https://i.ibb.co/2kR7x9J/avatar.png'
@@ -105,11 +126,33 @@ ${usedPrefix + command} @utente`)
   const attackerName = '@' + bare(m.sender)
 
   let vsBuffer
-  try {
-    vsBuffer = await makeFlameVsImage(conn, m.sender, who)
-  } catch (e) {
-    console.error('[FLAME] errore composizione:', e)
+
+  if (!sharpOk) {
+    await m.reply(`╭━━━━━━━⚠️━━━━━━━╮
+✦ 𝐅𝐋𝐀𝐌𝐄 ✦
+╰━━━━━━━⚠️━━━━━━━╯
+
+❌ 𝐌𝐨𝐝𝐮𝐥𝐨 *sharp* 𝐦𝐚𝐧𝐜𝐚𝐧𝐭𝐞
+
+📦 Installa con:
+npm i sharp
+
+🖼️ 𝐔𝐬𝐨 𝐢𝐥 𝐭𝐞𝐦𝐩𝐥𝐚𝐭𝐞 𝐛𝐚𝐬𝐞`)
     vsBuffer = fs.readFileSync(TEMPLATE_PATH)
+  } else {
+    try {
+      vsBuffer = await makeFlameVsImage(conn, m.sender, who)
+    } catch (e) {
+      console.error('[FLAME] errore composizione:', e)
+      await m.reply(`╭━━━━━━━⚠️━━━━━━━╮
+✦ 𝐅𝐋𝐀𝐌𝐄 ✦
+╰━━━━━━━⚠️━━━━━━━╯
+
+❌ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐧𝐞𝐥𝐥𝐚 𝐜𝐨𝐦𝐩𝐨𝐬𝐢𝐳𝐢𝐨𝐧𝐞 𝐝𝐞𝐥𝐥'𝐢𝐦𝐦𝐚𝐠𝐢𝐧𝐞
+
+🖼️ 𝐔𝐬𝐨 𝐢𝐥 𝐭𝐞𝐦𝐩𝐥𝐚𝐭𝐞 𝐛𝐚𝐬𝐞`)
+      vsBuffer = fs.readFileSync(TEMPLATE_PATH)
+    }
   }
 
   await conn.sendMessage(m.chat, {
