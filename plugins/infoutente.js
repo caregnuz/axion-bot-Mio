@@ -57,7 +57,8 @@ function isOwner(jid) {
 function getRole(target, participants = [], user = {}, chatId) {
   if (isOwner(target)) return '👑 𝐃𝐢𝐨'
 
-  const p = participants.find(x => (x.id || x.jid) === target)
+  const targetBare = bare(target)
+  const p = participants.find(x => bare(x.id || x.jid || '') === targetBare)
 
   if (p?.admin === 'admin') return '🛡️ 𝐀𝐝𝐦𝐢𝐧'
 
