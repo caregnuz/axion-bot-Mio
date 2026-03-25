@@ -17,8 +17,30 @@ function formatTime(ms) {
   return `${min}m`
 }
 
+function isRealOwner(jid) {
+  try {
+    const num = bare(jid)
+    if (!Array.isArray(global.owner)) return false
+
+    const owners = global.owner
+      .map(o => Array.isArray(o) ? o[0] : o)
+      .map(v => bare(v))
+      .filter(Boolean)
+
+    return owners.includes(num)
+  } catch {
+    return false
+  }
+}
+
 function isStaffParticipant(p) {
   return p?.admin === 'admin' || p?.admin === 'superadmin' || p?.isAdmin === true || p?.isSuperAdmin === true
+}
+
+function isStaffJid(jid, participants = []) {
+  if (isRealOwner(jid)) return true
+  const p = participants.find(v => (v.id || v.jid) === jid)
+  return isStaffParticipant(p)
 }
 
 function getButtonId(m) {
@@ -132,8 +154,7 @@ handler.before = async function (m) {
   }
 
   const participants = Array.isArray(meta?.participants) ? meta.participants : []
-  const actor = participants.find(p => (p.id || p.jid) === m.sender)
-  const isStaff = isStaffParticipant(actor)
+  const isStaff = isStaffJid(m.sender, participants)
 
   if (!isStaff) {
     await this.sendMessage(m.chat, {
