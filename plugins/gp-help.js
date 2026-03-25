@@ -103,7 +103,7 @@ let handler = async (m, { conn, text }) => {
     inviteLink = `https://chat.whatsapp.com/${code}`
   } catch {}
 
-  const supportGroup = 'INSERISCI_JID@g.us'
+  const supportGroup = '120363405786547241@g.us'
 
   const msg = `*╭━━━〔 🆘 𝐒𝐔𝐏𝐏𝐎𝐑𝐓𝐎 〕━━━⬣*
 ┃ ${requesterTag} 𝐡𝐚 𝐫𝐢𝐜𝐡𝐢𝐞𝐬𝐭𝐨 𝐚𝐢𝐮𝐭𝐨
