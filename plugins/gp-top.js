@@ -1,4 +1,23 @@
 let handler = async (m, { conn, command, usedPrefix }) => {
+  if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
+
+  if (command === 'resettp') {
+    let chats = global.db.data.chats || {}
+    let oggi = new Date().toDateString()
+
+    for (let jid in chats) {
+      if (!jid.endsWith('@g.us')) continue
+
+      chats[jid].archivioMessaggi = {
+        totali: 0,
+        utenti: {},
+        ultimoReset: oggi
+      }
+    }
+
+    return m.reply("🔄 *𝐓𝐮𝐭𝐭𝐞 𝐥𝐞 𝐜𝐥𝐚𝐬𝐬𝐢𝐟𝐢𝐜𝐡𝐞 𝐬𝐨𝐧𝐨 𝐬𝐭𝐚𝐭𝐞 𝐫𝐞𝐬𝐞𝐭𝐭𝐚𝐭𝐞*")
+  }
+
   let chat = global.db.data.chats[m.chat]
   if (!chat) return m.reply("📊 *𝐂𝐋𝐀𝐒𝐒𝐈𝐅𝐈𝐂𝐀*\n\n𝐍𝐞𝐬𝐬𝐮𝐧 𝐝𝐚𝐭𝐨 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞")
 
@@ -23,20 +42,23 @@ let handler = async (m, { conn, command, usedPrefix }) => {
     totaleMessaggi = Object.values(utenti)
       .reduce((acc, u) => acc + (u.messages || 0), 0)
 
-    if (!classifica.length) return m.reply("📊 *𝐂𝐋𝐀𝐒𝐒𝐈𝐅𝐈𝐂𝐀 𝐓𝐎𝐓𝐀𝐋𝐄*\n\n𝐍𝐞𝐬𝐬𝐮𝐧 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐫𝐞𝐠𝐢𝐬𝐭𝐫𝐚𝐭𝐨")
+    if (!classifica.length) {
+      return m.reply("📊 *𝐂𝐋𝐀𝐒𝐒𝐈𝐅𝐈𝐂𝐀 𝐓𝐎𝐓𝐀𝐋𝐄*\n\n𝐍𝐞𝐬𝐬𝐮𝐧 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐫𝐞𝐠𝐢𝐬𝐭𝐫𝐚𝐭𝐨")
+    }
   } else {
-    if (!chat.archivioMessaggi || chat.archivioMessaggi.totali === 0)
+    if (!chat.archivioMessaggi || chat.archivioMessaggi.totali === 0) {
       return m.reply("📊 *𝐂𝐋𝐀𝐒𝐒𝐈𝐅𝐈𝐂𝐀*\n\n𝐍𝐞𝐬𝐬𝐮𝐧 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐨𝐠𝐠𝐢")
+    }
 
     let dati = chat.archivioMessaggi
     totaleMessaggi = dati.totali
 
-    classifica = Object.entries(dati.utenti)
+    classifica = Object.entries(dati.utenti || {})
       .sort((a, b) => b[1].conteggio - a[1].conteggio)
       .slice(0, limite)
   }
 
-  const medaglie = ['🥇','🥈','🥉','🏅','🏅','🏅','🏅','🏅','🏅','🏅']
+  const medaglie = ['🥇', '🥈', '🥉', '🏅', '🏅', '🏅', '🏅', '🏅', '🏅', '🏅']
   const titolo = isAll ? `𝐓𝐎𝐏 ${limite} 𝐓𝐎𝐓𝐀𝐋𝐄` : `𝐓𝐎𝐏 ${limite} 𝐃𝐈 𝐎𝐆𝐆𝐈`
 
   let testo = `╭━〔 📊 *𝐂𝐋𝐀𝐒𝐒𝐈𝐅𝐈𝐂𝐀* 📊 〕━⬣\n`
@@ -53,7 +75,7 @@ let handler = async (m, { conn, command, usedPrefix }) => {
 
   testo += `──────────────────\n`
   testo += isAll
-    ? ` 𝐂𝐥𝐚𝐬𝐬𝐢𝐟𝐢𝐜𝐚 𝐬𝐭𝐨𝐫𝐢𝐜𝐚`
+    ? `𝐂𝐥𝐚𝐬𝐬𝐢𝐟𝐢𝐜𝐚 𝐬𝐭𝐨𝐫𝐢𝐜𝐚`
     : `⏳ 𝐑𝐞𝐬𝐞𝐭 𝐨𝐠𝐧𝐢 𝐠𝐢𝐨𝐫𝐧𝐨`
 
   let buttons = []
@@ -145,7 +167,6 @@ if (!global.topResetInterval) {
             utenti: {},
             ultimoReset: oggi
           }
-
         } catch (e) {
           if (e?.data === 403 || e.message?.includes('forbidden')) {
             delete chats[jid]
@@ -159,27 +180,8 @@ if (!global.topResetInterval) {
 }
 
 handler.command = /^(top|top5|top10|topall|topall5|topall10|resettp)$/i
-
-handler.run = async (m, { command }) => {
-  if (command === 'resettp') {
-  let chats = global.db.data.chats
-  let oggi = new Date().toDateString()
-
-  for (let jid in chats) {
-    if (!jid.endsWith('@g.us')) continue
-
-    chats[jid].archivioMessaggi = {
-      totali: 0,
-      utenti: {},
-      ultimoReset: oggi
-    }
-  }
-
-  return m.reply("🔄 *𝐓𝐮𝐭𝐭𝐞 𝐥𝐞 𝐜𝐥𝐚𝐬𝐬𝐢𝐟𝐢𝐜𝐡𝐞 𝐬𝐨𝐧𝐨 𝐬𝐭𝐚𝐭𝐞 𝐫𝐞𝐬𝐞𝐭𝐭𝐚𝐭𝐞*")
-}
-
 handler.group = true
-handler.help = ['top','top5','top10','topall','resettp']
+handler.help = ['top', 'top5', 'top10', 'topall', 'resettp']
 handler.tags = ['group']
 
 export default handler
