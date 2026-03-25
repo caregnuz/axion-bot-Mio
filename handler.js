@@ -33,10 +33,6 @@ global.ignoredUsersGlobal = new Set()
 global.ignoredUsersGroup = {}
 global.groupSpam = {}
 
-global.ignoredUsersGlobal = new Set()
-global.ignoredUsersGroup = {}
-global.groupSpam = {}
-
 if (!global.groupCache) {
 global.groupCache = new NodeCache({ stdTTL: 5 * 60, useClones: false })
 }
@@ -76,7 +72,8 @@ continue
 global.groupCache.set(update.id, metadata, { ttl: 300 })
 } catch (e) {
 if (!e.message?.includes('not authorized') && !e.message?.includes('chat not found') && !e.message?.includes('not in group')) {
-console.error([ERRORE] Errore nell'aggiornamento cache su groups.update per ${update.id}:, e)
+// RIGA 79 SISTEMATA QUI SOTTO
+console.error(`[ERRORE] Errore nell'aggiornamento cache su groups.update per ${update.id}:`, e)
 }
 }
 }
@@ -279,7 +276,7 @@ m.key = key;
 m.message = editedMessage;
 m.text = editedMessage.conversation || editedMessage.extendedTextMessage?.text || '';
 m.mtype = Object.keys(editedMessage)[0];
-console.log([EDIT] Messaggio ${key.id} modificato in ${key.remoteJid});
+console.log(`[EDIT] Messaggio ${key.id} modificato in ${key.remoteJid}`);
 }
 m = smsg(this, m, global.store)
 if (!m || !m.key || !m.chat || !m.sender) return
@@ -316,11 +313,12 @@ if (!this.originalGroupParticipantsUpdate) {
                 return participant ? participant.id : userJid  
             })  
 
-if (global.db.data.settings.botOff) {
-  const prefixes = Array.isArray(global.prefix) ? global.prefix : [global.prefix || '.']
-  const canWake = prefixes.some(p => txt.toLowerCase() === `${String(p).toLowerCase()}on`)
-  if (!canWake) return
-  
+            if (global.db.data.settings.botOff) {
+              const prefixes = Array.isArray(global.prefix) ? global.prefix : [global.prefix || '.']
+              const canWake = prefixes.some(p => m.text.toLowerCase() === `${String(p).toLowerCase()}on`)
+              if (!canWake) return
+            }
+
             return this.originalGroupParticipantsUpdate.call(this, chatId, correctedUsers, action)  
         } catch (e) {  
             console.error('[ERRORE] Errore in safeGroupParticipantsUpdate:', e)  
@@ -574,316 +572,221 @@ try {
         if (!match || !match[0]) continue  
 
         usedPrefix = (match[0] || '')[0]  
-        if (usedPrefix) {  
-            let noPrefix = m.text.replace(usedPrefix, '')  
-            let [command, ...args] = noPrefix.trim().split` `.filter(v => v)  
-            args = args || []  
-            let _args = noPrefix.trim().split` `.slice(1)  
-            let text = _args.join` `  
-            command = command?.toLowerCase() || ''  
-            let fail = plugin.fail || global.dfail  
-            let isAccept = plugin.command instanceof RegExp ? plugin.command.test(command) :  
-                Array.isArray(plugin.command) ? plugin.command.some(cmd => cmd instanceof RegExp ? cmd.test(command) : cmd === command) :  
-                typeof plugin.command === 'string' ? plugin.command === command : false  
+        let noPrefix = m.text.replace(usedPrefix, '')  
+        let [command, ...args] = noPrefix.trim().split` `.filter(v => v)  
+        args = args || []  
+        let _args = noPrefix.trim().split` `.slice(1)  
+        let text = _args.join` `  
+        command = command?.toLowerCase() || ''  
+        let fail = plugin.fail || global.dfail  
+        let isAccept = plugin.command instanceof RegExp ? plugin.command.test(command) :  
+            Array.isArray(plugin.command) ? plugin.command.some(cmd => cmd instanceof RegExp ? cmd.test(command) : cmd === command) :  
+            typeof plugin.command === 'string' ? plugin.command === command : false  
 
-            if (!isAccept) continue  
+        if (!isAccept) continue  
 
-            if (m.isGroup && (plugin.admin || plugin.botAdmin)) {  
-                const freshMetadata = global.groupCache.get(m.chat) || await fetchGroupMetadataWithRetry(this, m.chat)  
-                if (freshMetadata) {  
-                    freshMetadata.fetchTime = Date.now()  
-                    global.groupCache.set(m.chat, freshMetadata, { ttl: 300 })  
-                    groupMetadata = freshMetadata  
-                    participants = groupMetadata.participants  
-                    normalizedParticipants = participants.map(u => {  
-                        const normalizedId = this.decodeJid(u.id)  
-                        return { ...u, id: normalizedId, jid: u.jid || normalizedId }  
-                    })  
-
-                    const normalizedOwner = groupMetadata.owner ? this.decodeJid(groupMetadata.owner) : null  
-                    const normalizedOwnerLid = groupMetadata.ownerLid ? this.decodeJid(groupMetadata.ownerLid) : null  
-
-                    isAdmin = participants.some(u => {  
-                        const participantIds = [  
-                            this.decodeJid(u.id),  
-                            u.jid ? this.decodeJid(u.jid) : null,  
-                            u.lid ? this.decodeJid(u.lid) : null  
-                        ].filter(Boolean)  
-                        const isMatch = participantIds.includes(normalizedSender)  
-                        return isMatch && (u.admin === 'admin' || u.admin === 'superadmin' || u.isAdmin === true || u.admin === true)  
-                    })  
-
-                    isBotAdmin = participants.some(u => {  
-                        const participantIds = [  
-                            this.decodeJid(u.id),  
-                            u.jid ? this.decodeJid(u.jid) : null,  
-                            u.lid ? this.decodeJid(u.lid) : null  
-                        ].filter(Boolean)  
-                        const isMatch = participantIds.includes(normalizedBot)  
-                        return isMatch && (u.admin === 'admin' || u.admin === 'superadmin' || u.isAdmin === true || u.admin === true)  
-                    }) || (normalizedBot === normalizedOwner || normalizedBot === normalizedOwnerLid)  
-
-                    isRAdmin = isAdmin && (normalizedSender === normalizedOwner || normalizedSender === normalizedOwnerLid)  
-                }  
-            }  
-
-            if (plugin.disabled && !isOwner) {  
-                fail('disabled', m, this)  
-                continue  
-            }  
-
-            if (user.muto && !isROwner && !isOwner) {  
-                await this.sendMessage(m.chat, { text: `🚫 Non puoi usare i comandi se sei stato mutato gay!!` }, { quoted: m }).catch(e => console.error('[ERRORE] Errore nell\'invio del messaggio:', e))  
-                return  
-            }  
-
-            const ignoredGlobally = global.ignoredUsersGlobal.has(normalizedSender)  
-            const ignoredInGroup = m.isGroup && global.ignoredUsersGroup[m.chat]?.has(normalizedSender)  
-            if ((ignoredGlobally || ignoredInGroup) && !isROwner) {  
-                await this.sendMessage(m.chat, { text: `🚫 Non sei autorizzato a usare comandi.` }, { quoted: m }).catch(e => console.error('[ERRORE] Errore nell\'invio del messaggio:', e))  
-                return  
-            }  
-
-            m.plugin = name  
-            if (chat.isBanned && !isROwner && !['gp-sbanchat.js', 'creatore-exec.js', 'gp-delete.js'].includes(name)) return  
-            if (user.banned && !isROwner && name !== 'creatore-banuser.js') {  
-                if (user.antispam > 2) return  
-                await this.sendMessage(m.chat, {  
-                    text: `🚫 *Sei stato bannato/a dall'utilizzo del bot*.\n\n${user.bannedReason ? `Motivo: ${user.bannedReason}` : `Motivo: Non specificato`}`  
-                }, { quoted: m }).catch(e => console.error('[ERRORE] Errore nell\'invio del messaggio:', e))  
-                user.antispam++  
-                return  
-            }  
-
-            if (m.isGroup && !isOwner && !isROwner && !isAdmin && chat.antispam) {  
-                const groupData = global.groupSpam[m.chat] || (global.groupSpam[m.chat] = {  
-                    count: 0,  
-                    firstCommandTimestamp: 0,  
-                    isSuspended: false  
+        if (m.isGroup && (plugin.admin || plugin.botAdmin)) {  
+            const freshMetadata = global.groupCache.get(m.chat) || await fetchGroupMetadataWithRetry(this, m.chat)  
+            if (freshMetadata) {  
+                freshMetadata.fetchTime = Date.now()  
+                global.groupCache.set(m.chat, freshMetadata, { ttl: 300 })  
+                groupMetadata = freshMetadata  
+                participants = groupMetadata.participants  
+                normalizedParticipants = participants.map(u => {  
+                    const normalizedId = this.decodeJid(u.id)  
+                    return { ...u, id: normalizedId, jid: u.jid || normalizedId }  
                 })  
-                const now = Date.now()  
-                if (groupData.isSuspended) return  
 
-                if (now - groupData.firstCommandTimestamp > 60000) {  
-                    groupData.count = 1  
-                    groupData.firstCommandTimestamp = now  
-                } else {  
-                    groupData.count++  
-                }  
+                const normalizedOwner = groupMetadata.owner ? this.decodeJid(groupMetadata.owner) : null  
+                const normalizedOwnerLid = groupMetadata.ownerLid ? this.decodeJid(groupMetadata.ownerLid) : null  
 
-                if (groupData.count > 8) {  
-                    groupData.isSuspended = true  
-                    await this.reply(m.chat, `⚠️  \`Anti-spam comandi\`\n\n> Rilevati troppi comandi in un minuto, aspettate \`10 secondi\` prima di riutilizzare i comandi.`, m).catch(e => console.error('[ERRORE] Errore nell\'invio della risposta:', e))  
-                    setTimeout(() => {  
-                        delete global.groupSpam[m.chat]  
-                        console.log(`[Anti-Spam] Comandi riattivati per il gruppo: ${m.chat}`)  
-                    }, 15000)  
-                    return  
-                }  
-            }  
+                isAdmin = participants.some(u => {  
+                    const participantIds = [  
+                        this.decodeJid(u.id),  
+                        u.jid ? this.decodeJid(u.jid) : null,  
+                        u.lid ? this.decodeJid(u.lid) : null  
+                    ].filter(Boolean)  
+                    const isMatch = participantIds.includes(normalizedSender)  
+                    return isMatch && (u.admin === 'admin' || u.admin === 'superadmin' || u.isAdmin === true || u.admin === true)  
+                })  
 
-            if (chat.modoadmin && !isOwner && !isROwner && m.isGroup && !isAdmin && !user.premium) return  
-            if (settings.soloCreatore && !isROwner) return  
+                isBotAdmin = participants.some(u => {  
+                    const participantIds = [  
+                        this.decodeJid(u.id),  
+                        u.jid ? this.decodeJid(u.jid) : null,  
+                        u.lid ? this.decodeJid(u.lid) : null  
+                    ].filter(Boolean)  
+                    const isMatch = participantIds.includes(normalizedBot)  
+                    return isMatch && (u.admin === 'admin' || u.admin === 'superadmin' || u.isAdmin === true || u.admin === true)  
+                }) || (normalizedBot === normalizedOwner || normalizedBot === normalizedOwnerLid)  
 
-            if (plugin.sam && !isSam) {  
-                fail('sam', m, this)  
-                continue  
+                isRAdmin = isAdmin && (normalizedSender === normalizedOwner || normalizedSender === normalizedOwnerLid)  
             }  
-            if (plugin.rowner && !isROwner) {  
-                fail('rowner', m, this)  
-                continue  
-            }  
-            if (plugin.owner && !isOwner) {  
-                fail('owner', m, this)  
-                continue  
-            }  
-            if (plugin.mods && !isMods) {  
-                fail('mods', m, this)  
-                continue  
-            }  
-            if (plugin.premium && !isPrems) {  
-                fail('premium', m, this)  
-                continue  
-            }  
-            if (plugin.group && !m.isGroup) {  
-                fail('group', m, this)  
-                continue  
-            }  
-            if (plugin.botAdmin && !isBotAdmin) {  
-                fail('botAdmin', m, this)  
-                continue  
-            }  
-            if (plugin.admin && !isAdmin) {  
-                fail('admin', m, this)  
-                continue  
-            }  
-            if (plugin.private && m.isGroup) {  
-                fail('private', m, this)  
-                continue  
-            }  
-            if (plugin.register && !user.registered) {  
-                fail('unreg', m, this)  
-                continue  
-            }  
-
-            m.isCommand = true  
-            let xp = 'exp' in plugin ? parseInt(plugin.exp) : 17  
-            if (xp > 200) {  
-                await this.reply(m.chat, 'bzzzzz', m).catch(e => console.error('[ERRORE] Errore nella risposta:', e))  
-            } else {  
-                m.exp += xp  
-            }  
-
-            if (!isPrems && plugin.euro && user.euro < plugin.euro) {  
-                await this.reply(m.chat, `Niente più soldini, stupido poraccio`, m, null, global.fake).catch(e => console.error('[ERRORE] Errore nella risposta:', e))  
-                continue  
-            }  
-
-            let extra = {  
-                match,  
-                usedPrefix,  
-                noPrefix,  
-                _args,  
-                args,  
-                command,  
-                text,  
-                conn: this,  
-                participants: normalizedParticipants,  
-                groupMetadata,  
-                user: { admin: isAdmin ? 'admin' : null },  
-                bot: { admin: isBotAdmin ? 'admin' : null },  
-                isSam,  
-                isROwner,  
-                isOwner,  
-                isRAdmin,  
-                isAdmin,  
-                isBotAdmin,  
-                isPrems,  
-                chatUpdate,  
-                __dirname: ___dirname,  
-                __filename  
-            }  
-
-            try {  
-                await plugin.call(this, m, extra)  
-                if (!isPrems) m.euro = plugin.euro || false  
-            } catch (e) {  
-                m.error = e  
-                console.error(`[ERRORE] Errore nell'esecuzione del plugin per la chat ${m.chat}, mittente ${m.sender}:`, e)  
-                if (e.message.includes('rate-overlimit')) {  
-                    console.warn('[AVVISO] Rate limit raggiunto, ritento dopo 2 secondi...')  
-                    await delay(2000)  
-                }  
-                let text = format(e)  
-                await this.reply(m.chat, text, m).catch(e => console.error('[ERRORE] Errore nella risposta:', e))  
-            } finally {  
-                if (typeof plugin.after === 'function') {  
-                    try {  
-                        await plugin.after.call(this, m, extra)  
-                    } catch (e) {  
-                        console.error('[ERRORE] Errore in plugin.after:', e)  
-                    }  
-                }  
-                if (m.euro) {  
-                    await this.reply(m.chat, `\`Hai utilizzato *${+m.euro}*\``, m, null, global.rcanal).catch(e => console.error('[ERRORE] Errore nell\'invio della risposta:', e))  
-                }  
-            }  
-            break  
-        }  
-    }  
-} catch (e) {  
-    console.error(`[ERRORE] Errore nel handler per la chat ${m.chat}, mittente ${m.sender}:`, e)  
-} finally {  
-    if (m && user && user.muto && !m.fromMe) {  
-        await this.sendMessage(m.chat, { delete: m.key }).catch(e => console.error('[ERRORE] Errore nell\'eliminazione del messaggio:', e))  
-    }  
-
-    if (m && user) {  
-        user.exp += m.exp || 0  
-        user.euro -= m.euro * 1 || 0  
-        if (!user.messages) user.messages = 0;  
-        user.messages++;  
-        if (m.isGroup) {  
-            if (!chat.users) chat.users = {};  
-            const senderId = normalizedSender;  
-            if (!chat.users[senderId]) {  
-                chat.users[senderId] = { messages: 0 };  
-            }  
-            chat.users[senderId].messages++;  
         }  
 
-        if (m.plugin) {  
-            let stats = global.db.data.stats || (global.db.data.stats = {})  
-            let stat = stats[m.plugin] || (stats[m.plugin] = {  
-                total: 0,  
-                success: 0,  
-                last: 0,  
-                lastSuccess: 0  
+        if (plugin.disabled && !isOwner) {  
+            fail('disabled', m, this)  
+            continue  
+        }  
+
+        if (user.muto && !isROwner && !isOwner) {  
+            await this.sendMessage(m.chat, { text: `🚫 Non puoi usare i comandi se sei stato mutato gay!!` }, { quoted: m }).catch(e => console.error('[ERRORE] Errore nell\'invio del messaggio:', e))  
+            return  
+        }  
+
+        const ignoredGlobally = global.ignoredUsersGlobal.has(normalizedSender)  
+        const ignoredInGroup = m.isGroup && global.ignoredUsersGroup[m.chat]?.has(normalizedSender)  
+        if ((ignoredGlobally || ignoredInGroup) && !isROwner) {  
+            await this.sendMessage(m.chat, { text: `🚫 Non sei autorizzato a usare comandi.` }, { quoted: m }).catch(e => console.error('[ERRORE] Errore nell\'invio del messaggio:', e))  
+            return  
+        }  
+
+        m.plugin = name  
+        if (chat.isBanned && !isROwner && !['gp-sbanchat.js', 'creatore-exec.js', 'gp-delete.js'].includes(name)) return  
+        if (user.banned && !isROwner && name !== 'creatore-banuser.js') {  
+            if (user.antispam > 2) return  
+            await this.sendMessage(m.chat, {  
+                text: `🚫 *Sei stato bannato/a dall'utilizzo del bot*.\n\n${user.bannedReason ? `Motivo: ${user.bannedReason}` : `Motivo: Non specificato`}`  
+            }, { quoted: m }).catch(e => console.error('[ERRORE] Errore nell\'invio del messaggio:', e))  
+            user.antispam++  
+            return  
+        }  
+
+        if (m.isGroup && !isOwner && !isROwner && !isAdmin && chat.antispam) {  
+            const groupData = global.groupSpam[m.chat] || (global.groupSpam[m.chat] = {  
+                count: 0,  
+                firstCommandTimestamp: 0,  
+                isSuspended: false  
             })  
-            const now = +new Date  
-            stat.total += 1  
-            stat.last = now  
-            if (!m.error) {  
-                stat.success += 1  
-                stat.lastSuccess = now  
+            const now = Date.now()  
+            if (groupData.isSuspended) return  
+
+            if (now - groupData.firstCommandTimestamp > 60000) {  
+                groupData.count = 1  
+                groupData.firstCommandTimestamp = now  
+            } else {  
+                groupData.count++  
+            }  
+
+            if (groupData.count > 8) {  
+                groupData.isSuspended = true  
+                await this.reply(m.chat, `⚠️  \`Anti-spam comandi\`\n\n> Rilevati troppi comandi in un minuto, aspettate \`10 secondi\` prima di riutilizzare i comandi.`, m).catch(e => console.error('[ERRORE] Errore nell\'invio della risposta:', e))  
+                setTimeout(() => {  
+                    delete global.groupSpam[m.chat]  
+                    console.log(`[Anti-Spam] Comandi riattivati per il gruppo: ${m.chat}`)  
+                }, 15000)  
+                return  
             }  
         }  
-    }  
 
-    try {  
-        if (!global.opts['noprint'] && m) await (await import(`./lib/print.js`)).default(m, this)  
-    } catch (e) {  
-        console.error('[ERRORE] Errore in print:', e)  
-    }  
+        if (chat.modoadmin && !isOwner && !isROwner && m.isGroup && !isAdmin && !user.premium) return  
+        if (settings.soloCreatore && !isROwner) return  
 
-    let settingsREAD = global.db.data.settings[this.user.jid] || {}  
-    if ((global.opts['autoread'] || settingsREAD.autoread2) && m) {  
-        await this.readMessages([m.key]).catch(e => console.error('[ERRORE] Errore nella lettura del messaggio:', e))  
-    }  
+        if (plugin.sam && !isSam) {  
+            fail('sam', m, this)  
+            continue  
+        }  
+        if (plugin.rowner && !isROwner) {  
+            fail('rowner', m, this)  
+            continue  
+        }  
+        if (plugin.owner && !isOwner) {  
+            fail('owner', m, this)  
+            continue  
+        }  
+        if (plugin.mods && !isMods) {  
+            fail('mods', m, this)  
+            continue  
+        }  
+        if (plugin.premium && !isPrems) {  
+            fail('premium', m, this)  
+            continue  
+        }  
+        if (plugin.group && !m.isGroup) {  
+            fail('group', m, this)  
+            continue  
+        }  
+        if (plugin.botAdmin && !isBotAdmin) {  
+            fail('botAdmin', m, this)  
+            continue  
+        }  
+        if (plugin.admin && !isAdmin) {  
+            fail('admin', m, this)  
+            continue  
+        }  
+        if (plugin.private && m.isGroup) {  
+            fail('private', m, this)  
+            continue  
+        }  
+        if (plugin.register && !user.registered) {  
+            fail('unreg', m, this)  
+            continue  
+        }  
 
-    if (chat && chat.reaction && m?.text?.match(/(mente|zione|tà|ivo|osa|issimo|ma|però|eppure|anche|ma|no|se|ai|ciao|si)/gi) && !m.fromMe) {  
-        const emot = pickRandom([  
-            "🍟", "😃", "😄", "😁", "😆", "🍓", "😅", "😂", "🤣", "🥲", "☺️", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰"  
-        ])  
-        await this.sendMessage(m.chat, { react: { text: emot, key: m.key } }).catch(e => console.error('[ERRORE] Errore nell\'invio della reazione:', e))  
-    }  
+        m.isCommand = true  
+        let xp = 'exp' in plugin ? parseInt(plugin.exp) : 17  
+        if (xp > 200) {  
+            await this.reply(m.chat, 'bzzzzz', m).catch(e => console.error('[ERRORE] Errore nella risposta:', e))  
+        } else {  
+            m.exp += xp  
+        }  
+
+        if (!isPrems && plugin.euro && user.euro < plugin.euro) {  
+            await this.reply(m.chat, `Niente più soldini, stupido poraccio`, m, null, global.fake).catch(e => console.error('[ERRORE] Errore nella risposta:', e))  
+            continue  
+        }  
+
+        let extra = {  
+            match,  
+            usedPrefix,  
+            noPrefix,  
+            _args,  
+            args,  
+            command,  
+            text,  
+            conn: this,  
+            participants: normalizedParticipants,  
+            groupMetadata,  
+            user: { admin: isAdmin ? 'admin' : null },  
+            bot: { admin: isBotAdmin ? 'admin' : null },  
+            isSam,  
+            isROwner,  
+            isOwner,  
+            isRAdmin,  
+            isAdmin,  
+            isBotAdmin,  
+            isPrems,  
+            chatUpdate,  
+            __dirname: ___dirname,  
+            __filename  
+        }  
+
+        try {  
+            await plugin.call(this, m, extra)  
+            if (!isPrems) m.euro = plugin.euro || false  
+        } catch (e) {  
+            m.error = e  
+            console.error(`[ERRORE] Errore nell'esecuzione del plugin per la chat ${m.chat}, mittente ${m.sender}:`, e)  
+            if (e.message.includes('rate-overlimit')) {  
+                console.warn('[AVVISO] Rate limit raggiunto, ritento dopo 2 secondi...')  
+                await delay(2000)  
+            }  
+            let text = format(e)  
+            await this.reply(m.chat, text, m).catch(e => console.error('[ERRORE] Errore nella risposta:', e))  
+        } finally {  
+            if (typeof plugin.after === 'function') {  
+                try {  
+                    await plugin.after.call(this, m, extra)  
+                } catch (e) {  
+                    console.error('[ERRORE] Errore in plugin.after:', e)  
+                }  
+            }  
+            if (m.euro) {  
+                await this.reply(m.chat, `\`Hai utilizzato *${+m.euro}*\``, m, null, global.rcanal).catch(e => console.error(e))
+            }
+        }
+    }
+} catch (e) {
+    console.error(e)
 }
-
 }
-
-global.dfail = async (type, m, conn) => {
-const nome = m.pushName || 'sam'
-const etarandom = Math.floor(Math.random() * 21) + 13
-const msg = {
-rowner:   '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐎𝐖𝐍𝐄𝐑 』\n\n👑 RANGO INSUFFICIENTE\n╰➤ Richiesto: Owner Fondatore\n\n⚡ Solo chi ha dato vita al bot può evocare questo potere.',
-
-owner:    '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐀𝐔𝐓𝐇 』\n\n🛡️ MODALITÀ OWNER\n╰➤ Stato: Accesso Riservato\n\n💎 Comando sbloccabile solo dagli sviluppatori autorizzati.',
-
-premium:  '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐏𝐑𝐄𝐌𝐈𝐔𝐌 』\n\n💎 CONTENUTO ESCLUSIVO\n╰➤ Vantaggio: Utente Elite\n\n✨ Passa a Premium per sbloccare funzioni avanzate e limiti rimossi!',
-
-group:    '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐋𝐎𝐂𝐀𝐓𝐈𝐎𝐍 』\n\n👥 RIVELATO ERRORE\n╰➤ Ambiente: Solo Gruppi\n\n📍 Per favore, esegui questo comando all'interno di una Community.',
-
-private:  '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐏𝐑𝐈𝐕𝐀𝐓𝐄 』\n\n📩 CHAT RISERVATA\n╰➤ Ambiente: Messaggi Diretti\n\n👤 Vieni a trovarmi in privato per utilizzare questa funzione.',
-
-admin:    '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐆𝐑𝐎𝐔𝐏 』\n\n🛠️ AZIONE ADMIN\n╰➤ Requisito: Amministratore\n\n🚫 Non hai i gradi necessari per gestire questa operazione.',
-
-botAdmin: '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐏𝐄𝐑𝐌𝐈𝐒𝐒𝐈 』\n\n🤖 ERRORE DI SISTEMA\n╰➤ Problema: Bot non Admin\n\n💠 Promuovimi ad Admin per permettermi di agire correttamente.',
-
-restrict: '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐒𝐓𝐀𝐓𝐔𝐒 』\n\n🚫 FUNZIONE LIMITATA\n╰➤ Stato: Restrizione Attiva\n\n⏳ Questa opzione è stata temporaneamente isolata dal sistema.',
-
-disabled: '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐎𝐅𝐅𝐋𝐈𝐍𝐄 』\n\n⛔ COMANDO SPENTO\n╰➤ Stato: Disabilitato\n\n🛑 Attualmente in manutenzione o rimosso dallo staff.'
-}[type]
-if (msg) {
-conn.reply(m.chat, msg, m, global.rcanal).catch(e => console.error('[ERRORE] Errore in dfail:', e))
-}
-}
-
-function pickRandom(list) {
-return list[Math.floor(Math.random() * list.length)]
-}
-
-let file = global.__filename(import.meta.url, true)
-watchFile(file, async () => {
-unwatchFile(file)
-console.log(chalk.bgHex('#3b0d95')(chalk.white.bold("File: 'handler.js' Aggiornato")))
-})
