@@ -117,7 +117,7 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner }) => 
       result = box('ᴀɴᴛɪ-ᴘᴏʀɴᴏ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), 'Filtro neurale NSFW');
       break;
 
-    case 'modoadmin':
+    case 'soloadmin':
       if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin);
       chat.modoadmin = isEnable;
       result = box('ᴍᴏᴅᴏ ᴀᴅᴍɪɴ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), 'Restrizione comandi allo staff');
