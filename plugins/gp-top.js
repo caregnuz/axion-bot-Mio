@@ -158,10 +158,10 @@ if (!global.topResetInterval) {
   }, 60000)
 }
 
-handler.command = /^(top|top5|top10|topall|topall5|topall10|resettop)$/i
+handler.command = /^(top|top5|top10|topall|topall5|topall10|resettp)$/i
 
 handler.run = async (m, { command }) => {
-  if (command === 'resettop') {
+  if (command === 'resettp') {
     let chats = global.db.data.chats
     let oggi = new Date().toDateString()
 
@@ -180,7 +180,7 @@ handler.run = async (m, { command }) => {
 }
 
 handler.group = true
-handler.help = ['top','top5','top10','topall','resettop']
+handler.help = ['top','top5','top10','topall','resettp']
 handler.tags = ['group']
 
 export default handler
