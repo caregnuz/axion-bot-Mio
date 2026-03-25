@@ -2,7 +2,7 @@ import fs from 'fs';
 
 let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner }) => {
 
-  const isEnable = /attiva|enable|on|1/i.test(command);
+  const isEnable = /attiva|enable|1/i.test(command);
   const chats = global.db.data.chats;
   const settings = global.db.data.settings;
 
@@ -12,7 +12,6 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner }) => 
   const chat = chats[m.chat];
   const bot = settings[conn.user.jid];
 
-  // ================== FOTO PROFILO ==================
   let pp;
   try { 
     pp = await conn.profilePictureUrl(m.sender, 'image'); 
@@ -33,7 +32,6 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner }) => 
 
   const profileBuffer = await getBuffer(pp);
 
-  // ================== GRAFICA ==================
   const box = (title, stato, desc) => {
     return `
 『 𝚫𝐗𝐈𝐎𝐍 • 𝐂𝐎𝐑𝐄 』
@@ -72,7 +70,6 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner }) => 
   let feature = args[0].toLowerCase();
   let result = '';
 
-  // ================== SWITCH ==================
   switch(feature) {
     case 'antilink':
       if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin);
@@ -163,7 +160,6 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner }) => 
       return m.reply(box('ᴜɴᴋɴᴏᴡɴ', '⚠️ ᴡᴀʀɴɪɴɢ', 'Modulo non riconosciuto dal sistema Axion.'));
   }
 
-  // ================== INVIO CON CANALE ==================
   await conn.sendMessage(m.chat, {
     text: result,
     contextInfo: {
@@ -188,6 +184,6 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner }) => 
 
 handler.help = ['attiva','disattiva'];
 handler.tags = ['group'];
-handler.command = ['attiva','disattiva','enable','disable','on','off','1','0'];
+handler.command = ['attiva','disattiva','enable','disable', '1','0'];
 
 export default handler;
