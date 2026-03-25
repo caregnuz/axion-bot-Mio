@@ -1,5 +1,7 @@
 // by Bonzino
 
+import fetch from 'node-fetch'
+
 const S = v => String(v || '')
 
 function bare(j = '') {
@@ -65,6 +67,15 @@ let handler = async (m, { conn }) => {
   const figliTxt = formatList(figli)
   const amiciTxt = formatList(amici)
 
+  let pp = 'https://i.ibb.co/2kR7x9J/avatar.png'
+  try {
+    pp = await conn.profilePictureUrl(target, 'image')
+  } catch {}
+
+  const thumbnailBuffer = typeof pp === 'string'
+    ? await (await fetch(pp)).buffer()
+    : pp
+
   const text = `*╭━━━━━━━💍━━━━━━━╮*
    *✦ 𝐒𝐓𝐀𝐓𝐎 ✦*
 *╰━━━━━━━💍━━━━━━━╯*
@@ -77,11 +88,6 @@ let handler = async (m, { conn }) => {
 *👶 𝐅𝐢𝐠𝐥𝐢:* ${figliTxt}
 *🤝 𝐀𝐦𝐢𝐜𝐢:* ${amiciTxt}`
 
-  let pp = 'https://i.ibb.co/2kR7x9J/avatar.png'
-  try {
-    pp = await conn.profilePictureUrl(target, 'image')
-  } catch {}
-
   await conn.sendMessage(m.chat, {
     text,
     mentions: [...new Set(mentions)],
@@ -89,8 +95,8 @@ let handler = async (m, { conn }) => {
       ...(global.rcanal?.contextInfo || {}),
       externalAdReply: {
         title: nome,
-        body: '',
-        thumbnailUrl: pp,
+        body: ' ',
+        thumbnail: thumbnailBuffer,
         mediaType: 1,
         renderLargerThumbnail: false,
         showAdAttribution: false
