@@ -43,6 +43,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 👥 ɢᴇsᴛɪᴏɴᴇ 〕━⬣
+┃ 🆔 ${usedPrefix}idgp
 ┃ ⚔️ ${usedPrefix}kick
 ┃ 🚨 ${usedPrefix}nuke
 ┃ 🔮 ${usedPrefix}resucita
