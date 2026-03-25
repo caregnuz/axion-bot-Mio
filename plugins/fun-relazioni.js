@@ -25,6 +25,31 @@ function addUnique(arr, value) {
   if (!arr.includes(value)) arr.push(value)
 }
 
+function getButtonId(m) {
+  try {
+    if (m.text) return m.text
+
+    const msg = m.message || {}
+
+    if (msg.buttonsResponseMessage?.selectedButtonId)
+      return msg.buttonsResponseMessage.selectedButtonId
+
+    if (msg.templateButtonReplyMessage?.selectedId)
+      return msg.templateButtonReplyMessage.selectedId
+
+    const native = msg.interactiveResponseMessage?.nativeFlowResponseMessage?.paramsJson
+    if (native) {
+      const parsed = JSON.parse(native)
+      if (parsed?.id) return parsed.id
+    }
+
+    if (msg.listResponseMessage?.singleSelectReply?.selectedRowId)
+      return msg.listResponseMessage.singleSelectReply.selectedRowId
+  } catch {}
+
+  return ''
+}
+
 function getRequestText(command, from, to) {
   switch (command) {
     case 'madre':
@@ -128,8 +153,10 @@ handler.before = async function (m) {
   const pending = proposals[m.sender]
   if (!pending) return
 
-  const accept = m.text === 'relazione_si'
-  const reject = m.text === 'relazione_no'
+  const txt = getButtonId(m)
+
+  const accept = txt === 'relazione_si'
+  const reject = txt === 'relazione_no'
 
   if (!accept && !reject) return
 

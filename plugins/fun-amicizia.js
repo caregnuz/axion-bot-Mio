@@ -10,6 +10,34 @@ function ensureUser(user) {
   if (!Array.isArray(user.amici)) user.amici = []
 }
 
+function getButtonId(m) {
+  try {
+    if (m.text) return m.text
+
+    const msg = m.message || {}
+
+    if (msg.buttonsResponseMessage?.selectedButtonId) {
+      return msg.buttonsResponseMessage.selectedButtonId
+    }
+
+    if (msg.templateButtonReplyMessage?.selectedId) {
+      return msg.templateButtonReplyMessage.selectedId
+    }
+
+    const native = msg.interactiveResponseMessage?.nativeFlowResponseMessage?.paramsJson
+    if (native) {
+      const parsed = JSON.parse(native)
+      if (parsed?.id) return parsed.id
+    }
+
+    if (msg.listResponseMessage?.singleSelectReply?.selectedRowId) {
+      return msg.listResponseMessage.singleSelectReply.selectedRowId
+    }
+  } catch {}
+
+  return ''
+}
+
 let handler = async (m, { conn, usedPrefix }) => {
   const sender = m.sender
   const target = m.mentionedJid?.[0] || m.quoted?.sender || null
@@ -63,13 +91,15 @@ handler.before = async function (m) {
   const pending = proposals[m.sender]
   if (!pending) return
 
+  const txt = getButtonId(m)
+
   const accept =
-    m.text === 'amicizia_si' || /^amicizia_si$/i.test(m.text || '') ||
-    m.text === 'Si' || /^si$/i.test(m.text || '')
+    txt === 'amicizia_si' || /^amicizia_si$/i.test(txt) ||
+    txt === 'Si' || /^si$/i.test(txt)
 
   const reject =
-    m.text === 'amicizia_no' || /^amicizia_no$/i.test(m.text || '') ||
-    m.text === 'No' || /^no$/i.test(m.text || '')
+    txt === 'amicizia_no' || /^amicizia_no$/i.test(txt) ||
+    txt === 'No' || /^no$/i.test(txt)
 
   if (!accept && !reject) return
 
