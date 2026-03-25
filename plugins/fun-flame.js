@@ -46,7 +46,18 @@ ${usedPrefix + command} @utente`)
 
   await conn.sendMessage(m.chat, {
     text: startMsg,
-    mentions: [m.sender, who]
+    mentions: [m.sender, who],
+    contextInfo: {
+      ...(global.rcanal?.contextInfo || {}),
+      externalAdReply: {
+        title: '🔥 𝐅𝐥𝐚𝐦𝐞 𝐖𝐚𝐫',
+        body: '𝐀𝐱𝐢𝐨𝐧 𝐁𝐨𝐭',
+        thumbnailUrl: 'https://i.ibb.co/2kR7x9J/avatar.png',
+        mediaType: 1,
+        renderLargerThumbnail: false,
+        showAdAttribution: false
+      }
+    }
   }, { quoted: m })
 
   let flameCount = 0
@@ -82,7 +93,8 @@ ${usedPrefix + command} @utente`)
       await new Promise(res => setTimeout(res, 1000))
       await conn.sendMessage(m.chat, {
         text: reply,
-        mentions: [who]
+        mentions: [who],
+        contextInfo: global.rcanal?.contextInfo || {}
       }, { quoted: m2 })
     }
   }
@@ -93,7 +105,8 @@ ${usedPrefix + command} @utente`)
     if (battleActive) {
       conn.sendMessage(m.chat, {
         text: generateFlame(victimName),
-        mentions: [who]
+        mentions: [who],
+        contextInfo: global.rcanal?.contextInfo || {}
       }, { quoted: m })
     }
   }, 2000)
@@ -116,7 +129,18 @@ ${usedPrefix + command} @utente`)
 
     await conn.sendMessage(m.chat, {
       text: endMsg,
-      mentions: [who]
+      mentions: [who],
+      contextInfo: {
+        ...(global.rcanal?.contextInfo || {}),
+        externalAdReply: {
+          title: '🏁 𝐅𝐥𝐚𝐦𝐞 𝐂𝐨𝐧𝐜𝐥𝐮𝐬𝐨',
+          body: '𝐀𝐱𝐢𝐨𝐧 𝐁𝐨𝐭',
+          thumbnailUrl: 'https://i.ibb.co/2kR7x9J/avatar.png',
+          mediaType: 1,
+          renderLargerThumbnail: false,
+          showAdAttribution: false
+        }
+      }
     }, { quoted: m })
   }, 180000)
 }
