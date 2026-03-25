@@ -279,9 +279,26 @@ if (m.message?.protocolMessage?.type === 'MESSAGE_EDIT') {
     m.mtype = Object.keys(editedMessage)[0];
     console.log(`[EDIT] Messaggio ${key.id} modificato in ${key.remoteJid}`);
 }
-    m = smsg(this, m, global.store)
-    if (!m || !m.key || !m.chat || !m.sender) return
-    if (m.fromMe) return
+m = smsg(this, m, global.store)
+if (!m || !m.key || !m.chat || !m.sender) return
+
+global.db.data = global.db.data || {}
+global.db.data.settings = global.db.data.settings || {}
+
+const txt = (
+  m.text ||
+  m.message?.conversation ||
+  m.message?.extendedTextMessage?.text ||
+  ''
+).trim().toLowerCase()
+
+if (global.db.data.settings.botOff) {
+  const prefixes = Array.isArray(global.prefix) ? global.prefix : [global.prefix || '.']
+  const canWake = prefixes.some(p => txt === `${String(p).toLowerCase()}on`)
+  if (!canWake) return
+}
+
+if (m.fromMe) return
     if (m.key.participant && m.key.participant.includes(':') && m.key.participant.split(':')[1]?.includes('@')) return
 
     if (m.key) {
