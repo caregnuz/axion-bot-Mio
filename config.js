@@ -5,7 +5,6 @@ import fs from 'fs'
 import * as cheerio from 'cheerio'
 import fetch from 'node-fetch'
 import axios from 'axios'
-import moment from 'moment-timezone'
 import NodeCache from 'node-cache'
 
 const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf-8'))
@@ -27,7 +26,6 @@ global.dev       = '𝕯𝖊ⱥ𝖉𝖑𝐲'
 global.versione  = pkg.version
 global.testobot  = `AXION-CORE-V${pkg.version}`
 
-// 🌐 LINK
 global.repobot   = 'https://github.com/axion-bot/axion-bot-Md'
 global.canale    = 'https://whatsapp.com/channel/0029Vb8MQ3U1CYoMEtU1832d'
 global.insta     = 'https://www.instagram.com/darius._.n'
@@ -36,7 +34,6 @@ global.cheerio   = cheerio
 global.fs        = fs
 global.fetch     = fetch
 global.axios     = axios
-global.moment    = moment
 
 global.APIKeys = {
     spotifyclientid: 'axion',
