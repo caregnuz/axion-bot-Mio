@@ -10,9 +10,7 @@ async function editMessage(conn, chatId, key, text) {
         key,
         type: 14,
         editedMessage: {
-          extendedTextMessage: {
-            text
-          }
+          extendedTextMessage: { text }
         }
       }
     },
@@ -21,11 +19,12 @@ async function editMessage(conn, chatId, key, text) {
 }
 
 let handler = async (m, { conn, command }) => {
+  global.db.data = global.db.data || {}
   global.db.data.settings = global.db.data.settings || {}
 
   const chatId = m.chat
-  if (!chatId) return
 
+  // 🔴 OFF
   if (command === 'off') {
     const sent = await conn.sendMessage(
       chatId,
@@ -43,26 +42,18 @@ let handler = async (m, { conn, command }) => {
     if (!key) return
 
     const frames = [
-      `╭━━━━━━━🛑━━━━━━━╮
-✦ 𝐒𝐈𝐒𝐓𝐄𝐌𝐀 ✦
-╰━━━━━━━🛑━━━━━━━╯
-
-⏳ 𝐒𝐩𝐞𝐠𝐧𝐢𝐦𝐞𝐧𝐭𝐨 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨.`,
-      `╭━━━━━━━🛑━━━━━━━╮
-✦ 𝐒𝐈𝐒𝐓𝐄𝐌𝐀 ✦
-╰━━━━━━━🛑━━━━━━━╯
-
-⏳ 𝐒𝐩𝐞𝐠𝐧𝐢𝐦𝐞𝐧𝐭𝐨 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨..`,
-      `╭━━━━━━━🛑━━━━━━━╮
-✦ 𝐒𝐈𝐒𝐓𝐄𝐌𝐀 ✦
-╰━━━━━━━🛑━━━━━━━╯
-
-⏳ 𝐒𝐩𝐞𝐠𝐧𝐢𝐦𝐞𝐧𝐭𝐨 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨...`
+      `⏳ 𝐒𝐩𝐞𝐠𝐧𝐢𝐦𝐞𝐧𝐭𝐨 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨.`,
+      `⏳ 𝐒𝐩𝐞𝐠𝐧𝐢𝐦𝐞𝐧𝐭𝐨 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨..`,
+      `⏳ 𝐒𝐩𝐞𝐠𝐧𝐢𝐦𝐞𝐧𝐭𝐨 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨...`
     ]
 
-    for (const frame of frames) {
-      await editMessage(conn, chatId, key, frame)
+    for (const f of frames) {
       await sleep(700)
+      await editMessage(conn, chatId, key, `╭━━━━━━━🛑━━━━━━━╮
+✦ 𝐒𝐈𝐒𝐓𝐄𝐌𝐀 ✦
+╰━━━━━━━🛑━━━━━━━╯
+
+${f}`)
     }
 
     global.db.data.settings.botOff = true
@@ -75,12 +66,13 @@ let handler = async (m, { conn, command }) => {
 ✦ 𝐒𝐈𝐒𝐓𝐄𝐌𝐀 ✦
 ╰━━━━━━━🛑━━━━━━━╯
 
-🛑 𝐎𝐟𝐟𝐥𝐢𝐧𝐞`
+🛑 𝐒𝐢𝐬𝐭𝐞𝐦𝐚 𝐨𝐟𝐟𝐥𝐢𝐧𝐞`
     )
 
     return
   }
 
+  // 🟢 ON
   if (command === 'on') {
     const sent = await conn.sendMessage(
       chatId,
@@ -98,26 +90,18 @@ let handler = async (m, { conn, command }) => {
     if (!key) return
 
     const frames = [
-      `╭━━━━━━━⚡━━━━━━━╮
-✦ 𝐒𝐈𝐒𝐓𝐄𝐌𝐀 ✦
-╰━━━━━━━⚡━━━━━━━╯
-
-⏳ 𝐀𝐯𝐯𝐢𝐨 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨.`,
-      `╭━━━━━━━⚡━━━━━━━╮
-✦ 𝐒𝐈𝐒𝐓𝐄𝐌𝐀 ✦
-╰━━━━━━━⚡━━━━━━━╯
-
-⏳ 𝐀𝐯𝐯𝐢𝐨 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨..`,
-      `╭━━━━━━━⚡━━━━━━━╮
-✦ 𝐒𝐈𝐒𝐓𝐄𝐌𝐀 ✦
-╰━━━━━━━⚡━━━━━━━╯
-
-⏳ 𝐀𝐯𝐯𝐢𝐨 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨...`
+      `⏳ 𝐀𝐯𝐯𝐢𝐨 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨.`,
+      `⏳ 𝐀𝐯𝐯𝐢𝐨 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨..`,
+      `⏳ 𝐀𝐯𝐯𝐢𝐨 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨...`
     ]
 
-    for (const frame of frames) {
-      await editMessage(conn, chatId, key, frame)
+    for (const f of frames) {
       await sleep(700)
+      await editMessage(conn, chatId, key, `╭━━━━━━━⚡━━━━━━━╮
+✦ 𝐒𝐈𝐒𝐓𝐄𝐌𝐀 ✦
+╰━━━━━━━⚡━━━━━━━╯
+
+${f}`)
     }
 
     global.db.data.settings.botOff = false
@@ -130,7 +114,7 @@ let handler = async (m, { conn, command }) => {
 ✦ 𝐒𝐈𝐒𝐓𝐄𝐌𝐀 ✦
 ╰━━━━━━━⚡━━━━━━━╯
 
-✅ 𝐎𝐧𝐥𝐢𝐧𝐞`
+✅ 𝐒𝐢𝐬𝐭𝐞𝐦𝐚 𝐨𝐧𝐥𝐢𝐧𝐞`
     )
 
     return
