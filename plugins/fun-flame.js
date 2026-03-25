@@ -188,10 +188,7 @@ ${usedPrefix + command} @utente`)
 ╰━━━━━━━⏱️━━━━━━━╯
 
 🥊 𝐈𝐥 𝐛𝐨𝐭 𝐯𝐢𝐧𝐜𝐞 𝐩𝐞𝐫 𝐊𝐎 𝐭𝐞𝐜𝐧𝐢𝐜𝐨
-📊 𝐅𝐥𝐚𝐦𝐞 𝐭𝐨𝐭𝐚𝐥𝐢: ${flameCount}
-
-🏃 𝐏𝐞𝐫 𝐬𝐜𝐚𝐩𝐩𝐚𝐫𝐞 𝐝𝐨𝐯𝐫𝐚𝐢 𝐜𝐨𝐫𝐫𝐞𝐫𝐞 2,5 𝐤𝐦
-👣 𝐎𝐯𝐯𝐞𝐫𝐨 3.750 𝐩𝐚𝐬𝐬𝐢`
+📊 𝐅𝐥𝐚𝐦𝐞 𝐭𝐨𝐭𝐚𝐥𝐢: ${flameCount}`
 
     await conn.sendMessage(m.chat, {
       text: endMsg,
