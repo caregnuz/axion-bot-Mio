@@ -5,7 +5,17 @@ const handler = async (m, { conn, text, participants }) => {
     if (m.quoted) {
       const quoted = m.quoted;
 
-      if (quoted.mtype === 'imageMessage') {
+      if (
+        quoted.mtype === 'pollCreationMessage' ||
+        quoted.mtype === 'pollCreationMessageV2'
+      ) {
+        await conn.sendMessage(m.chat, {
+          forward: quoted.fakeObj,
+          mentions: users
+        }, { quoted: m });
+      }
+
+      else if (quoted.mtype === 'imageMessage') {
         const media = await quoted.download();
         await conn.sendMessage(m.chat, {
           image: media,
@@ -47,35 +57,6 @@ const handler = async (m, { conn, text, participants }) => {
         const media = await quoted.download();
         await conn.sendMessage(m.chat, {
           sticker: media,
-          mentions: users
-        }, { quoted: m });
-      }
-
-      else if (
-        quoted.mtype === 'pollCreationMessage' ||
-        quoted.mtype === 'pollCreationMessageV2'
-      ) {
-        const pollData =
-          quoted.message?.pollCreationMessage ||
-          quoted.message?.pollCreationMessageV2;
-
-        if (!pollData) {
-          return m.reply('❌ Sondaggio non valido');
-        }
-
-        const name = pollData.name || 'Sondaggio';
-        const values = pollData.options?.map(o => o.optionName).filter(Boolean) || [];
-
-        if (!values.length) {
-          return m.reply('❌ Nessuna opzione trovata');
-        }
-
-        await conn.sendMessage(m.chat, {
-          poll: {
-            name: name,
-            values: values,
-            selectableCount: pollData.selectableOptionsCount || 1
-          },
           mentions: users
         }, { quoted: m });
       }
