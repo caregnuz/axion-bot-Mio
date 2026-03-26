@@ -1,6 +1,6 @@
-const handler = async (m, { conn, text, participants, command }) => {
+const handler = async (m, { conn, text, participants }) => {
   try {
-    const users = participants.map((u) => conn.decodeJid(u.id));
+    const users = participants.map(u => conn.decodeJid(u.id));
 
     if (m.quoted) {
       const quoted = m.quoted;
@@ -56,13 +56,24 @@ const handler = async (m, { conn, text, participants, command }) => {
         quoted.mtype === 'pollCreationMessageV2'
       ) {
         const pollData =
-          quoted.message.pollCreationMessage ||
-          quoted.message.pollCreationMessageV2;
+          quoted.message?.pollCreationMessage ||
+          quoted.message?.pollCreationMessageV2;
+
+        if (!pollData) {
+          return m.reply('❌ Sondaggio non valido');
+        }
+
+        const name = pollData.name || 'Sondaggio';
+        const values = pollData.options?.map(o => o.optionName).filter(Boolean) || [];
+
+        if (!values.length) {
+          return m.reply('❌ Nessuna opzione trovata');
+        }
 
         await conn.sendMessage(m.chat, {
           poll: {
-            name: pollData.name,
-            values: pollData.options.map(opt => opt.optionName),
+            name: name,
+            values: values,
             selectableCount: pollData.selectableOptionsCount || 1
           },
           mentions: users
@@ -89,7 +100,7 @@ const handler = async (m, { conn, text, participants, command }) => {
 
   } catch (e) {
     console.error('Errore tag/hidetag:', e);
-    m.reply(`${global.errore || '❌ Si è verificato un errore'}`);
+    m.reply(global.errore || '❌ Si è verificato un errore');
   }
 };
 
