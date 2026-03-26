@@ -17,6 +17,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ╼━━━━━━━━━━━━━━╾
 
 ╭━━━〔 🛠️ sᴛʀᴜᴍᴇɴᴛɪ 〕━⬣
+┃ 💡 ${usedPrefix}font <numero> <messaggio>
 ┃ 🔄 ${usedPrefix}converter
 ┃ 🎛️ ${usedPrefix}audiofx
 ╰━━━━━━━━━━━━━━━━⬣
