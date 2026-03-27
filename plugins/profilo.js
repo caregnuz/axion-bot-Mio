@@ -1,10 +1,3 @@
-Ecco il tuo file sistemato con:
-
-✔ Math.max per coerenza
-
-✔ formato Messaggi: totali (oggi: X)
-
-✔ tutto in * coerente
 
 
 // by Bonzino
