@@ -85,7 +85,7 @@ let handler = async (m, { conn }) => {
   const warn = user.warn || 0
   const muted = !!user.muto
   const device = mapDeviceName(getDevice(getMessageId(m)))
-  const joinedAt = formatDate(user.regTime || user.firstTime)
+  const joinedAt = formatDate(user.regTime > 0 ? user.regTime : user.firstTime)
 
   let meta
   try {
