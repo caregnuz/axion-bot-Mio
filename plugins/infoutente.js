@@ -101,21 +101,20 @@ let handler = async (m, { conn }) => {
   const thumbnailBuffer = typeof profilo === 'string'
     ? await (await fetch(profilo)).buffer()
     : profilo
-
-  const text = `╭━━━━━━━📌━━━━━━━╮
+    
+const text = `*╭━━━━━━━📌━━━━━━━╮
 ✦ 𝐈𝐍𝐅𝐎 𝐔𝐓𝐄𝐍𝐓𝐄 ✦
-╰━━━━━━━📌━━━━━━━╯
+╰━━━━━━━📌━━━━━━━╯*
 
-👤 𝐍𝐨𝐦𝐞: ${nome}
-🆔 𝐉𝐈𝐃: ${jid}
-🛠 𝐑𝐮𝐨𝐥𝐨: ${ruolo}
-📱 𝐃𝐞𝐯𝐢𝐜𝐞: ${device}
-💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐭𝐨𝐭𝐚𝐥𝐢: ${totalMessages}
-📅 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐨𝐠𝐠𝐢: ${oggiCount}
-💸 𝐃𝐞𝐧𝐚𝐫𝐨: ${denaro}
-📅 𝐄𝐧𝐭𝐫𝐚𝐭𝐚: ${joinedAt}
-⚠️ 𝐖𝐚𝐫𝐧: ${warn}/3
-🔇 𝐌𝐮𝐭𝐞: ${muted ? '𝐒𝐢' : '𝐍𝐨'}`
+*👤 𝐍𝐨𝐦𝐞:* ${nome}
+*🆔 𝐉𝐈𝐃:* ${jid}
+*🛠 𝐑𝐮𝐨𝐥𝐨:* ${ruolo}
+*📱 𝐃𝐞𝐯𝐢𝐜𝐞:* ${device}
+*💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢:* ${totalMessages} *(𝐨𝐠𝐠𝐢: ${oggiCount})*
+*💸 𝐃𝐞𝐧𝐚𝐫𝐨:* ${denaro}
+*📅 𝐄𝐧𝐭𝐫𝐚𝐭𝐚:* ${joinedAt}
+*⚠️ 𝐖𝐚𝐫𝐧:* ${warn}/3
+*🔇 𝐌𝐮𝐭𝐞:* ${muted ? '𝐒𝐢' : '𝐍𝐨'}*`
 
   await conn.sendMessage(m.chat, {
     text,
