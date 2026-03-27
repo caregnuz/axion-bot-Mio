@@ -1,3 +1,5 @@
+Ecco il file aggiornato senza il campo User, mantenendo solo il JID per uno stile tecnico pulito:
+
 // by Bonzino
 
 import { getDevice } from '@realvare/baileys'
@@ -78,7 +80,7 @@ let handler = async (m, { conn }) => {
   const oggiCount = chat?.archivioMessaggi?.utenti?.[target]?.conteggio || 0
 
   const nome = await conn.getName(target)
-  const tag = '@' + bare(target)
+  const jid = target
 
   const totalMessages = user.messages || 0
   const denaro = user.euro || 0
@@ -107,7 +109,7 @@ let handler = async (m, { conn }) => {
 ╰━━━━━━━📌━━━━━━━╯
 
 👤 𝐍𝐨𝐦𝐞: ${nome}
-🆔 𝐈𝐃: ${tag}
+🆔 𝐉𝐈𝐃: ${jid}
 🛠 𝐑𝐮𝐨𝐥𝐨: ${ruolo}
 📱 𝐃𝐞𝐯𝐢𝐜𝐞: ${device}
 💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐭𝐨𝐭𝐚𝐥𝐢: ${totalMessages}
