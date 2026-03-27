@@ -1,5 +1,3 @@
-Ecco il file aggiornato senza il campo User, mantenendo solo il JID per uno stile tecnico pulito:
-
 // by Bonzino
 
 import { getDevice } from '@realvare/baileys'
@@ -78,11 +76,11 @@ let handler = async (m, { conn }) => {
   const chat = global.db.data.chats?.[m.chat] || {}
 
   const oggiCount = chat?.archivioMessaggi?.utenti?.[target]?.conteggio || 0
+  const totalMessages = Math.max(user.messages || 0, oggiCount)
 
   const nome = await conn.getName(target)
   const jid = target
 
-  const totalMessages = user.messages || 0
   const denaro = user.euro || 0
   const warn = user.warn || 0
   const muted = !!user.muto
