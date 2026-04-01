@@ -1,5 +1,5 @@
 module.exports = {
-  name: "prova1",
+  name: "aaaa",
   command: ["prova1"],
 
   async execute(sock, msg, text, args) {
