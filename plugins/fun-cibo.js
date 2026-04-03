@@ -38,16 +38,16 @@ const frasi = [
 ]
 
 const cibi = [
-  { nome: 'Pizza', url: 'https://source.unsplash.com/600x400/?pizza' },
-  { nome: 'Sushi', url: 'https://source.unsplash.com/600x400/?sushi' },
-  { nome: 'Hamburger', url: 'https://source.unsplash.com/600x400/?burger' },
-  { nome: 'Carbonara', url: 'https://source.unsplash.com/600x400/?carbonara' },
-  { nome: 'Lasagna', url: 'https://source.unsplash.com/600x400/?lasagna' },
-  { nome: 'Tiramisù', url: 'https://source.unsplash.com/600x400/?tiramisu' },
-  { nome: 'Paella', url: 'https://source.unsplash.com/600x400/?paella' },
-  { nome: 'Ramen', url: 'https://source.unsplash.com/600x400/?ramen' },
-  { nome: 'Hot Dog', url: 'https://source.unsplash.com/600x400/?hotdog' },
-  { nome: 'Gelato', url: 'https://source.unsplash.com/600x400/?gelato' }
+  { nome: 'Pizza', url: 'https://upload.wikimedia.org/wikipedia/commons/d/d3/Supreme_pizza.jpg' },
+  { nome: 'Sushi', url: 'https://upload.wikimedia.org/wikipedia/commons/6/60/Sushi_platter.jpg' },
+  { nome: 'Hamburger', url: 'https://upload.wikimedia.org/wikipedia/commons/0/0b/RedDot_Burger.jpg' },
+  { nome: 'Carbonara', url: 'https://upload.wikimedia.org/wikipedia/commons/3/3c/Spaghetti_alla_Carbonara.jpg' },
+  { nome: 'Lasagna', url: 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Lasagne_-_stonesoup.jpg' },
+  { nome: 'Tiramisù', url: 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Tiramisu.jpg' },
+  { nome: 'Paella', url: 'https://upload.wikimedia.org/wikipedia/commons/3/39/Paella_valenciana.jpg' },
+  { nome: 'Ramen', url: 'https://upload.wikimedia.org/wikipedia/commons/6/60/Tonkotsu_Ramen.jpg' },
+  { nome: 'Hot Dog', url: 'https://upload.wikimedia.org/wikipedia/commons/6/6f/Hot_dog_with_mustard.png' },
+  { nome: 'Gelato', url: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Gelato.jpg' }
 ]
 
 function normalizeString(str) {
