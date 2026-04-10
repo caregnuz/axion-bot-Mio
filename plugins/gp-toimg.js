@@ -6,7 +6,7 @@ import { promises as fs } from 'fs'
 import { spawn } from 'child_process'
 
 
-  //piccola utility per convertire gli sticker nei formati desiderati.
+// piccola utility per convertire gli sticker nei formati desiderati.
 function run(cmd, args = []) {
   return new Promise((resolve, reject) => {
     const p = spawn(cmd, args)
@@ -14,7 +14,7 @@ function run(cmd, args = []) {
     let stdout = ''
     let stderr = ''
 
-    p.stdout.on('data', d => stdout += d)
+    p.stdout.on('data', d => stderr += d)
     p.stderr.on('data', d => stderr += d)
 
     p.on('error', reject)
@@ -26,8 +26,8 @@ function run(cmd, args = []) {
   })
 }
 
-  //converte sticker normale in PNG.
 
+// converte sticker normale in PNG.
 async function webpToPng(input, output) {
   await run('ffmpeg', [
     '-y',
@@ -37,8 +37,8 @@ async function webpToPng(input, output) {
   ])
 }
 
-  // converte sticker animato in GIF.
 
+// converte sticker animato in GIF.
 async function webpToGif(input, output) {
   await run('ffmpeg', [
     '-y',
@@ -48,8 +48,7 @@ async function webpToGif(input, output) {
 }
 
 
-  //controlla se il file WEBP è animato.
-  
+// controlla se il file WEBP è animato.
 function isAnimatedWebp(buffer) {
   return buffer.includes(Buffer.from('ANIM'))
 }
@@ -86,9 +85,8 @@ let handler = async (m, { conn }) => {
 
     await fs.writeFile(inputPath, media)
 
-    
-      //se animato, converte in GIF
- 
+
+    // se animato, converte in GIF
     if (isAnimatedWebp(media)) {
 
       outputPath = join(tmpdir(), `${base}.gif`)
@@ -102,15 +100,17 @@ let handler = async (m, { conn }) => {
         gifPlayback: true,
         caption:
 `*╭━━━━━━━🎞️━━━━━━━╮*
-*✦ 𝐒𝐓𝐈𝐂𝐊𝐄𝐑 𝐈𝐍 𝐆𝐈𝐅 ✦*
-*╰━━━━━━━🎞️━━━━━━━╯*`
+*✦ 𝐂𝐎𝐍𝐕𝐄𝐑𝐒𝐈𝐎𝐍𝐄 𝐂𝐎𝐌𝐏𝐋𝐄𝐓𝐀𝐓𝐀 ✦*
+*╰━━━━━━━🎞️━━━━━━━╯*`,
+        contextInfo: {
+          ...(global.rcanal?.contextInfo || {})
+        }
       }, { quoted: m })
 
     } else {
 
-      
-      //se statico, png
-      
+
+      // se statico, png
       outputPath = join(tmpdir(), `${base}.png`)
 
       await webpToPng(inputPath, outputPath)
@@ -121,8 +121,11 @@ let handler = async (m, { conn }) => {
         image: pngBuffer,
         caption:
 `*╭━━━━━━━🖼️━━━━━━━╮*
-*✦ 𝐒𝐓𝐈𝐂𝐊𝐄𝐑 𝐈𝐍 𝐈𝐌𝐌𝐀𝐆𝐈𝐍𝐄 ✦*
-*╰━━━━━━━🖼️━━━━━━━╯*`
+*✦ 𝐂𝐎𝐍𝐕𝐄𝐑𝐒𝐈𝐎𝐍𝐄 𝐂𝐎𝐌𝐏𝐋𝐄𝐓𝐀𝐓𝐀 ✦*
+*╰━━━━━━━🖼️━━━━━━━╯*`,
+        contextInfo: {
+          ...(global.rcanal?.contextInfo || {})
+        }
       }, { quoted: m })
     }
 
