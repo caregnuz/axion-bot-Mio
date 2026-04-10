@@ -39,7 +39,6 @@ async function webpToPng(input, output) {
 async function webpToMp4(input, output) {
   await run('ffmpeg', [
     '-y',
-    '-ignore_loop', '0',
     '-i', input,
     '-vf', 'fps=15,scale=trunc(iw/2)*2:trunc(ih/2)*2',
     '-c:v', 'libx264',
