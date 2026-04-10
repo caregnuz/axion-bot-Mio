@@ -121,10 +121,7 @@ let handler = async (m, { conn, command }) => {
 
       await conn.sendMessage(m.chat, {
         image: pngBuffer,
-        caption:
-`*╭━━━━━━━🖼️━━━━━━━╮*
-*✦ 𝐂𝐎𝐍𝐕𝐄𝐑𝐒𝐈𝐎𝐍𝐄 𝐂𝐎𝐌𝐏𝐋𝐄𝐓𝐀𝐓𝐀 ✦*
-*╰━━━━━━━🖼️━━━━━━━╯*`,
+         caption: '*𝐜𝐨𝐧𝐯𝐞𝐫𝐬𝐢𝐨𝐧𝐞 𝐜𝐨𝐦𝐩𝐥𝐞𝐭𝐚𝐭𝐚 ✅*',
         contextInfo: {
           ...(global.rcanal?.contextInfo || {})
         }
