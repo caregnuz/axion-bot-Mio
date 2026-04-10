@@ -5,7 +5,6 @@ import { join } from 'path'
 import { promises as fs } from 'fs'
 import { spawn } from 'child_process'
 
-// piccola utility per convertire gli sticker nei formati desiderati.
 function run(cmd, args = []) {
   return new Promise((resolve, reject) => {
     const p = spawn(cmd, args)
@@ -25,31 +24,16 @@ function run(cmd, args = []) {
   })
 }
 
-// converte sticker normale in PNG.
+// statico -> png
 async function webpToPng(input, output) {
-  await run('ffmpeg', [
-    '-y',
-    '-i', input,
-    '-frames:v', '1',
-    output
-  ])
+  await run('dwebp', [input, '-o', output])
 }
 
-// converte sticker animato in MP4.
-async function webpToMp4(input, output) {
-  await run('ffmpeg', [
-    '-y',
-    '-i', input,
-    '-vf', 'fps=15,scale=trunc(iw/2)*2:trunc(ih/2)*2',
-    '-c:v', 'libx264',
-    '-pix_fmt', 'yuv420p',
-    '-movflags', 'faststart',
-    '-an',
-    output
-  ])
+// animato -> gif
+async function webpToGif(input, output) {
+  await run('magick', [input, output])
 }
 
-// controlla dai metadati se lo sticker è animato.
 function getQuotedStickerInfo(q) {
   const msg = q?.msg || q || {}
   const mime = msg.mimetype || ''
@@ -66,18 +50,15 @@ let handler = async (m, { conn, command }) => {
   let outputPath
 
   try {
-    // prende il messaggio quotato
     const q = m.quoted ? m.quoted : null
     const { mime, isAnimated } = getQuotedStickerInfo(q)
 
-    // verifica che sia uno sticker
     if (!q || !/webp/i.test(mime)) {
       return conn.sendMessage(m.chat, {
         text: '*⚠️ 𝐑𝐢𝐬𝐩𝐨𝐧𝐝𝐢 𝐚 𝐮𝐧𝐨 𝐬𝐭𝐢𝐜𝐤𝐞𝐫.*'
       }, { quoted: m })
     }
 
-    // scarica sticker
     const media = await q.download()
 
     if (!media) {
@@ -86,13 +67,10 @@ let handler = async (m, { conn, command }) => {
       }, { quoted: m })
     }
 
-    // crea file temporaneo
-    const base = `toimg_${Date.now()}_${Math.floor(Math.random() * 99999)}`
+    const base = `sticker_${Date.now()}_${Math.floor(Math.random() * 99999)}`
     inputPath = join(tmpdir(), `${base}.webp`)
-
     await fs.writeFile(inputPath, media)
 
-    // comandi per sticker statici
     if (/^(toimg|img)$/i.test(command)) {
       if (isAnimated) {
         return conn.sendMessage(m.chat, {
@@ -119,7 +97,6 @@ let handler = async (m, { conn, command }) => {
       return
     }
 
-    // comandi per sticker animati
     if (/^(togif|gif)$/i.test(command)) {
       if (!isAnimated) {
         return conn.sendMessage(m.chat, {
@@ -127,14 +104,15 @@ let handler = async (m, { conn, command }) => {
         }, { quoted: m })
       }
 
-      outputPath = join(tmpdir(), `${base}.mp4`)
-      await webpToMp4(inputPath, outputPath)
+      outputPath = join(tmpdir(), `${base}.gif`)
+      await webpToGif(inputPath, outputPath)
 
-      const mp4Buffer = await fs.readFile(outputPath)
+      const gifBuffer = await fs.readFile(outputPath)
 
       await conn.sendMessage(m.chat, {
-        video: mp4Buffer,
-        gifPlayback: true,
+        document: gifBuffer,
+        mimetype: 'image/gif',
+        fileName: 'sticker.gif',
         caption:
 `*╭━━━━━━━🎞️━━━━━━━╮*
 *✦ 𝐂𝐎𝐍𝐕𝐄𝐑𝐒𝐈𝐎𝐍𝐄 𝐂𝐎𝐌𝐏𝐋𝐄𝐓𝐀𝐓𝐀 ✦*
@@ -151,14 +129,12 @@ let handler = async (m, { conn, command }) => {
     console.error('Errore conversione sticker:', e)
 
     const rawErr = String(e?.message || e || '')
-    const err = rawErr.split('\n').slice(-12).join('\n').slice(0, 1200)
+    const err = rawErr.split('\n').slice(-10).join('\n').slice(0, 1200)
 
     await conn.sendMessage(m.chat, {
       text: `*⚠️ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐝𝐮𝐫𝐚𝐧𝐭𝐞 𝐥𝐚 𝐜𝐨𝐧𝐯𝐞𝐫𝐬𝐢𝐨𝐧𝐞.*\n\n\`\`\`${err || 'Errore sconosciuto'}\`\`\``
     }, { quoted: m })
-
   } finally {
-    // elimina i file temporanei
     try {
       if (inputPath) await fs.unlink(inputPath)
       if (outputPath) await fs.unlink(outputPath)
