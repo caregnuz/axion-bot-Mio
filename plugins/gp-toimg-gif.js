@@ -24,14 +24,36 @@ function run(cmd, args = []) {
   })
 }
 
+async function runFirstAvailable(commands, args = []) {
+  let lastError
+
+  for (const cmd of commands) {
+    try {
+      return await run(cmd, args)
+    } catch (e) {
+      lastError = e
+    }
+  }
+
+  throw lastError || new Error('Nessun comando disponibile')
+}
+
 // statico -> png
 async function webpToPng(input, output) {
-  await run('dwebp', [input, '-o', output])
+  await runFirstAvailable([
+    'dwebp',
+    '/data/data/com.termux/files/usr/bin/dwebp'
+  ], [input, '-o', output])
 }
 
 // animato -> gif
 async function webpToGif(input, output) {
-  await run('magick', [input, output])
+  await runFirstAvailable([
+    'magick',
+    'convert',
+    '/data/data/com.termux/files/usr/bin/magick',
+    '/data/data/com.termux/files/usr/bin/convert'
+  ], [input, output])
 }
 
 function getQuotedStickerInfo(q) {
