@@ -12,8 +12,8 @@ function run(cmd, args = []) {
     let stdout = ''
     let stderr = ''
 
-    p.stdout.on('data', d => stdout += d)
-    p.stderr.on('data', d => stderr += d)
+    p.stdout.on('data', d => stdout += d.toString())
+    p.stderr.on('data', d => stderr += d.toString())
 
     p.on('error', reject)
 
@@ -41,8 +41,15 @@ async function webpToGif(input, output) {
   ])
 }
 
-function isAnimatedWebp(buffer) {
-  return Buffer.isBuffer(buffer) && buffer.includes(Buffer.from('ANIM'))
+function getQuotedStickerInfo(q) {
+  const msg = q?.msg || q || {}
+  const mime = msg.mimetype || ''
+  const isAnimated =
+    !!msg.isAnimated ||
+    !!q?.isAnimated ||
+    !!q?.message?.stickerMessage?.isAnimated
+
+  return { mime, isAnimated }
 }
 
 let handler = async (m, { conn, command }) => {
@@ -51,7 +58,7 @@ let handler = async (m, { conn, command }) => {
 
   try {
     const q = m.quoted ? m.quoted : null
-    const mime = (q?.msg || q)?.mimetype || ''
+    const { mime, isAnimated } = getQuotedStickerInfo(q)
 
     if (!q || !/webp/i.test(mime)) {
       return conn.sendMessage(m.chat, {
@@ -67,14 +74,12 @@ let handler = async (m, { conn, command }) => {
       }, { quoted: m })
     }
 
-    const animated = isAnimatedWebp(media)
     const base = `sticker_${Date.now()}_${Math.floor(Math.random() * 99999)}`
     inputPath = join(tmpdir(), `${base}.webp`)
-
     await fs.writeFile(inputPath, media)
 
     if (/^(toimg|img)$/i.test(command)) {
-      if (animated) {
+      if (isAnimated) {
         return conn.sendMessage(m.chat, {
           text: '*⚠️ 𝐐𝐮𝐞𝐬𝐭𝐨 è 𝐮𝐧𝐨 𝐬𝐭𝐢𝐜𝐤𝐞𝐫 𝐚𝐧𝐢𝐦𝐚𝐭𝐨. 𝐔𝐬𝐚 `.togif` 𝐨 `.gif`.*'
         }, { quoted: m })
@@ -87,10 +92,7 @@ let handler = async (m, { conn, command }) => {
 
       await conn.sendMessage(m.chat, {
         image: pngBuffer,
-        caption:
-`*╭━━━━━━━🖼️━━━━━━━╮*
-*✦ 𝐂𝐎𝐍𝐕𝐄𝐑𝐒𝐈𝐎𝐍𝐄 𝐂𝐎𝐌𝐏𝐋𝐄𝐓𝐀𝐓𝐀 ✦*
-*╰━━━━━━━🖼️━━━━━━━╯*`,
+        caption: '*𝐂𝐨𝐧𝐯𝐞𝐫𝐬𝐢𝐨𝐧𝐞 𝐜𝐨𝐦𝐩𝐥𝐞𝐭𝐚𝐭𝐚.*',
         contextInfo: {
           ...(global.rcanal?.contextInfo || {})
         }
@@ -100,7 +102,7 @@ let handler = async (m, { conn, command }) => {
     }
 
     if (/^(togif|gif)$/i.test(command)) {
-      if (!animated) {
+      if (!isAnimated) {
         return conn.sendMessage(m.chat, {
           text: '*⚠️ 𝐐𝐮𝐞𝐬𝐭𝐨 𝐧𝐨𝐧 è 𝐮𝐧𝐨 𝐬𝐭𝐢𝐜𝐤𝐞𝐫 𝐚𝐧𝐢𝐦𝐚𝐭𝐨. 𝐔𝐬𝐚 `.toimg` 𝐨 `.img`.*'
         }, { quoted: m })
@@ -114,10 +116,7 @@ let handler = async (m, { conn, command }) => {
       await conn.sendMessage(m.chat, {
         video: gifBuffer,
         gifPlayback: true,
-        caption:
-`*╭━━━━━━━🎞️━━━━━━━╮*
-*✦ 𝐂𝐎𝐍𝐕𝐄𝐑𝐒𝐈𝐎𝐍𝐄 𝐂𝐎𝐌𝐏𝐋𝐄𝐓𝐀𝐓𝐀 ✦*
-*╰━━━━━━━🎞️━━━━━━━╯*`,
+        caption: '*𝐂𝐨𝐧𝐯𝐞𝐫𝐬𝐢𝐨𝐧𝐞 𝐜𝐨𝐦𝐩𝐥𝐞𝐭𝐚𝐭𝐚.*',
         contextInfo: {
           ...(global.rcanal?.contextInfo || {})
         }
