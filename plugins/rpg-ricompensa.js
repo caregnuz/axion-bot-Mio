@@ -22,7 +22,7 @@ let handler = async (m, { conn }) => {
   if (!user) return
 
   if (!user.lastDaily) user.lastDaily = 0
-  if (!user.money) user.money = 0
+  if (typeof user.euro !== 'number') user.euro = 0
   if (!user.dailyStreak) user.dailyStreak = 0
 
   const now = Date.now()
@@ -45,7 +45,7 @@ let handler = async (m, { conn }) => {
   const bonus = user.dailyStreak * 50
   const reward = base + bonus
 
-  user.money += reward
+  user.euro += reward
 
   const tag = '@' + m.sender.split('@')[0]
   const streakEmoji = getStreakEmoji(user.dailyStreak)
