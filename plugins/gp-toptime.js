@@ -52,7 +52,7 @@ handler.before = async function (m, { conn }) {
         // --------------------------------------
 
         // Risposta al bottone
-        if (m.text === '.top10' || m.message?.buttonsResponseMessage?.selectedButtonId === '.top10time') {
+        if (m.text === '.top10time' || m.message?.buttonsResponseMessage?.selectedButtonId === '.top10time') {
             const top10 = Object.entries(dayObj.chats[m.chat])
                 .sort((a, b) => b[1].time - a[1].time)
                 .slice(0, 10)
