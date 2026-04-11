@@ -37,7 +37,6 @@ let handler = async (m, { conn }) => {
     return
   }
 
-  // 🔥 FIX QUI
   const msgId = m.quoted?.key?.id || m.key?.id
 
   let device = 'Sconosciuto'
