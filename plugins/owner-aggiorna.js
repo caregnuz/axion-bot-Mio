@@ -45,12 +45,12 @@ let handler = async (m, { conn }) => {
 
         if (status === 'A') {
           const stats = statMap[oldPath] || { plus: 0, minus: 0 }
-          return `🟢 ${oldPath} (+${stats.plus}/-${stats.minus})`
+          return `✅️ ${oldPath} (+${stats.plus}/-${stats.minus})`
         }
 
         if (status === 'D') {
           const stats = statMap[oldPath] || { plus: 0, minus: 0 }
-          return `🔴 ${oldPath} (+${stats.plus}/-${stats.minus})`
+          return `❌️ ${oldPath} (+${stats.plus}/-${stats.minus})`
         }
 
         const stats = statMap[oldPath] || { plus: 0, minus: 0 }
