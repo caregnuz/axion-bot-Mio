@@ -7,64 +7,71 @@ try {
   ready = true;
 } catch (e) {}
 
-const baseUrl = 'https://receive-sms-online.info';
-
 const headers = {
   'User-Agent': 'Mozilla/5.0'
 };
 
-const countries = [
-  { name: 'USA 🇺🇸', path: '/us' },
-  { name: 'UK 🇬🇧', path: '/uk' },
-  { name: 'Francia 🇫🇷', path: '/fr' },
-  { name: 'Germania 🇩🇪', path: '/de' },
-  { name: 'Spagna 🇪🇸', path: '/es' },
-  { name: 'Italia 🇮🇹', path: '/it' }
+const sites = [
+  'https://receive-sms-online.info',
+  'https://receive-smss.com',
+  'https://www.receivesms.co'
 ];
 
-async function getNumbers(path) {
-  try {
-    const { data } = await axios.get(baseUrl + path, { headers });
-    const $ = cheerio.load(data);
+const countries = [
+  { name: 'USA 🇺🇸', prefix: '+1' },
+  { name: 'UK 🇬🇧', prefix: '+44' },
+  { name: 'Francia 🇫🇷', prefix: '+33' },
+  { name: 'Germania 🇩🇪', prefix: '+49' },
+  { name: 'Spagna 🇪🇸', prefix: '+34' },
+  { name: 'Italia 🇮🇹', prefix: '+39' },
+  { name: 'Svezia 🇸🇪', prefix: '+46' }
+];
 
-    let nums = [];
+async function getNumbers() {
+  let results = [];
 
-    $('a').each((i, el) => {
-      let t = $(el).text().trim();
-      let match = t.match(/\+\d{6,15}/);
-      if (match) nums.push(match[0]);
-    });
+  for (let site of sites) {
+    try {
+      const { data } = await axios.get(site, { headers, timeout: 8000 });
+      const $ = cheerio.load(data);
 
-    return [...new Set(nums)];
-  } catch {
-    return [];
+      $('a').each((i, el) => {
+        let t = $(el).text().trim();
+        let match = t.match(/\+\d{6,15}/);
+        if (match) results.push(match[0]);
+      });
+
+    } catch {}
   }
+
+  return [...new Set(results)];
 }
 
 async function getSMS(num) {
-  try {
-    const { data } = await axios.get(`${baseUrl}/${num.replace('+','')}`, { headers });
-    const $ = cheerio.load(data);
+  let clean = num.replace('+','');
 
-    let msgs = [];
+  for (let site of sites) {
+    try {
+      const { data } = await axios.get(`${site}/${clean}`, { headers, timeout: 8000 });
+      const $ = cheerio.load(data);
 
-    $('table tr').each((i, el) => {
-      let from = $(el).find('td').eq(0).text().trim();
-      let text = $(el).find('td').eq(1).text().trim();
-      let time = $(el).find('td').eq(2).text().trim();
+      let msgs = [];
 
-      if (text) msgs.push({ from, text, time });
-    });
+      $('table tr, .list, .sms').each((i, el) => {
+        let text = $(el).text().trim();
+        if (text.length > 5) msgs.push(text);
+      });
 
-    return msgs;
-  } catch {
-    return [];
+      if (msgs.length > 0) return msgs;
+    } catch {}
   }
+
+  return [];
 }
 
 let sessions = {};
 
-let handler = async (m, { conn, args, usedPrefix, command }) => {
+let handler = async (m, { conn, args, usedPrefix }) => {
   if (!ready) return m.reply("❌ Librerie mancanti.");
 
   let user = m.sender;
@@ -79,12 +86,13 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
   }
 
   if (!isNaN(args[0])) {
-    let index = parseInt(args[0]) - 1;
-    let country = countries[index];
+    let country = countries[parseInt(args[0]) - 1];
     if (!country) return m.reply("❌ Paese non valido");
 
-    let nums = await getNumbers(country.path);
-    if (nums.length === 0) return m.reply("❌ Nessun numero");
+    let all = await getNumbers();
+    let nums = all.filter(n => n.startsWith(country.prefix));
+
+    if (nums.length === 0) return m.reply("❌ Nessun numero trovato");
 
     sessions[user] = {
       country,
@@ -137,10 +145,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     let txt = `📩 *SMS ${num}*\n\n`;
 
     msgs.slice(0, 5).forEach(x => {
-      txt += `👤 ${x.from}\n`;
-      txt += `💬 ${x.text}\n`;
-      txt += `🕒 ${x.time}\n`;
-      txt += `────────────\n`;
+      txt += `💬 ${x}\n────────────\n`;
     });
 
     return m.reply(txt.trim());
