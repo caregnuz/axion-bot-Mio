@@ -39,7 +39,7 @@ let handler = async (m, { conn, text, participants, isROwner }) => {
         // Spamma direttamente senza avvisi
         for (let i = 0; i < count; i++) {
             await send(customMessage);
-            await delay(300); 
+            await delay(1000); 
         }
     } catch (e) {
         console.error(e);
