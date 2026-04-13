@@ -1,8 +1,8 @@
 // by 𝕯𝖊ⱥ𝖑𝐝𝖞 × Bonzino
 
-import fetch from 'node-fetch'
+import fs from 'fs'
 
-const TEMPLATE_URL = 'https://i.imgur.com/nav6WWX.png'
+const TEMPLATE_PATH = './media/bonk.png'
 
 async function getJimp() {
   const mod = await import('jimp')
@@ -27,12 +27,6 @@ async function getBufferCompat(image, mime) {
   }
   if (typeof image.getBufferAsync === 'function') return await image.getBufferAsync(mime)
   throw new Error('Jimp getBuffer compat failed')
-}
-
-async function fetchBuffer(url) {
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return Buffer.from(await res.arrayBuffer())
 }
 
 function resolveTarget(m, text = '') {
@@ -68,13 +62,9 @@ let handler = async (m, { conn, text }) => {
 
     const Jimp = await getJimp()
 
-    const [templateBuffer, avatarBuffer] = await Promise.all([
-      fetchBuffer(TEMPLATE_URL),
-      fetchBuffer(avatarUrl)
-    ])
-
+    const templateBuffer = fs.readFileSync(TEMPLATE_PATH)
     const img = await Jimp.read(templateBuffer)
-    const avatar = await Jimp.read(avatarBuffer)
+    const avatar = await Jimp.read(avatarUrl)
 
     await resizeCompat(avatar, 128, 128)
 
