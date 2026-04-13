@@ -84,7 +84,7 @@ let handler = async (m, { conn }) => {
     console.error('[bonk:error]', e)
     await conn.reply(
       m.chat,
-      '*❌ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐝𝐮𝐫𝐚𝐧𝐭𝐞 𝐢𝐥 𝐜𝐨𝐦𝐚𝐧𝐝𝐨.*',
+      '*❌ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐝𝐮𝐫𝐚𝐧𝐭𝐞 𝐢𝐥 𝐜𝐨𝐦𝐚𝐧𝐝𝐨:*\n\n\`\`\`${e.message}\`\`\``,',
       m,
       global.rcanal
     )
