@@ -17,10 +17,11 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ╼━━━━━━━━━━━━━━╾
 
 ╭━━━〔 🛠️ ɢᴇsᴛɪᴏɴᴇ 〕━⬣
-┃ 👑 ${usedPrefix}p 
-┃ 💯 ${usedPrefix}r
+┃ 👑 ${usedPrefix}promuovi <reply/tag>
+┃ 🙇‍♂️ ${usedPrefix}retrocedi <reply/tag>
 ┃ 🚨 ${usedPrefix}reimpostalink
 ┃ 🛡️ ${usedPrefix}admins
+┃ 📌 ${usedPrefix}pin <messaggio>
 ┃ ✅ ${usedPrefix}richieste
 ╰━━━━━━━━━━━━━━━━⬣
 
