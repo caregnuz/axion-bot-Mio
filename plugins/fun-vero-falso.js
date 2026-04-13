@@ -27,7 +27,7 @@ let handler = async (m, { conn, text }) => {
 
   } catch (e) {
     console.error('vof error:', e)
-    throw e
+    throw new Error(`❌ 𝐄𝐫𝐫𝐨𝐫𝐞\n\n${e.message || e}`)
   }
 }
 
