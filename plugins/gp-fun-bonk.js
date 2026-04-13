@@ -27,16 +27,23 @@ async function getBufferCompat(image, mime) {
   throw new Error('Jimp getBuffer compat failed')
 }
 
-function resolveTarget(m) {
+function resolveTarget(m, text = '') {
+  const raw = String(text || '').trim()
+  const digits = raw.replace(/\D/g, '')
+
+  if (digits.length >= 7 && digits.length <= 15) {
+    return digits + '@s.whatsapp.net'
+  }
+
   if (m.mentionedJid?.length) return m.mentionedJid[0]
   if (m.quoted) return m.quoted.sender
   return m.sender
 }
 
-let handler = async (m, { conn }) => {
+let handler = async (m, { conn, text }) => {
   try {
-    const sender = m.sender
-    const who = conn.decodeJid(resolveTarget(m))
+    const sender = conn.decodeJid(m.sender)
+    const who = conn.decodeJid(resolveTarget(m, text))
 
     const avatarUrl = await conn.profilePictureUrl(who, 'image').catch(() => null)
 
@@ -82,16 +89,16 @@ let handler = async (m, { conn }) => {
 
   } catch (e) {
     console.error('[bonk:error]', e)
-  await conn.reply(
-    m.chat,
-    `*❌ ERRORE:*\n\n\`\`\`${e.message}\`\`\``,
-    m,
-    global.rcanal
-  )
-}
+    await conn.reply(
+      m.chat,
+      '*❌ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐝𝐮𝐫𝐚𝐧𝐭𝐞 𝐢𝐥 𝐜𝐨𝐦𝐚𝐧𝐝𝐨.*',
+      m,
+      global.rcanal
+    )
+  }
 }
 
-handler.help = ['bonk']
+handler.help = ['bonk @utente', 'bonk numero']
 handler.tags = ['fun']
 handler.command = /^(bonk)$/i
 
