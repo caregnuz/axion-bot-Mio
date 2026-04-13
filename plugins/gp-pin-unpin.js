@@ -32,7 +32,7 @@ let handler = async (m, { conn, args, command }) => {
   if (isUnpinAll) {
     try {
       await conn.sendMessage(m.chat, { pin: { type: 3 } })
-      return m.reply('*『 ✅ 』 𝐓𝐮𝐭𝐭𝐢 𝐢 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐬𝐨𝐧𝐨 𝐬𝐭𝐚𝐭𝐢 𝐝𝐞𝐟𝐢𝐬𝐬𝐚𝐭𝐢.*')
+      return m.reply('*✅ 𝐓𝐮𝐭𝐭𝐢 𝐢 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐬𝐨𝐧𝐨 𝐬𝐭𝐚𝐭𝐢 𝐝𝐞𝐟𝐢𝐬𝐬𝐚𝐭𝐢.*')
     } catch (e) {
       console.error(e)
       return m.reply(global.errore)
@@ -41,7 +41,7 @@ let handler = async (m, { conn, args, command }) => {
 
   if (isUnpin) {
     if (!m.quoted) {
-      return m.reply('*『 ⛓️‍💥 』 𝐑𝐢𝐬𝐩𝐨𝐧𝐝𝐢 𝐚𝐥 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐝𝐚 𝐝𝐞𝐟𝐢𝐬𝐬𝐚𝐫𝐞.*')
+      return m.reply('*⚠️ 𝐑𝐢𝐬𝐩𝐨𝐧𝐝𝐢 𝐚𝐥 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐝𝐚 𝐝𝐞𝐟𝐢𝐬𝐬𝐚𝐫𝐞.*')
     }
 
     const key = getKey(m.quoted, m.chat)
@@ -49,7 +49,7 @@ let handler = async (m, { conn, args, command }) => {
 
     try {
       await conn.sendMessage(m.chat, { pin: { type: 2, key } })
-      return m.reply('*『 ✅ 』 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐝𝐞𝐟𝐢𝐬𝐬𝐚𝐭𝐨.*')
+      return m.reply('*✅ 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐝𝐞𝐟𝐢𝐬𝐬𝐚𝐭𝐨.*')
     } catch (e) {
       console.error(e)
       return m.reply(global.errore)
@@ -73,7 +73,7 @@ let handler = async (m, { conn, args, command }) => {
     try {
       await conn.sendMessage(m.chat, { pin: { type: 1, time: seconds, key } })
       const label = Object.entries(DURATE).find(([, s]) => s === seconds)?.[0] || `${seconds}s`
-      return m.reply(`*『 📌 』 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐟𝐢𝐬𝐬𝐚𝐭𝐨 𝐩𝐞𝐫 ${label}.*`)
+      return m.reply(`*📌 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐟𝐢𝐬𝐬𝐚𝐭𝐨 𝐩𝐞𝐫 ${label}.*`)
     } catch (e) {
       console.error(e)
       return m.reply(global.errore)
@@ -99,7 +99,7 @@ let handler = async (m, { conn, args, command }) => {
       }
     }
 
-    return m.reply('*『 ⛓️‍💥 』 𝐑𝐢𝐬𝐩𝐨𝐧𝐝𝐢 𝐚 𝐮𝐧 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐨 𝐬𝐜𝐫𝐢𝐯𝐢 𝐮𝐧 𝐭𝐞𝐬𝐭𝐨.*')
+    return m.reply('*⚠️ 𝐑𝐢𝐬𝐩𝐨𝐧𝐝𝐢 𝐚 𝐮𝐧 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐨 𝐬𝐜𝐫𝐢𝐯𝐢 𝐮𝐧 𝐭𝐞𝐬𝐭𝐨.*')
   }
 }
 
@@ -113,20 +113,14 @@ async function inviaBottoni(conn, chat, key) {
   }))
 
   await conn.sendMessage(chat, {
-    text: '*『 📌 』 𝐒𝐜𝐞𝐠𝐥𝐢 𝐥𝐚 𝐝𝐮𝐫𝐚𝐭𝐚 𝐝𝐞𝐥 𝐩𝐢𝐧:*',
+    text: '*📌 𝐒𝐜𝐞𝐠𝐥𝐢 𝐥𝐚 𝐝𝐮𝐫𝐚𝐭𝐚 𝐝𝐞𝐥 𝐩𝐢𝐧:*',
     buttons,
     footer: '',
     headerType: 1
   })
 }
 
-handler.command = [
-  'pin', 'p', 'pinna', 'fissa', 'fissamsg',
-  'unpin', 'defissa',
-  'unpinall', 'defissatutti',
-  'pinfinal'
-]
-
+handler.command = [ 'pin', 'pinna', 'fissa', 'fissamsg', 'unpin', 'defissa',  'unpinall','defissatutti', 'pinfinal']
 handler.tags = ['gruppo']
 handler.help = ['pin', 'unpin/unpinall']
 handler.group = true
