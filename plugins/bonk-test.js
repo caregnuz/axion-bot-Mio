@@ -1,29 +1,29 @@
-// by 𝕯𝖊ⱥ𝖉𝖑𝐲 × Bonzino
+// by 𝕯𝖊ⱥ𝖑𝐝𝖞 × Bonzino
 
 import fs from 'fs'
 import path from 'path'
+import fetch from 'node-fetch'
 import { spawn } from 'child_process'
 
+const BASE_PATH = './media/bonk.png'
+const AUDIO_PATH = './media/bonk.mp3'
 const TMP_DIR = './tmp_bonk'
 const OUT_FILE = './tmp_bonk/bonk.mp4'
-const AUDIO_FILE = './media/bonk.mp3'
+
+// posizione testa nella tua immagine
+const HEAD_X = 430
+const HEAD_Y = 245
+const HEAD_SIZE = 165
+
+// posizione mazza ritagliata dalla tua immagine
+const HAMMER_X = 430
+const HAMMER_Y = 70
+const HAMMER_W = 470
+const HAMMER_H = 420
 
 async function getJimp() {
   const mod = await import('jimp')
   return mod?.default || mod.Jimp || mod
-}
-
-function resolveTarget(m, text = '') {
-  const raw = String(text || '').trim()
-  const digits = raw.replace(/\D/g, '')
-
-  if (digits.length >= 7 && digits.length <= 15) {
-    return digits + '@s.whatsapp.net'
-  }
-
-  if (m.mentionedJid?.length) return m.mentionedJid[0]
-  if (m.quoted) return m.quoted.sender
-  return m.sender
 }
 
 function ensureDir(dir) {
@@ -33,7 +33,7 @@ function ensureDir(dir) {
 function clearDir(dir) {
   if (!fs.existsSync(dir)) return
   for (const file of fs.readdirSync(dir)) {
-    fs.unlinkSync(path.join(dir, file))
+    try { fs.unlinkSync(path.join(dir, file)) } catch {}
   }
 }
 
@@ -61,174 +61,186 @@ async function blurCompat(img, n) {
   return img
 }
 
-function rgba(Jimp, r, g, b, a = 255) {
-  return Jimp.rgbaToInt(r, g, b, a)
-}
+function resolveTarget(m, text = '') {
+  const raw = String(text || '').trim()
+  const digits = raw.replace(/\D/g, '')
 
-async function drawHammer() {
-  const Jimp = await getJimp()
-  const img = new Jimp(260, 260, 0x00000000)
-
-  const gray1 = rgba(Jimp, 175, 180, 190)
-  const gray2 = rgba(Jimp, 105, 112, 130)
-  const brown1 = rgba(Jimp, 145, 92, 45)
-  const brown2 = rgba(Jimp, 92, 55, 24)
-  const black = rgba(Jimp, 20, 20, 20)
-
-  img.scan(34, 38, 150, 88, function (x, y, idx) {
-    const use = y < 82 ? gray1 : gray2
-    this.bitmap.data.writeUInt32BE(use, idx)
-  })
-
-  img.scan(150, 72, 78, 28, function (x, y, idx) {
-    this.bitmap.data.writeUInt32BE(brown1, idx)
-  })
-
-  img.scan(206, 68, 22, 36, function (x, y, idx) {
-    this.bitmap.data.writeUInt32BE(brown2, idx)
-  })
-
-  img.scan(110, 68, 16, 28, function (x, y, idx) {
-    this.bitmap.data.writeUInt32BE(rgba(Jimp, 214, 140, 40), idx)
-  })
-
-  img.scan(34, 38, 150, 4, function (x, y, idx) {
-    this.bitmap.data.writeUInt32BE(black, idx)
-  })
-  img.scan(34, 122, 150, 4, function (x, y, idx) {
-    this.bitmap.data.writeUInt32BE(black, idx)
-  })
-  img.scan(34, 38, 4, 88, function (x, y, idx) {
-    this.bitmap.data.writeUInt32BE(black, idx)
-  })
-  img.scan(180, 38, 4, 88, function (x, y, idx) {
-    this.bitmap.data.writeUInt32BE(black, idx)
-  })
-
-  return img
-}
-
-async function drawImpact() {
-  const Jimp = await getJimp()
-  const img = new Jimp(220, 220, 0x00000000)
-  const yellow = rgba(Jimp, 255, 225, 40)
-  const white = rgba(Jimp, 255, 255, 255)
-
-  const cx = 110
-  const cy = 110
-
-  img.scan(0, 0, 220, 220, function (x, y, idx) {
-    const dx = x - cx
-    const dy = y - cy
-    const dist = Math.sqrt(dx * dx + dy * dy)
-    const ang = Math.atan2(dy, dx)
-    const ray = 38 + 44 * Math.abs(Math.sin(ang * 6))
-    if (dist < ray) this.bitmap.data.writeUInt32BE(yellow, idx)
-    if (dist < 18) this.bitmap.data.writeUInt32BE(white, idx)
-  })
-
-  return img
-}
-
-async function drawText100() {
-  const Jimp = await getJimp()
-  const img = new Jimp(180, 120, 0x00000000)
-  const yellow = rgba(Jimp, 255, 210, 0)
-  const black = rgba(Jimp, 0, 0, 0)
-
-  const font = await Jimp.loadFont(Jimp.FONT_SANS_64_WHITE)
-  img.print(font, 0, 10, '100')
-
-  img.scan(0, 0, img.bitmap.width, img.bitmap.height, function (x, y, idx) {
-    const a = this.bitmap.data[idx + 3]
-    if (a > 0) {
-      this.bitmap.data.writeUInt32BE(yellow, idx)
-    }
-  })
-
-  const outline = new Jimp(img.bitmap.width + 8, img.bitmap.height + 8, 0x00000000)
-  for (const [ox, oy] of [[0,4],[8,4],[4,0],[4,8],[1,1],[7,1],[1,7],[7,7]]) {
-    outline.composite(img.clone().scan(0, 0, img.bitmap.width, img.bitmap.height, function (x, y, idx) {
-      const a = this.bitmap.data[idx + 3]
-      if (a > 0) this.bitmap.data.writeUInt32BE(black, idx)
-    }), ox, oy)
+  if (digits.length >= 7 && digits.length <= 15) {
+    return digits + '@s.whatsapp.net'
   }
-  outline.composite(img, 4, 4)
-  return outline
+
+  if (m.mentionedJid?.length) return m.mentionedJid[0]
+  if (m.quoted) return m.quoted.sender
+  return m.sender
 }
 
 async function fetchAvatarBuffer(url) {
   const res = await fetch(url)
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  const arr = await res.arrayBuffer()
-  return Buffer.from(arr)
+  return Buffer.from(await res.arrayBuffer())
+}
+
+function makeCircleMask(Jimp, size) {
+  const mask = new Jimp(size, size, 0x00000000)
+  const r = size / 2
+  const cx = r
+  const cy = r
+  const white = Jimp.rgbaToInt(255, 255, 255, 255)
+
+  mask.scan(0, 0, size, size, function (x, y, idx) {
+    const dx = x - cx
+    const dy = y - cy
+    if ((dx * dx) + (dy * dy) <= r * r) {
+      this.bitmap.data.writeUInt32BE(white, idx)
+    }
+  })
+
+  return mask
+}
+
+async function cropCircleAvatar(Jimp, avatar) {
+  const mask = makeCircleMask(Jimp, HEAD_SIZE)
+  await resizeCompat(avatar, HEAD_SIZE, HEAD_SIZE)
+
+  avatar.mask(mask, 0, 0)
+
+  return avatar
+}
+
+async function makeImpact(Jimp) {
+  const impact = new Jimp(220, 220, 0x00000000)
+  const yellow = Jimp.rgbaToInt(255, 220, 40, 255)
+  const white = Jimp.rgbaToInt(255, 255, 255, 255)
+  const cx = 110
+  const cy = 110
+
+  impact.scan(0, 0, 220, 220, function (x, y, idx) {
+    const dx = x - cx
+    const dy = y - cy
+    const dist = Math.sqrt(dx * dx + dy * dy)
+    const ang = Math.atan2(dy, dx)
+    const ray = 24 + 60 * Math.abs(Math.sin(ang * 6))
+    if (dist < ray) this.bitmap.data.writeUInt32BE(yellow, idx)
+    if (dist < 18) this.bitmap.data.writeUInt32BE(white, idx)
+  })
+
+  return impact
+}
+
+async function makeBonkText(Jimp) {
+  const img = new Jimp(260, 120, 0x00000000)
+  const font = await Jimp.loadFont(Jimp.FONT_SANS_64_WHITE)
+  const yellow = Jimp.rgbaToInt(255, 210, 0, 255)
+  const black = Jimp.rgbaToInt(0, 0, 0, 255)
+
+  img.print(font, 10, 20, 'BONK')
+
+  img.scan(0, 0, img.bitmap.width, img.bitmap.height, function (x, y, idx) {
+    const a = this.bitmap.data[idx + 3]
+    if (a > 0) this.bitmap.data.writeUInt32BE(yellow, idx)
+  })
+
+  const out = new Jimp(img.bitmap.width + 8, img.bitmap.height + 8, 0x00000000)
+
+  for (const [ox, oy] of [[0,4],[8,4],[4,0],[4,8],[1,1],[7,1],[1,7],[7,7]]) {
+    const shadow = img.clone()
+    shadow.scan(0, 0, shadow.bitmap.width, shadow.bitmap.height, function (x, y, idx) {
+      const a = this.bitmap.data[idx + 3]
+      if (a > 0) this.bitmap.data.writeUInt32BE(black, idx)
+    })
+    out.composite(shadow, ox, oy)
+  }
+
+  out.composite(img, 4, 4)
+  return out
 }
 
 async function buildFrames(avatarUrl) {
   const Jimp = await getJimp()
+
+  const base = await Jimp.read(fs.readFileSync(BASE_PATH))
+  const hammerSource = base.clone().crop(HAMMER_X, HAMMER_Y, HAMMER_W, HAMMER_H)
+
   const avatarBuffer = await fetchAvatarBuffer(avatarUrl)
   const avatarBase = await Jimp.read(avatarBuffer)
-  const hammerBase = await drawHammer()
-  const impact = await drawImpact()
-  const text100 = await drawText100()
+  const avatar = await cropCircleAvatar(Jimp, avatarBase)
 
-  await resizeCompat(avatarBase, 320, 320)
+  const impact = await makeImpact(Jimp)
+  const bonkText = await makeBonkText(Jimp)
 
   const frames = []
 
-  const makeBase = async (shakeX = 0, shakeY = 0, squash = false) => {
-    let av = avatarBase.clone()
-    if (squash) await resizeCompat(av, 320, 285)
-    const canvas = new Jimp(512, 512, rgba(Jimp, 0, 0, 0, 0))
-    canvas.composite(av, 96 + shakeX, squash ? 154 + shakeY : 128 + shakeY)
-    return canvas
+  const buildBaseFrame = (ax = 0, ay = 0, blur = 0) => {
+    const frame = base.clone()
+    const av = avatar.clone()
+    if (blur > 0) blurCompat(av, blur)
+    frame.composite(av, HEAD_X + ax, HEAD_Y + ay)
+    return frame
   }
 
+  // frame 1: stato base, mazza giù come nell'immagine originale
   {
-    const frame = await makeBase()
-    const hammer = hammerBase.clone()
-    await rotateCompat(hammer, -28)
-    frame.composite(hammer, 150, -18)
+    const frame = buildBaseFrame(0, 0, 0)
     frames.push(frame)
   }
 
+  // frame 2: mazza alzata
   {
-    const frame = await makeBase(4, 0)
-    const hammer = hammerBase.clone()
+    const frame = buildBaseFrame(0, 0, 0)
+
+    // copertura semplice zona mazza originale
+    const cover = new Jimp(HAMMER_W + 30, HAMMER_H + 30, 0x00000000)
+    frame.composite(cover, HAMMER_X - 10, HAMMER_Y - 10)
+
+    const hammer = hammerSource.clone()
+    await rotateCompat(hammer, -35)
+    frame.composite(hammer, 320, -20)
+
+    frames.push(frame)
+  }
+
+  // frame 3: discesa
+  {
+    const frame = buildBaseFrame(3, 0, 0)
+    const cover = new Jimp(HAMMER_W + 30, HAMMER_H + 30, 0x00000000)
+    frame.composite(cover, HAMMER_X - 10, HAMMER_Y - 10)
+
+    const hammer = hammerSource.clone()
     await rotateCompat(hammer, -18)
     await blurCompat(hammer, 1)
-    frame.composite(hammer, 150, 24)
+    frame.composite(hammer, 365, 18)
+
     frames.push(frame)
   }
 
+  // frame 4: impatto
   {
-    const frame = await makeBase(-8, 6, true)
-    const hammer = hammerBase.clone()
-    await rotateCompat(hammer, -8)
+    const frame = buildBaseFrame(-10, 8, 1)
+    const cover = new Jimp(HAMMER_W + 30, HAMMER_H + 30, 0x00000000)
+    frame.composite(cover, HAMMER_X - 10, HAMMER_Y - 10)
+
+    const hammer = hammerSource.clone()
+    await rotateCompat(hammer, -5)
     await blurCompat(hammer, 2)
-    frame.composite(hammer, 155, 86)
-    frame.composite(impact, 182, 150)
-    frame.composite(text100, 34, 220)
+    frame.composite(hammer, 415, 68)
+
+    frame.composite(impact, 410, 205)
+    frame.composite(bonkText, 240, 120)
+
     frames.push(frame)
   }
 
+  // frame 5: rimbalzo
   {
-    const frame = await makeBase(10, -4, true)
-    const hammer = hammerBase.clone()
-    await rotateCompat(hammer, -4)
-    frame.composite(hammer, 160, 95)
-    frame.composite(impact.clone(), 188, 152)
-    frame.composite(text100.clone(), 28, 224)
-    await blurCompat(frame, 1)
-    frames.push(frame)
-  }
+    const frame = buildBaseFrame(9, -4, 0)
+    const cover = new Jimp(HAMMER_W + 30, HAMMER_H + 30, 0x00000000)
+    frame.composite(cover, HAMMER_X - 10, HAMMER_Y - 10)
 
-  {
-    const frame = await makeBase(-4, 2)
-    const hammer = hammerBase.clone()
-    await rotateCompat(hammer, -10)
-    frame.composite(hammer, 160, 70)
-    frame.composite(text100.clone(), 40, 222)
+    const hammer = hammerSource.clone()
+    await rotateCompat(hammer, -12)
+    frame.composite(hammer, 395, 36)
+    frame.composite(impact.clone(), 415, 205)
+
     frames.push(frame)
   }
 
@@ -246,16 +258,16 @@ async function renderMp4(frames) {
   return new Promise((resolve, reject) => {
     const args = [
       '-y',
-      '-framerate', '8',
+      '-framerate', '7',
       '-i', path.join(TMP_DIR, 'f%d.png')
     ]
 
-    if (fs.existsSync(AUDIO_FILE)) {
-      args.push('-i', AUDIO_FILE)
+    if (fs.existsSync(AUDIO_PATH)) {
+      args.push('-i', AUDIO_PATH)
     }
 
     args.push(
-      '-vf', 'scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2',
+      '-vf', 'scale=720:-2',
       '-pix_fmt', 'yuv420p',
       '-shortest',
       '-movflags', '+faststart',
@@ -330,6 +342,6 @@ let handler = async (m, { conn, text }) => {
 
 handler.help = ['bonk', 'bonk @utente', 'bonk numero']
 handler.tags = ['fun']
-handler.command = /^(bonk2)$/i
+handler.command = /^(bonk)$/i
 
 export default handler
