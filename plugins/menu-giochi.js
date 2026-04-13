@@ -21,6 +21,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 🏟️ ${usedPrefix}schedina <euro>
 ┃ 🪢 ${usedPrefix}impiccato
 ┃ 🤣 ${usedPrefix}meme
+┃ 🧠 ${usedPrefix}vof (vero/falso)
 ┃ 🍣 ${usedPrefix}cibo
 ┃ 🚩 ${usedPrefix}bandiera
 ┃ 🏆 ${usedPrefix}classificabandiera
