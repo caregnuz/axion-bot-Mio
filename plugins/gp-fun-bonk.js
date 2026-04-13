@@ -36,7 +36,7 @@ function resolveTarget(m) {
 let handler = async (m, { conn }) => {
   try {
     const sender = m.sender
-    const who = jidNormalizedUser(resolveTarget(m))
+    const who = conn.decodeJid(resolveTarget(m))
 
     const avatarUrl = await conn.profilePictureUrl(who, 'image').catch(() => null)
 
