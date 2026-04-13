@@ -1,4 +1,6 @@
-// by 𝕯𝖊ⱥ𝖉𝖑𝐲 × Bonzino
+// by 𝕯𝖊ⱥ𝖑𝐝𝖞 × Bonzino
+
+import fetch from 'node-fetch'
 
 const TEMPLATE_URL = 'https://i.imgur.com/nav6WWX.png'
 
@@ -25,6 +27,12 @@ async function getBufferCompat(image, mime) {
   }
   if (typeof image.getBufferAsync === 'function') return await image.getBufferAsync(mime)
   throw new Error('Jimp getBuffer compat failed')
+}
+
+async function fetchBuffer(url) {
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return Buffer.from(await res.arrayBuffer())
 }
 
 function resolveTarget(m, text = '') {
@@ -59,8 +67,14 @@ let handler = async (m, { conn, text }) => {
     }
 
     const Jimp = await getJimp()
-    const img = await Jimp.read(TEMPLATE_URL)
-    const avatar = await Jimp.read(avatarUrl)
+
+    const [templateBuffer, avatarBuffer] = await Promise.all([
+      fetchBuffer(TEMPLATE_URL),
+      fetchBuffer(avatarUrl)
+    ])
+
+    const img = await Jimp.read(templateBuffer)
+    const avatar = await Jimp.read(avatarBuffer)
 
     await resizeCompat(avatar, 128, 128)
 
@@ -95,7 +109,7 @@ let handler = async (m, { conn, text }) => {
     console.error('[bonk:error]', e)
     await conn.reply(
       m.chat,
-      '*❌ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐝𝐮𝐫𝐚𝐧𝐭𝐞 𝐢𝐥 𝐜𝐨𝐦𝐚𝐧𝐝𝐨.*',
+      `*❌ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐝𝐮𝐫𝐚𝐧𝐭𝐞 𝐢𝐥 𝐜𝐨𝐦𝐚𝐧𝐝𝐨.*\n\n\`\`\`${e.message || e}\`\`\``,
       m,
       global.rcanal
     )
