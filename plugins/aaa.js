@@ -16,25 +16,30 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
         }
 
         try {
-            const response = await axios.get(`https://sms24.me/en/countries/${code}`, {
+            const { data } = await axios({
+                method: 'get',
+                url: `https://sms24.me/en/countries/${code}`,
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
                     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-                    'Accept-Language': 'en-US,en;q=0.5'
+                    'Accept-Language': 'it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7',
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache',
+                    'Referer': 'https://sms24.me/'
                 },
-                timeout: 15000
+                timeout: 20000
             });
 
-            const $ = cheerio.load(response.data);
+            const $ = cheerio.load(data);
             let nums = [];
             $('a[href*="/en/numbers/"]').each((i, e) => {
                 let n = $(e).text().replace(/[^0-9+]/g, '');
-                if (n.startsWith('+')) nums.push(n);
+                if (n.length > 5) nums.push(n.startsWith('+') ? n : '+' + n);
             });
 
-            if (nums.length === 0) return m.reply("*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Nessun numero disponibile al momento.");
+            if (nums.length === 0) return m.reply("*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Nessun numero trovato. Riprova tra poco.");
 
-            let shuffled = nums.sort(() => 0.5 - Math.random()).slice(0, 6);
+            let shuffled = [...new Set(nums)].sort(() => 0.5 - Math.random()).slice(0, 6);
             let res = `*✅ 𝐍𝐔𝐌𝐄𝐑𝐈 ${code.toUpperCase()}*\n\n`;
             let buttons = [];
 
@@ -48,44 +53,45 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
             return conn.sendMessage(m.chat, {
                 text: res,
-                footer: "Tocca un bottone o usa i comandi sopra",
+                footer: "Tocca un bottone o usa i comandi",
                 buttons: buttons,
                 headerType: 1
             }, { quoted: m });
 
         } catch (e) {
-            return m.reply("*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Il servizio sms24 è temporaneamente irraggiungibile.");
+            return m.reply("*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Connessione fallita. Il sito potrebbe essere in manutenzione.");
         }
     }
 
     if (cmd === 'check') {
         let num = args[0]?.replace('+', '');
-        if (!num) return m.reply("*✅ 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨:* Specifica il numero da controllare.");
+        if (!num) return m.reply("*✅ 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨:* Inserisci un numero.");
 
         try {
-            const response = await axios.get(`https://sms24.me/en/numbers/${num}`, {
+            const { data } = await axios({
+                method: 'get',
+                url: `https://sms24.me/en/numbers/${num}`,
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+                    'Referer': `https://sms24.me/en/countries/`
                 },
-                timeout: 15000
+                timeout: 20000
             });
 
-            const $ = cheerio.load(response.data);
+            const $ = cheerio.load(data);
             let txt = `*✅ 𝐌𝐄𝐒𝐒𝐀𝐆𝐆𝐈 𝐑𝐈𝐂𝐄𝐕𝐔𝐓𝐈:* \`+${num}\`\n\n`;
-            let count = 0;
+            let found = false;
 
-            $('.shadow-sm').each((i, e) => {
-                if (count >= 3) return;
+            $('.shadow-sm').slice(0, 3).each((i, e) => {
                 let from = $(e).find('a').first().text().trim();
-                let body = $(e).find('.v-btn').parent().text().split('ago')[1]?.replace('Copy', '').trim();
-                
-                if (from && body) {
-                    txt += `👤 *${from}*\n💬 ${body}\n\n────────────────\n`;
-                    count++;
+                let msg = $(e).find('.v-btn').parent().text().split('ago')[1]?.replace('Copy', '').trim();
+                if (from && msg) {
+                    found = true;
+                    txt += `👤 *${from}*\n💬 ${msg}\n\n────────────────\n`;
                 }
             });
 
-            if (count === 0) txt += "📭 Nessun SMS recente trovato.";
+            if (!found) txt += "📭 Nessun SMS ricevuto recentemente.";
 
             const checkBtn = [
                 { buttonId: `${usedPrefix}check ${num}`, buttonText: { displayText: `🔄 𝐀𝐆𝐆𝐈𝐎𝐑𝐍𝐀 𝐒𝐌𝐒` }, type: 1 },
@@ -94,13 +100,13 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
             return conn.sendMessage(m.chat, {
                 text: txt,
-                footer: `Ultimo controllo: ${new Date().toLocaleTimeString()}`,
+                footer: `Update: ${new Date().toLocaleTimeString()}`,
                 buttons: checkBtn,
                 headerType: 1
             }, { quoted: m });
 
         } catch (e) {
-            return m.reply("*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Impossibile leggere gli SMS.");
+            return m.reply("*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Impossibile recuperare i messaggi.");
         }
     }
 };
