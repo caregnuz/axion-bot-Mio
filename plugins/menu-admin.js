@@ -26,8 +26,8 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 ⚠️ ᴡᴀʀɴ 〕━⬣
-┃ ⚠️ ${usedPrefix}warn
-┃ ✅ ${usedPrefix}unwarn
+┃ ⚠️ ${usedPrefix}warn <reply/tag>
+┃ ✅ ${usedPrefix}unwarn <reply/tag>
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 🔇 ᴄᴏɴᴛʀᴏʟʟᴏ 〕━⬣
@@ -48,7 +48,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 🆔 ${usedPrefix}idgp
 ┃ ⚔️ ${usedPrefix}kick
 ┃ 🚨 ${usedPrefix}nuke
-┃ 🔮 ${usedPrefix}resucita
+┃ 🔮 ${usedPrefix}resuscita
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 🔗 ʟɪɴᴋ ɢʀᴜᴘᴘᴏ 〕━⬣
