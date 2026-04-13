@@ -4,8 +4,11 @@ let handler = async (m, { conn, text }) => {
   let who
 
   try {
-    if (text && /^\d{7,15}$/.test(text)) {
-      who = text.replace(/\D/g, '') + '@s.whatsapp.net'
+    const raw = String(text || '').trim()
+    const digits = raw.replace(/\D/g, '')
+
+    if (digits.length >= 7 && digits.length <= 15) {
+      who = digits + '@s.whatsapp.net'
     } else if (m.mentionedJid?.length) {
       who = m.mentionedJid[0]
     } else if (m.quoted) {
