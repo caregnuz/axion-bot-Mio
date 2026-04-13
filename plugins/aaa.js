@@ -5,9 +5,7 @@ try {
   axios = (await import('axios')).default;
   cheerio = await import('cheerio');
   ready = true;
-} catch (e) {
-  console.log("Errore librerie");
-}
+} catch (e) {}
 
 const baseUrl = 'https://receive-sms-online.info';
 
@@ -20,7 +18,8 @@ const countries = [
   { name: 'UK 🇬🇧', path: '/uk' },
   { name: 'Francia 🇫🇷', path: '/fr' },
   { name: 'Germania 🇩🇪', path: '/de' },
-  { name: 'Spagna 🇪🇸', path: '/es' }
+  { name: 'Spagna 🇪🇸', path: '/es' },
+  { name: 'Italia 🇮🇹', path: '/it' }
 ];
 
 async function getNumbers(path) {
@@ -32,9 +31,8 @@ async function getNumbers(path) {
 
     $('a').each((i, el) => {
       let t = $(el).text().trim();
-      if (t.includes('+')) {
-        nums.push(t.replace(/[^0-9]/g, ''));
-      }
+      let match = t.match(/\+\d{6,15}/);
+      if (match) nums.push(match[0]);
     });
 
     return [...new Set(nums)];
@@ -45,7 +43,7 @@ async function getNumbers(path) {
 
 async function getSMS(num) {
   try {
-    const { data } = await axios.get(`${baseUrl}/${num}`, { headers });
+    const { data } = await axios.get(`${baseUrl}/${num.replace('+','')}`, { headers });
     const $ = cheerio.load(data);
 
     let msgs = [];
@@ -64,29 +62,25 @@ async function getSMS(num) {
   }
 }
 
-let sessions = {}; 
+let sessions = {};
 
 let handler = async (m, { conn, args, usedPrefix, command }) => {
   if (!ready) return m.reply("❌ Librerie mancanti.");
 
   let user = m.sender;
 
-  // 🌍 MENU PAESI
   if (!args[0]) {
     let txt = `🌍 *SCEGLI PAESE*\n\n`;
     countries.forEach((c, i) => {
       txt += `${i + 1}. ${c.name}\n`;
     });
-
-    txt += `\n💡 Usa: ${usedPrefix}voip <numero paese>`;
-
+    txt += `\nUsa: ${usedPrefix}voip <numero>`;
     return m.reply(txt);
   }
 
   if (!isNaN(args[0])) {
     let index = parseInt(args[0]) - 1;
     let country = countries[index];
-
     if (!country) return m.reply("❌ Paese non valido");
 
     let nums = await getNumbers(country.path);
@@ -101,7 +95,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     let num = nums[0];
 
     return conn.sendMessage(m.chat, {
-      text: `📱 *NUMERO ATTIVO*\n\n🌍 ${country.name}\n📲 +${num}`,
+      text: `📱 *NUMERO ATTIVO*\n\n🌍 ${country.name}\n📲 ${num}`,
       buttons: [
         { buttonId: `${usedPrefix}voip next`, buttonText: { displayText: '🔄 Cambia Numero' }, type: 1 },
         { buttonId: `${usedPrefix}voip sms`, buttonText: { displayText: '📩 Controlla SMS' }, type: 1 },
@@ -121,7 +115,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     let num = session.nums[session.current];
 
     return conn.sendMessage(m.chat, {
-      text: `📱 *NUOVO NUMERO*\n\n🌍 ${session.country.name}\n📲 +${num}`,
+      text: `📱 *NUOVO NUMERO*\n\n🌍 ${session.country.name}\n📲 ${num}`,
       buttons: [
         { buttonId: `${usedPrefix}voip next`, buttonText: { displayText: '🔄 Cambia Numero' }, type: 1 },
         { buttonId: `${usedPrefix}voip sms`, buttonText: { displayText: '📩 Controlla SMS' }, type: 1 },
@@ -140,13 +134,16 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
     if (msgs.length === 0) return m.reply("❌ Nessun SMS");
 
-    let txt = `📩 *SMS +${num}*\n\n`;
+    let txt = `📩 *SMS ${num}*\n\n`;
 
-    msgs.slice(0, 5).forEach(m => {
-      txt += `👤 ${m.from}\n💬 ${m.text}\n🕒 ${m.time}\n──────\n`;
+    msgs.slice(0, 5).forEach(x => {
+      txt += `👤 ${x.from}\n`;
+      txt += `💬 ${x.text}\n`;
+      txt += `🕒 ${x.time}\n`;
+      txt += `────────────\n`;
     });
 
-    return m.reply(txt);
+    return m.reply(txt.trim());
   }
 };
 
