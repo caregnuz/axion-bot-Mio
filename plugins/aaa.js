@@ -1,4 +1,4 @@
-Let isScraperReady = false;
+let isScraperReady = false;
 let axios, cheerio;
 
 try {
