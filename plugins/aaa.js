@@ -1,15 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
-const config = { 
-    url: 'https://sms24.me', 
-    headers: { 
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
-        'Referer': 'https://sms24.me/'
-    },
-    timeout: 10000
-};
-
 const nazioni = { 'it': '🇮🇹 𝐈𝐭𝐚', 'us': '🇺🇸 𝐔𝐬𝐚', 'gb': '🇬🇧 𝐔𝐤', 'fr': '🇫🇷 𝐅𝐫𝐚', 'de': '🇩🇪 𝐆𝐞𝐫' };
 
 let handler = async (m, { conn, args, usedPrefix, command }) => {
@@ -25,21 +16,29 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
         }
 
         try {
-            const { data } = await axios.get(`${config.url}/en/countries/${code}`, { headers: config.headers, timeout: config.timeout });
-            const $ = cheerio.load(data);
+            const response = await axios.get(`https://sms24.me/en/countries/${code}`, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5'
+                },
+                timeout: 15000
+            });
+
+            const $ = cheerio.load(response.data);
             let nums = [];
             $('a[href*="/en/numbers/"]').each((i, e) => {
                 let n = $(e).text().replace(/[^0-9+]/g, '');
                 if (n.startsWith('+')) nums.push(n);
             });
 
-            if (nums.length === 0) return m.reply("*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Nessun numero trovato.");
+            if (nums.length === 0) return m.reply("*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Nessun numero disponibile al momento.");
 
-            let randomNums = [...new Set(nums)].sort(() => Math.random() - 0.5).slice(0, 6);
+            let shuffled = nums.sort(() => 0.5 - Math.random()).slice(0, 6);
             let res = `*✅ 𝐍𝐔𝐌𝐄𝐑𝐈 ${code.toUpperCase()}*\n\n`;
-            
             let buttons = [];
-            randomNums.forEach(n => {
+
+            shuffled.forEach(n => {
                 let clean = n.replace('+', '');
                 res += `🔹 \`${usedPrefix}check ${clean}\`\n`;
                 buttons.push({ buttonId: `${usedPrefix}check ${clean}`, buttonText: { displayText: `💬 Check ${n}` }, type: 1 });
@@ -49,33 +48,44 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
             return conn.sendMessage(m.chat, {
                 text: res,
-                footer: "Seleziona un numero o cambia lista",
+                footer: "Tocca un bottone o usa i comandi sopra",
                 buttons: buttons,
                 headerType: 1
             }, { quoted: m });
-        } catch (e) { 
-            return m.reply("*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Impossibile connettersi al servizio."); 
+
+        } catch (e) {
+            return m.reply("*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Il servizio sms24 è temporaneamente irraggiungibile.");
         }
     }
 
     if (cmd === 'check') {
         let num = args[0]?.replace('+', '');
-        if (!num) return m.reply("*✅ 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨:* Inserisci un numero.");
-        
+        if (!num) return m.reply("*✅ 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨:* Specifica il numero da controllare.");
+
         try {
-            const { data } = await axios.get(`${config.url}/en/numbers/${num}`, { headers: config.headers, timeout: config.timeout });
-            const $ = cheerio.load(data);
-            let txt = `*✅ 𝐌𝐄𝐒𝐒𝐀𝐆𝐆𝐈 𝐑𝐈𝐂𝐄𝐕𝐔𝐓𝐈:* \`+${num}\`\n\n`;
-            
-            let found = false;
-            $('.shadow-sm').slice(0, 3).each((i, e) => {
-                found = true;
-                let f = $(e).find('a').first().text().trim();
-                let msg = $(e).text().split('ago')[1]?.replace('Copy', '').trim();
-                if (f) txt += `👤 *${f}*\n💬 ${msg}\n\n`;
+            const response = await axios.get(`https://sms24.me/en/numbers/${num}`, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+                },
+                timeout: 15000
             });
 
-            if (!found) txt += "📭 Nessun messaggio ricevuto.";
+            const $ = cheerio.load(response.data);
+            let txt = `*✅ 𝐌𝐄𝐒𝐒𝐀𝐆𝐆𝐈 𝐑𝐈𝐂𝐄𝐕𝐔𝐓𝐈:* \`+${num}\`\n\n`;
+            let count = 0;
+
+            $('.shadow-sm').each((i, e) => {
+                if (count >= 3) return;
+                let from = $(e).find('a').first().text().trim();
+                let body = $(e).find('.v-btn').parent().text().split('ago')[1]?.replace('Copy', '').trim();
+                
+                if (from && body) {
+                    txt += `👤 *${from}*\n💬 ${body}\n\n────────────────\n`;
+                    count++;
+                }
+            });
+
+            if (count === 0) txt += "📭 Nessun SMS recente trovato.";
 
             const checkBtn = [
                 { buttonId: `${usedPrefix}check ${num}`, buttonText: { displayText: `🔄 𝐀𝐆𝐆𝐈𝐎𝐑𝐍𝐀 𝐒𝐌𝐒` }, type: 1 },
@@ -84,12 +94,13 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
             return conn.sendMessage(m.chat, {
                 text: txt,
-                footer: `Update: ${new Date().toLocaleTimeString()}`,
+                footer: `Ultimo controllo: ${new Date().toLocaleTimeString()}`,
                 buttons: checkBtn,
                 headerType: 1
             }, { quoted: m });
-        } catch (e) { 
-            return m.reply("*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Numero non valido o timeout."); 
+
+        } catch (e) {
+            return m.reply("*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Impossibile leggere gli SMS.");
         }
     }
 };
