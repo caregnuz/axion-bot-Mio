@@ -1,7 +1,8 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
-const baseUrl = 'https://sms24.me';
+const baseUrl = 'https://sms24.me'; 
+const mirrorUrl = 'https://sms-online.co';
 
 const nazioni = [
     { id: '1', nome: 'Stati Uniti 🇺🇸', path: '/en/countries/us' },
@@ -14,17 +15,21 @@ const nazioni = [
     { id: '8', nome: 'Spagna 🇪🇸', path: '/en/countries/es' }
 ];
 
-async function fetchData(url) {
-    return await axios.get(url, {
-        headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-            'Accept-Language': 'it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7',
-            'Referer': 'https://google.com',
-            'Cache-Control': 'no-cache'
-        },
-        timeout: 15000
-    });
+async function getHtml(url) {
+    const headers = {
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language': 'it-IT,it;q=0.9,en;q=0.8',
+        'Referer': 'https://www.google.com/'
+    };
+    try {
+        return await axios.get(url, { headers, timeout: 10000 });
+    } catch (e) {
+        if (url.includes(baseUrl)) {
+            return await axios.get(url.replace(baseUrl, mirrorUrl), { headers, timeout: 10000 });
+        }
+        throw e;
+    }
 }
 
 let handler = async (m, { conn, args, usedPrefix, command }) => {
@@ -32,10 +37,10 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     const arg = args[0];
 
     if (cmd === 'voip' && !arg) {
-        let menu = `*✅ 𝐒𝐘𝐒𝐓𝐄𝐌 𝐕𝐎𝐈𝐏: 𝐃𝐀𝐓𝐀𝐁𝐀𝐒𝐄*\n\n`;
-        nazioni.forEach(n => menu += `*${n.id}* ➜ ${n.nome}\n`);
-        menu += `\n💡 _Usa_ \`${usedPrefix}voip <id>\` _per i numeri._`;
-        return m.reply(menu);
+        let txt = `*✅ 𝐒𝐘𝐒𝐓𝐄𝐌 𝐕𝐎𝐈𝐏: 𝐃𝐀𝐓𝐀𝐁𝐀𝐒𝐄*\n\n`;
+        nazioni.forEach(n => txt += `*${n.id}* ➜ ${n.nome}\n`);
+        txt += `\n💡 _Digita_ \`${usedPrefix}voip <id>\` _per estrarre i numeri._`;
+        return m.reply(txt);
     }
 
     if (cmd === 'voip' && arg && !isNaN(arg)) {
@@ -45,13 +50,13 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
         let { key } = await conn.sendMessage(m.chat, { text: `📡 *✅ 𝐒𝐂𝐀𝐍𝐒𝐈𝐎𝐍𝐄 𝐈𝐍 𝐂𝐎𝐑𝐒𝐎:* ${naz.nome}` });
 
         try {
-            const { data } = await fetchData(`${baseUrl}${naz.path}?t=${Date.now()}`);
+            const { data } = await getHtml(`${baseUrl}${naz.path}`);
             const $ = cheerio.load(data);
             let nums = [];
             
             $('a[href*="/en/numbers/"]').each((i, el) => {
-                let val = $(el).text().trim().replace(/[^0-9]/g, '');
-                if (val.length > 5) nums.push(val);
+                let n = $(el).text().trim().replace(/[^0-9]/g, '');
+                if (n.length > 5) nums.push(n);
             });
 
             let final = [...new Set(nums)].sort(() => 0.5 - Math.random()).slice(0, 6);
@@ -69,14 +74,14 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
             return conn.sendMessage(m.chat, { 
                 text: res, 
-                footer: "Seleziona un numero o cambia lista", 
+                footer: "Tocca un tasto per i messaggi", 
                 buttons, 
                 headerType: 1, 
                 edit: key 
             }, { quoted: m });
 
         } catch { 
-            return conn.sendMessage(m.chat, { text: "*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Connessione fallita. La VPS è bloccata da Cloudflare.", edit: key }); 
+            return conn.sendMessage(m.chat, { text: "*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* VPS Bloccata. Riprova più tardi.", edit: key }); 
         }
     }
 
@@ -87,20 +92,20 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
         let { key } = await conn.sendMessage(m.chat, { text: `📨 *✅ 𝐋𝐄𝐓𝐓𝐔𝐑𝐀 𝐒𝐌𝐒:* \`+${num}\`` });
 
         try {
-            const { data } = await fetchData(`${baseUrl}/en/numbers/${num}?t=${Date.now()}`);
+            const { data } = await getHtml(`${baseUrl}/en/numbers/${num}`);
             const $ = cheerio.load(data);
-            let logs = [];
+            let msgs = [];
 
-            $('.shadow-sm').each((i, el) => {
+            $('.shadow-sm, .list-group-item').each((i, el) => {
                 let user = $(el).find('a').first().text().trim() || 'SCONOSCIUTO';
                 let txt = $(el).text().split('ago')[1]?.replace('Copy', '').trim();
-                if (txt) logs.push({ user, txt });
+                if (txt) msgs.push({ user, txt });
             });
 
-            if (!logs.length) return conn.sendMessage(m.chat, { text: "*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Nessun SMS trovato.", edit: key });
+            if (!msgs.length) return conn.sendMessage(m.chat, { text: "*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Nessun SMS ricevuto.", edit: key });
 
             let res = `*✅ 𝐌𝐄𝐒𝐒𝐀𝐆𝐆𝐈 𝐑𝐈𝐂𝐄𝐕𝐔𝐓𝐈:* \`+${num}\`\n\n`;
-            logs.slice(0, 3).forEach(l => res += `👤 *${l.user}*\n💬 ${l.txt}\n\n────────────────\n`);
+            msgs.slice(0, 3).forEach(m => res += `👤 *${m.user}*\n💬 ${m.txt}\n\n────────────────\n`);
 
             const btns = [
                 { buttonId: `${usedPrefix}check ${num}`, buttonText: { displayText: `🔄 𝐀𝐆𝐆𝐈𝐎𝐑𝐍𝐀 𝐒𝐌𝐒` }, type: 1 },
@@ -116,7 +121,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
             }, { quoted: m });
 
         } catch { 
-            return conn.sendMessage(m.chat, { text: "*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Impossibile leggere gli SMS.", edit: key }); 
+            return conn.sendMessage(m.chat, { text: "*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Impossibile leggere i log.", edit: key }); 
         }
     }
 };
