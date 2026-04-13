@@ -27,7 +27,7 @@ let handler = async (m, { conn, text }) => {
     name = await conn.getName(who)
   } catch {}
 
-  let pp = 'https://ui-avatars.com/api/?background=f3f4f6&color=9ca3af&size=512&name=User'
+  let pp = https://i.imgur.com/6VBx3io.png'
 
   try {
     const real = await conn.profilePictureUrl(who, 'image')
