@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 
 const config = { url: 'https://sms24.me', headers: { 'User-Agent': 'Mozilla/5.0' } };
-const nazioni = { 'it': '🇮🇹 𝐈𝐭𝐚', 'us': '🇺🇸 𝐔𝐬𝐚', 'gb': '🇬🇧 𝐔𝐤', 'fr': '🇫🇷 𝐅𝐫𝐚', 'de': '🇩🇪 𝐆𝐞𝐫' };
+const nazioni = { 'it': '🇮🇹 𝐈𝐭𝐚', 'us': '🇺🇸 𝐔𝐬𝐚', 'gb': '𝐆🇧 𝐔𝐤', 'fr': '🇫🇷 𝐅𝐫𝐚', 'de': '🇩🇪 𝐆𝐞𝐫' };
 
 let handler = async (m, { conn, args, usedPrefix, command }) => {
     const cmd = command.toLowerCase();
@@ -25,6 +25,8 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
                 if (n.startsWith('+')) nums.push(n);
             });
 
+            if (nums.length === 0) return m.reply("*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Nessun numero trovato.");
+
             let randomNums = [...new Set(nums)].sort(() => Math.random() - 0.5).slice(0, 6);
             let res = `*✅ 𝐍𝐔𝐌𝐄𝐑𝐈 ${code.toUpperCase()}*\n\n`;
             
@@ -32,7 +34,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
             randomNums.forEach(n => {
                 let clean = n.replace('+', '');
                 res += `🔹 \`${usedPrefix}check ${clean}\`\n`;
-                buttons.push({ buttonId: `${usedPrefix}check ${clean}`, buttonText: { displayText: `Check ${n}` }, type: 1 });
+                buttons.push({ buttonId: `${usedPrefix}check ${clean}`, buttonText: { displayText: `💬 Check ${n}` }, type: 1 });
             });
 
             buttons.push({ buttonId: `${usedPrefix}voip ${code}`, buttonText: { displayText: `🔄 𝐂𝐀𝐌𝐁𝐈𝐀 𝐍𝐔𝐌𝐄𝐑𝐈` }, type: 1 });
@@ -43,12 +45,12 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
                 buttons: buttons,
                 headerType: 1
             }, { quoted: m });
-        } catch { return m.reply("❌ Errore."); }
+        } catch { return m.reply("*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Impossibile connettersi."); }
     }
 
     if (cmd === 'check') {
         let num = args[0]?.replace('+', '');
-        if (!num) return m.reply("💡 Scrivi il numero.");
+        if (!num) return m.reply("*✅ 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨:* Inserisci un numero.");
         
         try {
             const { data } = await axios.get(`${config.url}/en/numbers/${num}`, { headers: config.headers });
@@ -60,10 +62,10 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
                 found = true;
                 let f = $(e).find('a').first().text().trim();
                 let msg = $(e).text().split('ago')[1]?.replace('Copy', '').trim();
-                txt += `👤 *${f}*\n💬 ${msg}\n\n`;
+                if (f) txt += `👤 *${f}*\n💬 ${msg}\n\n`;
             });
 
-            if (!found) txt += "📭 Nessun messaggio.";
+            if (!found) txt += "📭 Nessun messaggio ricevuto.";
 
             const checkBtn = [
                 { buttonId: `${usedPrefix}check ${num}`, buttonText: { displayText: `🔄 𝐀𝐆𝐆𝐈𝐎𝐑𝐍𝐀 𝐒𝐌𝐒` }, type: 1 },
@@ -72,11 +74,11 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
             return conn.sendMessage(m.chat, {
                 text: txt,
-                footer: `Aggiornato alle ${new Date().toLocaleTimeString()}`,
+                footer: `Update: ${new Date().toLocaleTimeString()}`,
                 buttons: checkBtn,
                 headerType: 1
             }, { quoted: m });
-        } catch { return m.reply("❌ Errore."); }
+        } catch { return m.reply("*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Numero non valido."); }
     }
 };
 
