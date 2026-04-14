@@ -81,6 +81,5 @@ handler.command = ['linkqr']
 handler.tags = ['group']
 handler.help = ['linkqr']
 handler.group = true
-handler.botAdmin = true
 
 export default handler
