@@ -71,11 +71,11 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner }) => 
   let result = '';
 
   switch(feature) {
-    case 'antilink':
-      if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin);
-      chat.antiLink = isEnable;
-      result = box('ᴀɴᴛɪʟɪɴᴋ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), 'Protocollo blocco link attivo');
-      break;
+   case 'antilink':
+  if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin);
+  chat.antiLink = isEnable;
+  result = box('ᴀɴᴛɪʟɪɴᴋ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), '🔒 Protocollo AntiLink attivo');
+  break;
 
     case 'antiinsta':
       if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin);
