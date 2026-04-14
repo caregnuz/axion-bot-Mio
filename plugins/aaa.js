@@ -11,12 +11,18 @@ const headers = {
   'User-Agent': 'Mozilla/5.0'
 };
 
+// 🌐 PIÙ SITI (alcuni potrebbero non funzionare sempre)
 const sites = [
   'https://receive-sms-online.info',
   'https://receive-smss.com',
-  'https://www.receivesms.co'
+  'https://www.receivesms.co',
+  'https://freephonenum.com',
+  'https://receive-sms.cc',
+  'https://sms-online.co',
+  'https://receiveasms.com'
 ];
 
+// 🌍 PIÙ NAZIONI
 const countries = [
   { name: 'USA 🇺🇸', prefix: '+1' },
   { name: 'UK 🇬🇧', prefix: '+44' },
@@ -24,45 +30,65 @@ const countries = [
   { name: 'Germania 🇩🇪', prefix: '+49' },
   { name: 'Spagna 🇪🇸', prefix: '+34' },
   { name: 'Italia 🇮🇹', prefix: '+39' },
-  { name: 'Svezia 🇸🇪', prefix: '+46' }
+  { name: 'Svezia 🇸🇪', prefix: '+46' },
+  { name: 'Canada 🇨🇦', prefix: '+1' },
+  { name: 'Paesi Bassi 🇳🇱', prefix: '+31' },
+  { name: 'Polonia 🇵🇱', prefix: '+48' },
+  { name: 'Russia 🇷🇺', prefix: '+7' },
+  { name: 'Ucraina 🇺🇦', prefix: '+380' },
+  { name: 'India 🇮🇳', prefix: '+91' },
+  { name: 'Indonesia 🇮🇩', prefix: '+62' },
+  { name: 'Filippine 🇵🇭', prefix: '+63' }
 ];
 
+// 📥 PRENDE NUMERI
 async function getNumbers() {
   let results = [];
 
   for (let site of sites) {
     try {
-      const { data } = await axios.get(site, { headers, timeout: 8000 });
+      const { data } = await axios.get(site, { headers, timeout: 10000 });
       const $ = cheerio.load(data);
 
-      $('a').each((i, el) => {
+      $('a, td, div').each((i, el) => {
         let t = $(el).text().trim();
-        let match = t.match(/\+\d{6,15}/);
-        if (match) results.push(match[0]);
+
+        let match = t.match(/\+\d{6,15}/g);
+        if (match) results.push(...match);
       });
 
-    } catch {}
+    } catch (e) {
+      console.log('Errore sito:', site);
+    }
   }
 
-  return [...new Set(results)];
+  // pulizia numeri
+  results = [...new Set(results)].filter(n => n.length >= 8);
+
+  return results;
 }
 
+// 📩 PRENDE SMS
 async function getSMS(num) {
-  let clean = num.replace('+','');
+  let clean = num.replace('+', '');
 
   for (let site of sites) {
     try {
-      const { data } = await axios.get(`${site}/${clean}`, { headers, timeout: 8000 });
+      const { data } = await axios.get(`${site}/${clean}`, { headers, timeout: 10000 });
       const $ = cheerio.load(data);
 
       let msgs = [];
 
-      $('table tr, .list, .sms').each((i, el) => {
+      $('table tr, .list, .sms, div').each((i, el) => {
         let text = $(el).text().trim();
-        if (text.length > 5) msgs.push(text);
+
+        if (text.length > 10 && text.length < 300) {
+          msgs.push(text);
+        }
       });
 
-      if (msgs.length > 0) return msgs;
+      if (msgs.length > 0) return msgs.slice(0, 10);
+
     } catch {}
   }
 
@@ -76,20 +102,27 @@ let handler = async (m, { conn, args, usedPrefix }) => {
 
   let user = m.sender;
 
+  // MENU
   if (!args[0]) {
     let txt = `🌍 *SCEGLI PAESE*\n\n`;
+
     countries.forEach((c, i) => {
       txt += `${i + 1}. ${c.name}\n`;
     });
+
     txt += `\nUsa: ${usedPrefix}voip <numero>`;
     return m.reply(txt);
   }
 
+  // SCELTA PAESE
   if (!isNaN(args[0])) {
     let country = countries[parseInt(args[0]) - 1];
     if (!country) return m.reply("❌ Paese non valido");
 
+    m.reply("⏳ Cerco numeri...");
+
     let all = await getNumbers();
+
     let nums = all.filter(n => n.startsWith(country.prefix));
 
     if (nums.length === 0) return m.reply("❌ Nessun numero trovato");
@@ -113,6 +146,7 @@ let handler = async (m, { conn, args, usedPrefix }) => {
     });
   }
 
+  // CAMBIA NUMERO
   if (args[0] === 'next') {
     let session = sessions[user];
     if (!session) return m.reply("❌ Seleziona prima un paese");
@@ -133,18 +167,22 @@ let handler = async (m, { conn, args, usedPrefix }) => {
     });
   }
 
+  // CONTROLLA SMS
   if (args[0] === 'sms') {
     let session = sessions[user];
     if (!session) return m.reply("❌ Nessuna sessione");
 
     let num = session.nums[session.current];
+
+    m.reply("⏳ Controllo SMS...");
+
     let msgs = await getSMS(num);
 
     if (msgs.length === 0) return m.reply("❌ Nessun SMS");
 
     let txt = `📩 *SMS ${num}*\n\n`;
 
-    msgs.slice(0, 5).forEach(x => {
+    msgs.forEach(x => {
       txt += `💬 ${x}\n────────────\n`;
     });
 
