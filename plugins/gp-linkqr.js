@@ -77,7 +77,7 @@ ${link}
   }
 }
 
-handler.command = ['linkqr']
+handler.command = ['linkqrtest']
 handler.tags = ['group']
 handler.help = ['linkqr']
 handler.group = true
