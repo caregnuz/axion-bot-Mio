@@ -9,6 +9,21 @@ import { promisify } from 'util'
 
 const execFileAsync = promisify(execFile)
 
+function getEnvValue(name) {
+  try {
+    const envPath = '/home/falcox/axion-bot-Md/.env'
+    const env = fs.readFileSync(envPath, 'utf8')
+    const line = env
+      .split('\n')
+      .find(v => v.trim().startsWith(name + '='))
+
+    if (!line) return null
+    return line.slice(name.length + 1).trim().replace(/^['"]|['"]$/g, '')
+  } catch {
+    return null
+  }
+}
+
 function isValidUrl(text) {
   try {
     const url = new URL(text)
@@ -18,6 +33,38 @@ function isValidUrl(text) {
   }
 }
 
+function isTikTokUrl(url) {
+  return url.includes('tiktok.com') || url.includes('vm.tiktok.com')
+}
+
+function isYouTubeUrl(url) {
+  return url.includes('youtube.com') || url.includes('youtu.be')
+}
+
+function sanitizeError(msg = '') {
+  if (msg.includes('requiring login for access to this content')) {
+    return 'TikTok richiede login per questo contenuto.'
+  }
+
+  if (msg.includes('HTTP Error 403: Forbidden')) {
+    return 'Download bloccato dal sito sorgente.'
+  }
+
+  if (msg.includes('Video unavailable')) {
+    return 'Contenuto non disponibile.'
+  }
+
+  if (msg.includes('Private video')) {
+    return 'Contenuto privato.'
+  }
+
+  if (msg.includes('Sign in to confirm your age')) {
+    return 'Contenuto con restrizione di età.'
+  }
+
+  return msg
+}
+
 async function hasBinary(bin) {
   try {
     await execFileAsync(bin, ['--version'], { timeout: 10000 })
@@ -25,17 +72,6 @@ async function hasBinary(bin) {
   } catch {
     return false
   }
-}
-
-async function tiktokFallback(url) {
-  const { data } = await axios.get(`https://api.tiklydown.eu.org/api/download?url=${encodeURIComponent(url)}`, {
-    timeout: 30000
-  })
-
-  const videoUrl = data?.video?.noWatermark || data?.video?.watermark || data?.video
-  const audioUrl = data?.music || data?.audio
-
-  return { videoUrl, audioUrl }
 }
 
 async function saveStreamToFile(url, filePath) {
@@ -55,35 +91,150 @@ async function saveStreamToFile(url, filePath) {
   })
 }
 
+async function tiktokFallback1(url, mode, tmpDir) {
+  const endpoints = [
+    `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`,
+    `https://tikwm.com/api/?url=${encodeURIComponent(url)}`
+  ]
+
+  for (const endpoint of endpoints) {
+    try {
+      const res = await axios.get(endpoint, {
+        timeout: 30000,
+        headers: { 'User-Agent': 'Mozilla/5.0' }
+      })
+
+      const data = res.data?.data
+      if (!data) continue
+
+      if (mode === 'video') {
+        const mediaUrl = data.play || data.wmplay
+        if (!mediaUrl) continue
+
+        const filePath = path.join(tmpDir, 'video.mp4')
+        await saveStreamToFile(mediaUrl, filePath)
+        return filePath
+      }
+
+      const audioUrl = data.music
+      if (!audioUrl) continue
+
+      const filePath = path.join(tmpDir, 'audio.mp3')
+      await saveStreamToFile(audioUrl, filePath)
+      return filePath
+    } catch {}
+  }
+
+  throw new Error('Fallback TikTok 1 fallito.')
+}
+
+async function tiktokFallback2(url, mode, tmpDir) {
+  const endpoints = [
+    `https://tikdown.org/api/download?url=${encodeURIComponent(url)}`,
+    `https://api.tiklydown.me/api/download?url=${encodeURIComponent(url)}`
+  ]
+
+  for (const endpoint of endpoints) {
+    try {
+      const res = await axios.get(endpoint, {
+        timeout: 30000,
+        headers: { 'User-Agent': 'Mozilla/5.0' }
+      })
+
+      const data = res.data
+
+      if (mode === 'video') {
+        const mediaUrl =
+          data?.video?.noWatermark ||
+          data?.video?.watermark ||
+          data?.video ||
+          data?.data?.play
+
+        if (!mediaUrl) continue
+
+        const filePath = path.join(tmpDir, 'video.mp4')
+        await saveStreamToFile(mediaUrl, filePath)
+        return filePath
+      }
+
+      const audioUrl =
+        data?.music ||
+        data?.audio ||
+        data?.data?.music
+
+      if (!audioUrl) continue
+
+      const filePath = path.join(tmpDir, 'audio.mp3')
+      await saveStreamToFile(audioUrl, filePath)
+      return filePath
+    } catch {}
+  }
+
+  throw new Error('Fallback TikTok 2 fallito.')
+}
+
+function buildYtDlpBaseArgs(output, url) {
+  const args = [
+    '--no-playlist',
+    '--no-warnings',
+    '-o', output
+  ]
+
+  const cookiesPath = getEnvValue('YTDLP_COOKIES')
+  if (cookiesPath && fs.existsSync(cookiesPath)) {
+    args.push('--cookies', cookiesPath)
+  }
+
+  args.push(url)
+  return args
+}
+
+async function runYtDlp(args) {
+  return execFileAsync('yt-dlp', args, {
+    timeout: 180000,
+    maxBuffer: 1024 * 1024 * 10
+  })
+}
+
 async function downloadVideo(url, tmpDir) {
   const output = path.join(tmpDir, 'video.%(ext)s')
 
   try {
-    await execFileAsync('yt-dlp', [
-      '--no-playlist',
-      '--no-warnings',
+    await runYtDlp([
+      ...buildYtDlpBaseArgs(output, url).slice(0, -1),
       '-f', 'bv*+ba/b',
       '--merge-output-format', 'mp4',
-      '-o', output,
-      url
-    ], {
-      timeout: 180000,
-      maxBuffer: 1024 * 1024 * 10
-    })
-  } catch (e) {
-    if (url.includes('tiktok.com') || url.includes('vm.tiktok.com')) {
-      const { videoUrl } = await tiktokFallback(url)
-      if (!videoUrl) throw new Error('TikTok fallback fallito.')
+      buildYtDlpBaseArgs(output, url).at(-1)
+    ])
+  } catch {
+    try {
+      await runYtDlp([
+        ...buildYtDlpBaseArgs(output, url).slice(0, -1),
+        '-f', 'best[ext=mp4]/best',
+        '--merge-output-format', 'mp4',
+        buildYtDlpBaseArgs(output, url).at(-1)
+      ])
+    } catch (e2) {
+      if (isTikTokUrl(url)) {
+        try {
+          return await tiktokFallback1(url, 'video', tmpDir)
+        } catch {
+          return await tiktokFallback2(url, 'video', tmpDir)
+        }
+      }
 
-      const filePath = path.join(tmpDir, 'video.mp4')
-      await saveStreamToFile(videoUrl, filePath)
-      return filePath
+      if (isYouTubeUrl(url)) {
+        throw new Error('YouTube ha bloccato il download. Prova con cookies.txt.')
+      }
+
+      throw e2
     }
-
-    throw e
   }
 
-  const file = fs.readdirSync(tmpDir).find(f => f.endsWith('.mp4'))
+  const file = fs.readdirSync(tmpDir).find(f =>
+    f.endsWith('.mp4') || f.endsWith('.webm') || f.endsWith('.mkv')
+  )
+
   if (!file) throw new Error('Video non trovato.')
   return path.join(tmpDir, file)
 }
@@ -92,27 +243,25 @@ async function downloadAudio(url, tmpDir) {
   const output = path.join(tmpDir, 'audio.%(ext)s')
 
   try {
-    await execFileAsync('yt-dlp', [
-      '--no-playlist',
-      '--no-warnings',
+    await runYtDlp([
+      ...buildYtDlpBaseArgs(output, url).slice(0, -1),
       '-f', 'bestaudio',
       '--extract-audio',
       '--audio-format', 'mp3',
       '--audio-quality', '0',
-      '-o', output,
-      url
-    ], {
-      timeout: 180000,
-      maxBuffer: 1024 * 1024 * 10
-    })
+      buildYtDlpBaseArgs(output, url).at(-1)
+    ])
   } catch (e) {
-    if (url.includes('tiktok.com') || url.includes('vm.tiktok.com')) {
-      const { audioUrl } = await tiktokFallback(url)
-      if (!audioUrl) throw new Error('Audio TikTok non trovato.')
+    if (isTikTokUrl(url)) {
+      try {
+        return await tiktokFallback1(url, 'audio', tmpDir)
+      } catch {
+        return await tiktokFallback2(url, 'audio', tmpDir)
+      }
+    }
 
-      const filePath = path.join(tmpDir, 'audio.mp3')
-      await saveStreamToFile(audioUrl, filePath)
-      return filePath
+    if (isYouTubeUrl(url)) {
+      throw new Error('YouTube ha bloccato l’audio. Prova con cookies.txt.')
     }
 
     throw e
@@ -139,7 +288,7 @@ let handler = async (m, { conn, args, usedPrefix }) => {
     }
 
     const hasYtDlp = await hasBinary('yt-dlp')
-    if (!hasYtDlp && !(url.includes('tiktok.com') || url.includes('vm.tiktok.com'))) {
+    if (!hasYtDlp && !isTikTokUrl(url)) {
       return m.reply('*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* yt-dlp non installato.')
     }
 
@@ -196,7 +345,7 @@ let handler = async (m, { conn, args, usedPrefix }) => {
 
   } catch (e) {
     console.error('download error:', e)
-    return m.reply(`*❌️ 𝐄𝐫𝐫𝐨𝐫𝐞:* ${e.message || e}`)
+    return m.reply(`*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* ${sanitizeError(e.message || String(e))}`)
   } finally {
     try {
       fs.rmSync(tmpDir, { recursive: true, force: true })
