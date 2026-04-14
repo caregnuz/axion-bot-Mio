@@ -6,9 +6,13 @@ import fetch from 'node-fetch'
 const handler = async (m, { conn, usedPrefix, command }) => {
   try {
     const metadata = await conn.groupMetadata(m.chat)
-
     const code = await conn.groupInviteCode(m.chat)
     const link = `https://chat.whatsapp.com/${code}`
+
+    const totalMembers = Array.isArray(metadata.participants) ? metadata.participants.length : 0
+    const totalAdmins = Array.isArray(metadata.participants)
+      ? metadata.participants.filter(p => p.admin).length
+      : 0
 
     const qrBuffer = await QRCode.toBuffer(link, {
       type: 'png',
@@ -26,12 +30,15 @@ const handler = async (m, { conn, usedPrefix, command }) => {
       ? await (await fetch(thumb)).buffer()
       : thumb
 
-    const caption = `*╭━━━━━━━📌━━━━━━━╮*
-*✦ 𝐐𝐫 𝐆𝐫𝐮𝐩𝐩𝐨 ✦*
-*╰━━━━━━━📌━━━━━━━╯*
+    const caption = `*📌 𝐐𝐫 𝐠𝐫𝐮𝐩𝐩𝐨*
 
-*🔗 𝐋𝐢𝐧𝐤:*
-${link}`
+👥 *Membri:* ${totalMembers}
+🛡️ *Admin:* ${totalAdmins}
+
+🔗 *Link:*
+${link}
+
+⚠️ *Non condividere il link con sconosciuti.*`
 
     await conn.sendMessage(m.chat, {
       image: qrBuffer,
@@ -40,7 +47,7 @@ ${link}`
         ...(global.rcanal?.contextInfo || {}),
         externalAdReply: {
           title: metadata.subject || 'Gruppo',
-          body: ' ',
+          body: 'Qr invito gruppo',
           thumbnail: thumbnailBuffer,
           mediaType: 1,
           renderLargerThumbnail: false,
@@ -53,6 +60,16 @@ ${link}`
           buttonId: `${usedPrefix}${command}`,
           buttonText: { displayText: '🔄 Genera nuovo Qr' },
           type: 1
+        },
+        {
+          buttonId: `${usedPrefix}link`,
+          buttonText: { displayText: '🔗 Mostra link' },
+          type: 1
+        },
+        {
+          buttonId: `${usedPrefix}reimpostalink`,
+          buttonText: { displayText: '♻️ Reset link' },
+          type: 1
         }
       ],
       headerType: 4
@@ -60,7 +77,7 @@ ${link}`
 
   } catch (error) {
     console.error(error)
-    m.reply('*𝐄𝐫𝐫𝐨𝐫𝐞 𝐝𝐮𝐫𝐚𝐧𝐭𝐞 𝐥𝐚 𝐠𝐞𝐧𝐞𝐫𝐚𝐳𝐢𝐨𝐧𝐞 𝐝𝐞𝐥 𝐐𝐫.*')
+    m.reply('*❌ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐝𝐮𝐫𝐚𝐧𝐭𝐞 𝐥𝐚 𝐠𝐞𝐧𝐞𝐫𝐚𝐳𝐢𝐨𝐧𝐞 𝐝𝐞𝐥 𝐐𝐫.*')
   }
 }
 
