@@ -476,12 +476,13 @@ function buildInfoCaption(info, mode) {
   txt += `⚖️ *𝐏𝐞𝐬𝐨:* ${info.filesize || '𝐍/𝐃'}\n`
   txt += `👁️ *𝐕𝐢𝐞𝐰𝐬:* ${info.views || '𝐍/𝐃'}\n`
   txt += `📅 *𝐃𝐚𝐭𝐚:* ${info.uploadDate || '𝐍/𝐃'}`
-  
-    txt += `🕒 *𝐓𝐞𝐦𝐩𝐨 𝐬𝐭𝐢𝐦𝐚𝐭𝐨 𝐝𝐨𝐰𝐧𝐥𝐨𝐚𝐝:* ${estimateDownloadTime(info, mode)}\n`
+
   txt += buildLongWarning(info, mode)
 
+  txt += `\n\n🕒 *𝐓𝐞𝐦𝐩𝐨 𝐬𝐭𝐢𝐦𝐚𝐭𝐨 𝐝𝐨𝐰𝐧𝐥𝐨𝐚𝐝:*\n${estimateDownloadTime(info, mode)}`
+
   return txt
-}
+}}
 
 let handler = async (m, { conn, args, usedPrefix }) => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dw-'))
@@ -506,7 +507,7 @@ let handler = async (m, { conn, args, usedPrefix }) => {
     }
 
     if (!url) {
-      return m.reply('*❌️ 𝐄𝐑𝐑𝐎𝐑𝐄:* 𝐈𝐧𝐬𝐞𝐫𝐢𝐬𝐜𝐢 𝐮𝐧 𝐥𝐢𝐧𝐤.')
+      return m.reply('*⚠️ 𝐈𝐧𝐬𝐞𝐫𝐢𝐬𝐜𝐢 𝐮𝐧 𝐥𝐢𝐧𝐤*')
     }
 
     if (!isValidUrl(url)) {
