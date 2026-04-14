@@ -467,7 +467,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
   }
 }
 
-handler.command = /^(voip|saldo)$/i
+handler.command = /^(voip2|saldo)$/i
 handler.tags = ['strumenti']
 handler.help = ['voip', 'saldo']
 
