@@ -92,6 +92,10 @@ function sanitizeError(msg = '') {
     return '𝐟𝐟𝐦𝐩𝐞𝐠 𝐧𝐨𝐧 𝐢𝐧𝐬𝐭𝐚𝐥𝐥𝐚𝐭𝐨.'
   }
 
+  if (text.includes('ffprobe') && text.includes('not found')) {
+    return '𝐟𝐟𝐩𝐫𝐨𝐛𝐞 𝐧𝐨𝐧 𝐢𝐧𝐬𝐭𝐚𝐥𝐥𝐚𝐭𝐨.'
+  }
+
   if (text.includes('yt-dlp') && text.includes('not found')) {
     return '𝐲𝐭-𝐝𝐥𝐩 𝐧𝐨𝐧 𝐢𝐧𝐬𝐭𝐚𝐥𝐥𝐚𝐭𝐨.'
   }
@@ -99,13 +103,40 @@ function sanitizeError(msg = '') {
   return text
 }
 
+function estimateDownloadTime(info, mode) {
+  const secs = Number(info?.durationSeconds || 0)
+  const size = Number(info?.filesizeApprox || 0)
+
+  if (mode === 'audio') {
+    if (secs >= 1800) return '𝟐-𝟓 𝐦𝐢𝐧'
+    if (secs >= 600) return '𝟒𝟎-𝟗𝟎 𝐬𝐞𝐜'
+    return '𝟓-𝟑𝟎 𝐬𝐞𝐜'
+  }
+
+  if (size >= 200 * 1024 * 1024 || secs >= 1800) return '𝟑-𝟏𝟎 𝐦𝐢𝐧'
+  if (size >= 80 * 1024 * 1024 || secs >= 600) return '𝟏-𝟑 𝐦𝐢𝐧'
+  if (size >= 25 * 1024 * 1024 || secs >= 180) return '𝟐𝟎-𝟗𝟎 𝐬𝐞𝐜'
+  return '𝟓-𝟑𝟎 𝐬𝐞𝐜'
+}
+
 function buildLongWarning(info, mode) {
   const secs = Number(info?.durationSeconds || 0)
-  const size = Number(info?.filesizeApprox || info?.filesize || 0)
+  const size = Number(info?.filesizeApprox || 0)
 
-  if (secs < 600 && size < 80 * 1024 * 1024) return ''
+  const longByTime = secs >= 600
+  const longBySize = size >= 80 * 1024 * 1024
 
-  return `\n\n⚠️ 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 𝐋𝐄𝐍𝐓𝐎`
+  if (!longByTime && !longBySize) return ''
+
+  return `\n\n⚠️ *𝐀𝐕𝐕𝐈𝐒𝐎:* 𝐪𝐮𝐞𝐬𝐭𝐨 ${mode === 'video' ? '𝐝𝐨𝐰𝐧𝐥𝐨𝐚𝐝' : '𝐝𝐨𝐰𝐧𝐥𝐨𝐚𝐝 𝐚𝐮𝐝𝐢𝐨'} 𝐩𝐨𝐭𝐫𝐞𝐛𝐛𝐞 𝐫𝐢𝐜𝐡𝐢𝐞𝐝𝐞𝐫𝐞 𝐩𝐢𝐮̀ 𝐭𝐞𝐦𝐩𝐨 𝐝𝐞𝐥 𝐧𝐨𝐫𝐦𝐚𝐥𝐞.`
+}
+
+function formatElapsed(ms) {
+  const total = Math.max(0, Math.round(ms / 1000))
+  const m = Math.floor(total / 60)
+  const s = total % 60
+  if (m > 0) return `${m}𝐦 ${s}𝐬`
+  return `${s}𝐬`
 }
 
 async function hasBinary(bin) {
@@ -280,6 +311,43 @@ async function convertToMp4(inputPath, tmpDir) {
   return outputPath
 }
 
+async function probeVideoCodecs(filePath) {
+  const { stdout } = await execFileAsync('ffprobe', [
+    '-v', 'error',
+    '-select_streams', 'v:0',
+    '-show_entries', 'stream=codec_name',
+    '-of', 'default=noprint_wrappers=1:nokey=1',
+    filePath
+  ], {
+    timeout: 30000
+  })
+
+  let audioCodec = ''
+  try {
+    const { stdout: audioOut } = await execFileAsync('ffprobe', [
+      '-v', 'error',
+      '-select_streams', 'a:0',
+      '-show_entries', 'stream=codec_name',
+      '-of', 'default=noprint_wrappers=1:nokey=1',
+      filePath
+    ], {
+      timeout: 30000
+    })
+    audioCodec = audioOut.trim().toLowerCase()
+  } catch {}
+
+  return {
+    video: stdout.trim().toLowerCase(),
+    audio: audioCodec
+  }
+}
+
+function isWhatsAppCompatible(codecs) {
+  const videoOk = ['h264'].includes(codecs.video)
+  const audioOk = !codecs.audio || ['aac', 'mp3'].includes(codecs.audio)
+  return videoOk && audioOk
+}
+
 async function downloadVideo(url, tmpDir) {
   const output = path.join(tmpDir, 'video.%(ext)s')
 
@@ -322,8 +390,9 @@ async function downloadVideo(url, tmpDir) {
   if (!file) throw new Error('𝐕𝐢𝐝𝐞𝐨 𝐧𝐨𝐧 𝐭𝐫𝐨𝐯𝐚𝐭𝐨.')
 
   const rawPath = path.join(tmpDir, file)
+  const codecs = await probeVideoCodecs(rawPath)
 
-  if (rawPath.endsWith('.mp4')) {
+  if (isWhatsAppCompatible(codecs)) {
     return { filePath: rawPath }
   }
 
@@ -374,6 +443,7 @@ function buildInfoCaption(info, mode) {
   txt += `👤 *𝐀𝐮𝐭𝐨𝐫𝐞:* ${info.uploader || '𝐍/𝐃'}\n`
   txt += `⏱️ *𝐃𝐮𝐫𝐚𝐭𝐚:* ${info.duration || '𝐍/𝐃'}\n`
   txt += `⚖️ *𝐏𝐞𝐬𝐨:* ${info.filesize || '𝐍/𝐃'}\n`
+  txt += `🕒 *𝐓𝐞𝐦𝐩𝐨 𝐬𝐭𝐢𝐦𝐚𝐭𝐨 𝐝𝐨𝐰𝐧𝐥𝐨𝐚𝐝:* ${estimateDownloadTime(info, mode)}\n`
   txt += `👁️ *𝐕𝐢𝐞𝐰𝐬:* ${info.views || '𝐍/𝐃'}\n`
   txt += `📅 *𝐃𝐚𝐭𝐚:* ${info.uploadDate || '𝐍/𝐃'}`
   txt += buildLongWarning(info, mode)
@@ -464,28 +534,42 @@ let handler = async (m, { conn, args, usedPrefix }) => {
       }, { quoted: m })
     }
 
-    await conn.sendMessage(m.chat, {
-      react: { text: '⏳', key: m.key }
-    })
+    const startedAt = Date.now()
+
+    const statusMsg = await conn.sendMessage(m.chat, {
+      text: '*⏳ 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 𝐈𝐍 𝐂𝐎𝐑𝐒𝐎...*'
+    }, { quoted: m })
 
     if (mode === 'audio') {
       const result = await downloadAudio(url, tmpDir)
+      const elapsed = formatElapsed(Date.now() - startedAt)
 
       await conn.sendMessage(m.chat, {
         audio: fs.readFileSync(result.filePath),
         mimetype: 'audio/mpeg',
         fileName: 'audio.mp3'
       }, { quoted: m })
+
+      await conn.sendMessage(m.chat, {
+        text: `*𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 𝐂𝐎𝐌𝐏𝐋𝐄𝐓𝐀𝐓𝐎✅️*\n\n🕒 *𝐓𝐞𝐦𝐩𝐨 𝐭𝐫𝐚𝐬𝐜𝐨𝐫𝐬𝐨:* ${elapsed}`,
+        edit: statusMsg.key
+      })
     }
 
     if (mode === 'video') {
       const result = await downloadVideo(url, tmpDir)
+      const elapsed = formatElapsed(Date.now() - startedAt)
 
       await conn.sendMessage(m.chat, {
         video: fs.readFileSync(result.filePath),
         mimetype: 'video/mp4',
         fileName: 'video.mp4'
       }, { quoted: m })
+
+      await conn.sendMessage(m.chat, {
+        text: `*𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 𝐂𝐎𝐌𝐏𝐋𝐄𝐓𝐀𝐓𝐎✅️*\n\n🕒 *𝐓𝐞𝐦𝐩𝐨 𝐭𝐫𝐚𝐬𝐜𝐨𝐫𝐬𝐨:* ${elapsed}`,
+        edit: statusMsg.key
+      })
     }
 
     await conn.sendMessage(m.chat, {
