@@ -1,3 +1,4 @@
+
 //by Bonzino
 
 import fs from 'fs'
@@ -457,7 +458,21 @@ let handler = async (m, { conn, args, usedPrefix }) => {
 
   try {
     const mode = (args[0] || '').toLowerCase()
-    const url = (mode === 'audio' || mode === 'video') ? args[1] : args[0]
+    let url = (mode === 'audio' || mode === 'video') ? args[1] : args[0]
+
+if (!url && m.quoted) {
+  const quoted = m.quoted
+  url = quoted.text || quoted.caption || ''
+
+  if (!url && quoted.msg) {
+    url = quoted.msg?.text || quoted.msg?.caption || ''
+  }
+}
+
+if (url) {
+  const match = url.match(/https?:\/\/[^\s]+/)
+  url = match ? match[0] : null
+}
 
     if (!url) {
       return m.reply('*❌️ 𝐄𝐑𝐑𝐎𝐑𝐄:* 𝐈𝐧𝐬𝐞𝐫𝐢𝐬𝐜𝐢 𝐮𝐧 𝐥𝐢𝐧𝐤.')
