@@ -541,7 +541,7 @@ let handler = async (m, { conn, args, usedPrefix }) => {
     }
 
     if (!url) {
-      return m.reply('*❌️ 𝐄𝐑𝐑𝐎𝐑𝐄:* 𝐈𝐧𝐬𝐞𝐫𝐢𝐬𝐜𝐢 𝐮𝐧 𝐥𝐢𝐧𝐤.')
+      return m.reply('*⚠️ 𝐈𝐧𝐬𝐞𝐫𝐢𝐬𝐜𝐢 𝐮𝐧 𝐥𝐢𝐧𝐤 𝐯𝐚𝐥𝐢𝐝𝐨*')
     }
 
     if (!isValidUrl(url)) {
