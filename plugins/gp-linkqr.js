@@ -10,9 +10,6 @@ const handler = async (m, { conn, usedPrefix, command }) => {
     const link = `https://chat.whatsapp.com/${code}`
 
     const totalMembers = Array.isArray(metadata.participants) ? metadata.participants.length : 0
-    const totalAdmins = Array.isArray(metadata.participants)
-      ? metadata.participants.filter(p => p.admin).length
-      : 0
 
     const qrBuffer = await QRCode.toBuffer(link, {
       type: 'png',
@@ -33,7 +30,6 @@ const handler = async (m, { conn, usedPrefix, command }) => {
     const caption = `*📌 𝐐𝐫 𝐠𝐫𝐮𝐩𝐩𝐨*
 
 👥 *Membri:* ${totalMembers}
-🛡️ *Admin:* ${totalAdmins}
 
 🔗 *Link:*
 ${link}
