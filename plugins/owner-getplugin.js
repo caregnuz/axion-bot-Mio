@@ -122,7 +122,7 @@ ${SIGN}`
       document: fs.readFileSync(pluginPath),
       mimetype: 'application/javascript',
       fileName: pluginFile,
-      caption: `📥 *Download pronto:*`
+      caption: `*Download pronto✅️*`
     }, { quoted: m })
   }
 
