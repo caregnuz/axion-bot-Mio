@@ -1,8 +1,25 @@
 //by Bonzino
 
 import axios from 'axios'
+import fs from 'fs'
+import path from 'path'
 
-const API_KEY = process.env.FIVESIM_KEY
+function getEnvValue(name) {
+  try {
+    const envPath = path.resolve('.env')
+    const env = fs.readFileSync(envPath, 'utf8')
+    const line = env
+      .split('\n')
+      .find(v => v.trim().startsWith(name + '='))
+
+    if (!line) return null
+    return line.slice(name.length + 1).trim().replace(/^['"]|['"]$/g, '')
+  } catch {
+    return null
+  }
+}
+
+const API_KEY = getEnvValue('FIVESIM_KEY')
 const USER_BASE = 'https://5sim.net/v1/user'
 const GUEST_BASE = 'https://5sim.net/v1/guest'
 const PAGE_SIZE = 3
@@ -193,9 +210,7 @@ async function autoCycle(conn, chat, m, session) {
 
   try {
     for (let attempt = 1; attempt <= AUTO_TRIES; attempt++) {
-      if (!session.selected) {
-        throw new Error('Nessun paese selezionato.')
-      }
+      if (!session.selected) throw new Error('Nessun paese selezionato.')
 
       if (!session.order?.id) {
         await buyAndSave(session, session.selected.key)
@@ -452,7 +467,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
   }
 }
 
-handler.command = /^(voip2|saldo)$/i
+handler.command = /^(voip|saldo)$/i
 handler.tags = ['strumenti']
 handler.help = ['voip', 'saldo']
 

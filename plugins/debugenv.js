@@ -1,11 +1,41 @@
 //by Bonzino
 
+import fs from 'fs'
+import path from 'path'
+
+function getEnvValue(name) {
+  try {
+    const envPath = path.resolve('.env')
+    const env = fs.readFileSync(envPath, 'utf8')
+
+    const line = env
+      .split('\n')
+      .find(v => v.trim().startsWith(name + '='))
+
+    if (!line) return null
+
+    return line
+      .slice(name.length + 1)
+      .trim()
+      .replace(/^['"]|['"]$/g, '')
+  } catch {
+    return null
+  }
+}
+
 let handler = async (m) => {
   try {
-    const key = process.env.FIVESIM_KEY
+    const key = getEnvValue('FIVESIM_KEY')
 
     if (!key) {
-      return m.reply('*❌ ENV NON LETTO*\n\nFIVESIM_KEY non trovata.')
+      return m.reply(
+        '*❌ ENV NON LETTO*\n\n' +
+        'FIVESIM_KEY non trovata.\n\n' +
+        'Controlla:\n' +
+        '- file .env\n' +
+        '- nome variabile\n' +
+        '- posizione file'
+      )
     }
 
     const masked =
@@ -14,8 +44,9 @@ let handler = async (m) => {
         : key
 
     let txt = `*✅ ENV LETTO CORRETTAMENTE*\n\n`
-    txt += `🔑 *FIVESIM_KEY:*\n\`${masked}\`\n\n`
-    txt += `📏 Lunghezza: ${key.length}`
+    txt += `🔑 *Key:*\n\`${masked}\`\n\n`
+    txt += `📏 Lunghezza: \`${key.length}\`\n`
+    txt += `📂 Path: \`${path.resolve('.env')}\``
 
     return m.reply(txt)
 
