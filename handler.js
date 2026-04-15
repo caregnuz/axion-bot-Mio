@@ -222,6 +222,23 @@ export async function participantsUpdate({ id, participants, action }) {
     if (global.db.data.chats[id]?.rileva === false) return
 
     try {
+        for (let name in global.plugins) {
+            let plugin = global.plugins[name]
+            if (!plugin) continue
+
+            if (typeof plugin.participantsUpdate === 'function') {
+                try {
+                    await plugin.participantsUpdate.call(this, {
+                        id,
+                        participants,
+                        action
+                    })
+                } catch (e) {
+                    console.error(`[ERRORE] participantsUpdate plugin ${name}:`, e)
+                }
+            }
+        }
+
         let metadata = global.groupCache.get(id) || await fetchMetadata(this, id)
         if (!metadata) return
 
