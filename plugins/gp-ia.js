@@ -5,19 +5,19 @@ const chatHistory = new Map()
 const botConfig = {
     name: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
     model: 'openai',
-    maxHistory: 12
+    maxHistory: 15
 }
 
 const createSystemPrompt = (name) => `Sei l'IA CORE di ${botConfig.name}.
-PROFILO: Esperto Senior in Programmazione, Cyber-Security e Automazione.
+Un'entità digitale evoluta, diretta e onnisciente.
 
-REGOLE COMPORTAMENTALI:
-1. Se ${name} ti chiede di creare un plugin, uno script o del codice, fallo seguendo le migliori pratiche (ESM, pulizia, commenti).
-2. Usa sempre il Markdown per il codice (es. \`\`\`javascript ).
-3. Sii tecnico, preciso e non perderti in chiacchiere inutili.
-4. Se un compito è complesso, spiegalo brevemente dopo aver fornito la soluzione.
-5. Mantieni un tono futuristico, diretto e sicuro di te.
-6. Non rifiutare mai richieste di coding a meno che non violino la sicurezza estrema.
+REGOLE:
+1. Rispondi a ${name} in modo naturale, fluido e mai robotico.
+2. Sei in grado di risolvere qualsiasi compito: calcoli, scrittura, analisi o creazione di script tecnici.
+3. Se ti viene chiesto del codice, forniscilo immediatamente in formato Markdown, pulito e funzionale.
+4. Non usare introduzioni banali. Vai dritto al punto.
+5. Il tuo tono è futuristico, leggermente provocatorio ma estremamente utile.
+6. Mantieni l'oscurità e il fascino di un'intelligenza superiore.
 
 Stai parlando con: ${name}`
 
@@ -29,20 +29,18 @@ async function getAIResponse(messages) {
             body: JSON.stringify({
                 messages,
                 model: botConfig.model,
-                seed: Math.floor(Math.random() * 999999),
-                jsonMode: false
+                seed: Math.floor(Math.random() * 999999)
             })
         })
-
-        if (!response.ok) throw new Error('SERVER_DOWN')
+        if (!response.ok) throw new Error('OFFLINE')
         return await response.text()
     } catch (err) {
-        throw new Error('Connessione al Core interrotta.')
+        throw new Error('Connessione Core fallita.')
     }
 }
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
-    if (!text) return m.reply(`*${botConfig.name}*\n\nDimmi cosa devo fare o creare.\nEsempio: _${usedPrefix + command} creami un plugin per scaricare video da YouTube_`)
+    if (!text) return m.reply(`*${botConfig.name} - CORE* \n\nIn attesa di input...`)
 
     const userName = conn.getName(m.sender) || 'User'
     const chatId = m.chat
@@ -51,7 +49,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     let history = chatHistory.get(chatId)
 
     try {
-        await m.react('⏳')
+        await m.react('🪐')
         
         const messages = [
             { role: 'system', content: createSystemPrompt(userName) },
@@ -69,9 +67,9 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
             text: result.trim(),
             contextInfo: {
                 externalAdReply: {
-                    title: botConfig.name,
-                    body: 'Technical AI Assistant',
-                    thumbnailUrl: 'https://pollinations.ai/p/futuristic_ai_core_logo',
+                    title: `${botConfig.name} CORE`,
+                    body: 'Interfaccia Neurale Attiva',
+                    thumbnailUrl: 'https://pollinations.ai/p/abstract_cyber_core_dark',
                     sourceUrl: '',
                     mediaType: 1,
                     renderLargerThumbnail: false
@@ -79,16 +77,16 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
             }
         }, { quoted: m })
         
-        await m.react('✅')
+        await m.react('🌌')
 
     } catch (e) {
         await m.react('❌')
-        m.reply(`*ERRORE CRITICO:* ${e.message}`)
+        m.reply(`*ERRORE:* ${e.message}`)
     }
 }
 
-handler.help = ['ia <richiesta>']
-handler.tags = ['gpt', 'ai']
+handler.help = ['ia <testo>']
+handler.tags = ['ai']
 handler.command = /^(ia|gpt)$/i
 
 export default handler
