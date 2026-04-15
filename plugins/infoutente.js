@@ -2,6 +2,7 @@
 
 import { getDevice } from '@realvare/baileys'
 import fetch from 'node-fetch'
+import fs from 'fs'
 
 const S = v => String(v || '')
 
@@ -95,14 +96,18 @@ let handler = async (m, { conn }) => {
   const participants = Array.isArray(meta?.participants) ? meta.participants : []
   const ruolo = getRole(target, participants, user, m.chat)
 
-  const profilo = await conn.profilePictureUrl(target, 'image')
-    .catch(() => 'https://i.ibb.co/2kR7x9J/avatar.png')
+  let profilo
+  try {
+    profilo = await conn.profilePictureUrl(target, 'image')
+  } catch {
+    profilo = fs.readFileSync('./media/default-avatar.png')
+  }
 
   const thumbnailBuffer = typeof profilo === 'string'
     ? await (await fetch(profilo)).buffer()
     : profilo
-    
-const text = `╭━━━━━━━📌━━━━━━━╮
+
+  const text = `╭━━━━━━━📌━━━━━━━╮
 ✦ 𝐈𝐍𝐅𝐎 𝐔𝐓𝐄𝐍𝐓𝐄 ✦
 ╰━━━━━━━📌━━━━━━━╯
 

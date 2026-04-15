@@ -1,8 +1,7 @@
-
-
 // by Bonzino
 
 import fetch from 'node-fetch'
+import fs from 'fs'
 import { getLevelFull } from '../lib/levels.js'
 
 const S = v => String(v || '')
@@ -28,8 +27,12 @@ let handler = async (m, { conn }) => {
     ? `instagram.com/${user.profile.instagram}`
     : '𝐍𝐨𝐧 𝐢𝐦𝐩𝐨𝐬𝐭𝐚𝐭𝐨'
 
-  const profilo = await conn.profilePictureUrl(target, 'image')
-    .catch(() => 'https://i.ibb.co/2kR7x9J/avatar.png')
+  let profilo
+  try {
+    profilo = await conn.profilePictureUrl(target, 'image')
+  } catch {
+    profilo = fs.readFileSync('./media/default-avatar.png')
+  }
 
   const thumbnailBuffer = typeof profilo === 'string'
     ? await (await fetch(profilo)).buffer()
@@ -44,7 +47,7 @@ let handler = async (m, { conn }) => {
 *🧠 𝐋𝐢𝐯𝐞𝐥𝐥𝐨:* ${lvl.level} (${lvl.icon} ${lvl.name})
 *📈 𝐏𝐫𝐨𝐠𝐫𝐞𝐬𝐬𝐨:* ${lvl.percent}%
 *⬆️ 𝐏𝐫𝐨𝐬𝐬𝐢𝐦𝐨:* ${lvl.isMax ? '*𝐌𝐀𝐗*' : `${lvl.nextName} (${lvl.remaining} msg)`}
-*🪙 𝐌𝐨𝐧𝐞𝐭𝐞:* ${monete}
+*💸 Denaro:* ${monete}
 *🎁 𝐒𝐭𝐫𝐞𝐚𝐤 𝐃𝐚𝐢𝐥𝐲:* ${dailyStreak} 𝐠𝐢𝐨𝐫𝐧𝐢
 *📸 𝐈𝐧𝐬𝐭𝐚𝐠𝐫𝐚𝐦:* ${instagram}`
 
