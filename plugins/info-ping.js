@@ -1,11 +1,12 @@
-import fs from 'fs'
+// by 𝕯𝖊ⱥ𝖉𝖑𝐲 × Bonzino
+
 import os from 'os'
 import { performance } from 'perf_hooks'
 
 const toMathematicalAlphanumericSymbols = number => {
   const map = {
-    '0': '𝟎','1': '𝟏','2': '𝟐','3': '𝟑','4': '𝟒',
-    '5': '𝟓','6': '𝟔','7': '𝟕','8': '𝟖','9': '𝟗','.': '.'
+    '0': '𝟎', '1': '𝟏', '2': '𝟐', '3': '𝟑', '4': '𝟒',
+    '5': '𝟓', '6': '𝟔', '7': '𝟕', '8': '𝟖', '9': '𝟗', '.': '.'
   }
   return number.toString().split('').map(d => map[d] || d).join('')
 }
@@ -15,14 +16,10 @@ const clockString = ms => {
   const hours = Math.floor((ms % 86400000) / 3600000)
   const minutes = Math.floor((ms % 3600000) / 60000)
 
-  return `${toMathematicalAlphanumericSymbols(days.toString().padStart(2,'0'))}d ${toMathematicalAlphanumericSymbols(hours.toString().padStart(2,'0'))}h ${toMathematicalAlphanumericSymbols(minutes.toString().padStart(2,'0'))}m`
+  return `${toMathematicalAlphanumericSymbols(days.toString().padStart(2, '0'))}d ${toMathematicalAlphanumericSymbols(hours.toString().padStart(2, '0'))}h ${toMathematicalAlphanumericSymbols(minutes.toString().padStart(2, '0'))}m`
 }
 
 const handler = async (m, { conn, usedPrefix }) => {
-
-  // SOLO GRUPPI
-  if (!m.isGroup) return conn.reply(m.chat, '❌ Questo comando funziona solo nei gruppi.', m)
-
   const _uptime = process.uptime() * 1000
   const uptime = clockString(_uptime)
 
@@ -40,17 +37,20 @@ const handler = async (m, { conn, usedPrefix }) => {
   const info = `
 『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐒𝐓𝐀𝐓𝐔𝐒 』
 
-🚀 𝐋𝐀𝐓𝐄𝐍𝐙𝐀
+🚀 𝐋𝐚𝐭𝐞𝐧𝐜𝐲
 ╰➤ ${speedWithFont} ms
 
-⏱️ 𝐔𝐏𝐓𝐈𝐌𝐄
+⏱️ 𝐔𝐩𝐭𝐢𝐦𝐞
 ╰➤ ${uptime}
 
-💻 𝐑𝐄𝐒𝐎𝐔𝐑𝐂𝐄𝐒
+💻 𝐑𝐞𝐬𝐨𝐮𝐫𝐜𝐞𝐬
 ╰➤ Server: ${usedMem} / ${totalMem} MB
 ╰➤ Engine: ${heapUsed} MB
 
-🛰️ 𝐒𝐘𝐒𝐓𝐄𝐌 𝐎𝐍𝐋𝐈𝐍𝐄
+✅️ 𝐒𝐭𝐚𝐭𝐮𝐬
+╰➤ System online
+
+> 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓
 `.trim()
 
   const buttons = [
@@ -60,12 +60,16 @@ const handler = async (m, { conn, usedPrefix }) => {
 
   await conn.sendMessage(m.chat, {
     text: info,
-    footer: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 𝐒𝐘𝐒𝐓𝐄𝐌',
-    buttons: buttons,
-    headerType: 1
+    buttons,
+    headerType: 1,
+    contextInfo: {
+      ...(global.rcanal?.contextInfo || {})
+    }
   }, { quoted: m })
 }
 
+handler.help = ['ping']
+handler.tags = ['info']
 handler.command = /^(ping)$/i
 
 export default handler
