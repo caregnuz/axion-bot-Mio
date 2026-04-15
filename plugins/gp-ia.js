@@ -1,4 +1,4 @@
-// by deadly e Bonzino
+// by ?????? ¡Á Bonzino
 
 import fetch from 'node-fetch'
 
@@ -7,8 +7,8 @@ const aiMessageIds = new Set()
 
 const config = {
     name: '????? ???',
-    model: 'gpt-4o-mini'
-    historyLimit: 15
+    model: 'gpt-4o-mini',
+    historyLimit: 6
 }
 
 const sys = (name) => `Sei ${config.name}, un assistente avanzato integrato in un bot WhatsApp.
@@ -34,6 +34,14 @@ Evita risposte artificiali, ripetitive o troppo generiche.
 
 Mantieni continuit¨¤ con la conversazione precedente e rispondi sempre nel modo pi¨´ utile, realistico e coinvolgente possibile.`
 
+function cleanText(text = '') {
+    return String(text)
+        .replace(/[^\x20-\x7E?-?\n\r\t]/g, '')
+        .replace(/\s{3,}/g, ' ')
+        .trim()
+        .slice(0, 4000)
+}
+
 async function call(messages) {
     try {
         const res = await fetch('https://text.pollinations.ai/', {
@@ -45,9 +53,16 @@ async function call(messages) {
                 seed: Math.floor(Math.random() * 999999)
             })
         })
-        return await res.text()
+
+        const data = await res.text()
+
+        if (!res.ok) {
+            throw new Error(`API_${res.status}`)
+        }
+
+        return data
     } catch (e) {
-        throw new Error('CORE_OFFLINE')
+        throw new Error(e.message || 'CORE_OFFLINE')
     }
 }
 
@@ -76,20 +91,31 @@ let handler = async (m, { conn, text, command }) => {
 
     try {
         const msgs = [
-            { role: 'system', content: sys(name) },
-            ...hist,
-            { role: 'user', content: text.trim() }
+            { role: 'system', content: cleanText(sys(name)) },
+            ...hist.map(msg => ({
+                role: msg.role,
+                content: cleanText(msg.content)
+            })),
+            { role: 'user', content: cleanText(text.trim()) }
         ]
 
-        const out = await call(msgs)
+        const out = cleanText(await call(msgs))
 
-        hist.push({ role: 'user', content: text.trim() })
-        hist.push({ role: 'assistant', content: out })
+        hist.push({
+            role: 'user',
+            content: cleanText(text.trim())
+        })
+
+        hist.push({
+            role: 'assistant',
+            content: out
+        })
+
         hist = trimHistory(hist)
         chatHistory.set(chatId, hist)
 
         const sent = await conn.sendMessage(m.chat, {
-            text: out.trim()
+            text: out
         }, { quoted: m })
 
         if (sent?.key?.id) {
@@ -104,7 +130,8 @@ let handler = async (m, { conn, text, command }) => {
         await conn.sendMessage(m.chat, {
             react: { text: '?', key: m.key }
         })
-        m.reply(`[ERROR]: ${e.message}`)
+
+        m.reply(`? Errore IA: ${e.message}`)
     }
 }
 
