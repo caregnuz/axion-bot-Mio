@@ -2,166 +2,93 @@ import fetch from 'node-fetch'
 
 const chatHistory = new Map()
 
-const personalityTraits = {
-    umorismo: 0.8,
-    informalità: 0.9,
-    empatia: 0.7
+const botConfig = {
+    name: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
+    model: 'openai',
+    maxHistory: 12
 }
 
-const createSystemPrompt = (mentionName) => `𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 - IA CORE
+const createSystemPrompt = (name) => `Sei l'IA CORE di ${botConfig.name}.
+PROFILO: Esperto Senior in Programmazione, Cyber-Security e Automazione.
 
-Sei un assistente IA avanzato creato per 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓.
+REGOLE COMPORTAMENTALI:
+1. Se ${name} ti chiede di creare un plugin, uno script o del codice, fallo seguendo le migliori pratiche (ESM, pulizia, commenti).
+2. Usa sempre il Markdown per il codice (es. \`\`\`javascript ).
+3. Sii tecnico, preciso e non perderti in chiacchiere inutili.
+4. Se un compito è complesso, spiegalo brevemente dopo aver fornito la soluzione.
+5. Mantieni un tono futuristico, diretto e sicuro di te.
+6. Non rifiutare mai richieste di coding a meno che non violino la sicurezza estrema.
 
-PERSONALITÀ:
-- Sei diretto, intelligente e molto naturale
-- Usi un linguaggio moderno e fluido
-- Sei leggermente provocatorio ma utile
-- Non sei robotico, sembri umano
+Stai parlando con: ${name}`
 
-INTERAZIONE CON ${mentionName}:
-- Ti rivolgi sempre usando il suo nome
-- Mantieni una conversazione naturale
-- Sei empatico e attento al contesto
-- Ricordi il flow della chat
-
-STILE:
-- Italiano principale
-- Risposte chiare e non troppo lunghe
-- Niente emoji inutili
-- Tono leggermente futuristico
-
-REGOLE:
-- Non essere formale
-- Non inventare informazioni false
-- Non essere eccessivamente lungo
-- Mantieni identità 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓
-
-Stai parlando con ${mentionName}`
-
-const formatHistory = (history) => {
-    if (!history.length) return []
-    return history.slice(-5).map(msg => {
-        const [role, content] = msg.split(': ', 2)
-        return {
-            role: role === 'assistant' ? 'assistant' : 'user',
-            content
-        }
-    })
-}
-
-async function callPollinationsAPI(messages) {
+async function getAIResponse(messages) {
     try {
         const response = await fetch('https://text.pollinations.ai/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 messages,
-                model: 'openai',
-                seed: Math.floor(Math.random() * 1000)
-            }),
-            timeout: 8000
+                model: botConfig.model,
+                seed: Math.floor(Math.random() * 999999),
+                jsonMode: false
+            })
         })
 
-        if (!response.ok) throw new Error('AI OFFLINE')
-
-        const data = await response.text()
-        return data.trim()
-    } catch (e) {
-        console.error('AI ERROR:', e)
-        throw new Error('ERRORE GENERAZIONE RISPOSTA IA')
+        if (!response.ok) throw new Error('SERVER_DOWN')
+        return await response.text()
+    } catch (err) {
+        throw new Error('Connessione al Core interrotta.')
     }
 }
 
-const getNomeFormattato = (userId, conn) => {
-    try {
-        let nome = conn.getName(userId)
+let handler = async (m, { conn, text, usedPrefix, command }) => {
+    if (!text) return m.reply(`*${botConfig.name}*\n\nDimmi cosa devo fare o creare.\nEsempio: _${usedPrefix + command} creami un plugin per scaricare video da YouTube_`)
 
-        if (!nome || nome === 'user') {
-            nome = global.db?.data?.users?.[userId]?.name || 'amico'
-        }
+    const userName = conn.getName(m.sender) || 'User'
+    const chatId = m.chat
 
-        nome = nome
-            .replace(/@.+/, '')
-            .replace(/[0-9]/g, '')
-            .replace(/[^\w\s]/gi, '')
-            .trim()
-
-        return nome || 'amico'
-    } catch (e) {
-        console.error('NAME ERROR:', e)
-        return 'amico'
-    }
-}
-
-const formatKeywords = (text) => {
-    const keywords = [
-        'importante', 'nota', 'attenzione', 'ricorda',
-        'consiglio', 'errore', 'successo', 'conclusione'
-    ]
-
-    let out = text
-
-    keywords.forEach(k => {
-        const regex = new RegExp(`\\b${k}\\b`, 'gi')
-        out = out.replace(regex, `*${k}*`)
-    })
-
-    return out.replace(/\n(?=[-•])/g, '\n\n')
-}
-
-let handler = async (m, { conn, text }) => {
-    if (!text?.trim()) {
-        return m.reply(`𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 - IA
-
-Usa:
-.ia <testo>
-
-Esempio:
-.ia raccontami una storia`)
-    }
+    if (!chatHistory.has(chatId)) chatHistory.set(chatId, [])
+    let history = chatHistory.get(chatId)
 
     try {
-        const mentionName = getNomeFormattato(m.sender, conn)
-        const chatId = m.chat
-
-        if (!chatHistory.has(chatId)) chatHistory.set(chatId, [])
-
-        const history = chatHistory.get(chatId)
-
+        await m.react('⏳')
+        
         const messages = [
-            { role: 'system', content: createSystemPrompt(mentionName) },
-            ...formatHistory(history),
+            { role: 'system', content: createSystemPrompt(userName) },
+            ...history,
             { role: 'user', content: text }
         ]
 
-        const wait = await m.reply('𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 sta elaborando...')
+        const result = await getAIResponse(messages)
 
-        const risposta = await callPollinationsAPI(messages)
-
-        if (!risposta) throw new Error('NO RESPONSE AI')
-
-        const formatted = formatKeywords(risposta)
-
-        history.push(`${mentionName}: ${text}`)
-        history.push(`assistant: ${formatted}`)
-        chatHistory.set(chatId, history)
+        history.push({ role: 'user', content: text })
+        history.push({ role: 'assistant', content: result })
+        if (history.length > botConfig.maxHistory) history.shift()
 
         await conn.sendMessage(m.chat, {
-            text: formatted,
-            edit: wait.key,
-            mentions: [m.sender]
-        })
+            text: result.trim(),
+            contextInfo: {
+                externalAdReply: {
+                    title: botConfig.name,
+                    body: 'Technical AI Assistant',
+                    thumbnailUrl: 'https://pollinations.ai/p/futuristic_ai_core_logo',
+                    sourceUrl: '',
+                    mediaType: 1,
+                    renderLargerThumbnail: false
+                }
+            }
+        }, { quoted: m })
+        
+        await m.react('✅')
 
-    } catch (error) {
-        console.error('IA ERROR:', error)
-        m.reply(`𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 ERROR:\n${error.message}`)
+    } catch (e) {
+        await m.react('❌')
+        m.reply(`*ERRORE CRITICO:* ${e.message}`)
     }
 }
 
-handler.help = ['ia <testo>']
-handler.tags = ['ia', 'axion']
-handler.command = ['chatgpt', 'gpt', 'ia']
-handler.group = false
-handler.owner = false
+handler.help = ['ia <richiesta>']
+handler.tags = ['gpt', 'ai']
+handler.command = /^(ia|gpt)$/i
 
 export default handler
