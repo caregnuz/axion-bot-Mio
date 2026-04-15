@@ -37,17 +37,17 @@ const handler = async (m, { conn, usedPrefix }) => {
   const info = `
 『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐒𝐓𝐀𝐓𝐔𝐒 』
 
-🚀 𝐋𝐚𝐭𝐞𝐧𝐜𝐲
+🚀 *𝐋𝐚𝐭𝐞𝐧𝐜𝐲*
 ╰➤ ${speedWithFont} ms
 
-⏱️ 𝐔𝐩𝐭𝐢𝐦𝐞
+⏱️ *𝐔𝐩𝐭𝐢𝐦𝐞*
 ╰➤ ${uptime}
 
-💻 𝐑𝐞𝐬𝐨𝐮𝐫𝐜𝐞𝐬
-╰➤ Server: ${usedMem} / ${totalMem} MB
-╰➤ Engine: ${heapUsed} MB
+💻 *𝐑𝐞𝐬𝐨𝐮𝐫𝐜𝐞𝐬*
+╰➤ Server: ${toMathematicalAlphanumericSymbols(usedMem)} / ${toMathematicalAlphanumericSymbols(totalMem)} MB
+╰➤ Engine: ${toMathematicalAlphanumericSymbols(heapUsed)} MB
 
-✅️ 𝐒𝐭𝐚𝐭𝐮𝐬
+✅️ *𝐒𝐭𝐚𝐭𝐮𝐬*
 ╰➤ System online
 
 > 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓
@@ -62,8 +62,6 @@ const handler = async (m, { conn, usedPrefix }) => {
     text: info,
     buttons,
     headerType: 1,
-    contextInfo: {
-      ...(global.rcanal?.contextInfo || {})
     }
   }, { quoted: m })
 }
