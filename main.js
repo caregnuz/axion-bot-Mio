@@ -311,42 +311,8 @@ async function connectionUpdate(update) {
         global.qrGenerated = true;
     }
     if (connection === 'open') {
-                const RESTART_FILE = path.resolve('./tmp/restart-state.json');
-
-        if (fs.existsSync(RESTART_FILE)) {
-            let restartInfo = null;
-            let startupErrors = 0;
-
-            try {
-                restartInfo = JSON.parse(fs.readFileSync(RESTART_FILE, 'utf-8'));
-            } catch (e) {
-                startupErrors++;
-            }
-
-            if (restartInfo?.chat) {
-                try {
-                    const elapsedMs = Date.now() - (restartInfo.startedAt || Date.now());
-                    const elapsedSec = (elapsedMs / 1000).toFixed(1);
-                    const totalErrors = (restartInfo.errors || 0) + startupErrors;
-
-                    await conn.sendMessage(restartInfo.chat, {
-                        text: `» Riavvio completato!\n⏱️ Tempo: ${elapsedSec}s\n🧾 Errori: ${totalErrors}`,
-                        mentions: restartInfo.sender ? [restartInfo.sender] : []
-                    });
-                } catch (e) {
-                    console.error('Errore invio post-restart:', e);
-                }
-            }
-
-            try {
-                fs.unlinkSync(RESTART_FILE);
-            } catch (e) {
-                console.error('Errore eliminazione file restart:', e);
-            }
-        }
         global.qrGenerated = false;
         global.connectionMessagesPrinted = {};
-        
         if (!global.isLogoPrinted) {
             const finchevedotuttoviolaviola = [
     '#00BFFF', '#00CED1', '#20B2AA', '#2ECC71', '#2ECC71', '#20B2AA', '#00CED1', '#00BFFF',
@@ -451,17 +417,15 @@ global.reloadHandler = async function (restatConn) {
         global.store.bind(global.conn.ev);
         isInit = true;
     }
-if (!isInit) {
-    conn.ev.off('messages.upsert', conn.handler);
-    conn.ev.off('group-participants.update', conn.participantsUpdate);
-    conn.ev.off('connection.update', conn.connectionUpdate);
-    conn.ev.off('creds.update', conn.credsUpdate);
-    if (conn.callUpdate) conn.ev.off('call', conn.callUpdate);
-}
-conn.handler = handler.handler.bind(global.conn);
-conn.participantsUpdate = handler.participantsUpdate.bind(conn);
-conn.connectionUpdate = connectionUpdate.bind(global.conn);
-conn.credsUpdate = saveCreds;
+    if (!isInit) {
+        conn.ev.off('messages.upsert', conn.handler);
+        conn.ev.off('connection.update', conn.connectionUpdate);
+        conn.ev.off('creds.update', conn.credsUpdate);
+        if (conn.callUpdate) conn.ev.off('call', conn.callUpdate);
+    }
+    conn.handler = handler.handler.bind(global.conn);
+    conn.connectionUpdate = connectionUpdate.bind(global.conn);
+    conn.credsUpdate = saveCreds;
     conn.callUpdate = async (calls) => {
         try {
             global.processedCalls = global.processedCalls || new Map();
@@ -489,7 +453,6 @@ conn.credsUpdate = saveCreds;
         }
     };
     conn.ev.on('messages.upsert', conn.handler);
-    conn.ev.on('group-participants.update', conn.participantsUpdate);
     conn.ev.on('connection.update', conn.connectionUpdate);
     conn.ev.on('creds.update', conn.credsUpdate);
     conn.ev.on('call', conn.callUpdate);

@@ -11,18 +11,6 @@ global.ignoredUsersGlobal = new Set()
 global.ignoredUsersGroup = {}
 global.groupSpam = {}
 
-global.rcanal = global.rcanal || {
-  contextInfo: {
-    forwardingScore: 999,
-    isForwarded: true,
-    forwardedNewsletterMessageInfo: {
-      newsletterJid: '120363420524815455@newsletter',
-      serverMessageId: 100,
-      newsletterName: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
-    }
-  }
-}
-
 if (!global.groupCache) {
     global.groupCache = new NodeCache({ stdTTL: 5 * 60, useClones: false })
 }
@@ -219,24 +207,9 @@ setInterval(() => {
 }, 180000)
 
 export async function participantsUpdate({ id, participants, action }) {
+    if (global.db.data.chats[id]?.rileva === false) return
+
     try {
-        for (let name in global.plugins) {
-            let plugin = global.plugins[name]
-            if (!plugin) continue
-
-            if (typeof plugin.participantsUpdate === 'function') {
-                try {
-                    await plugin.participantsUpdate.call(this, {
-                        id,
-                        participants,
-                        action
-                    })
-                } catch (e) {
-                    console.error(`[ERRORE] participantsUpdate plugin ${name}:`, e)
-                }
-            }
-        }
-
         let metadata = global.groupCache.get(id) || await fetchMetadata(this, id)
         if (!metadata) return
 
@@ -583,16 +556,16 @@ if (m.message?.protocolMessage?.type === 'MESSAGE_EDIT') {
                 if (!isAccept) continue
 
                 if (m.isGroup && (plugin.admin || plugin.botAdmin)) {
-    const freshMetadata = await fetchGroupMetadataWithRetry(this, m.chat)
-    if (freshMetadata) {
-        freshMetadata.fetchTime = Date.now()
-        global.groupCache.set(m.chat, freshMetadata, { ttl: 300 })
-        groupMetadata = freshMetadata
-        participants = groupMetadata.participants
-        normalizedParticipants = participants.map(u => {
-            const normalizedId = this.decodeJid(u.id)
-            return { ...u, id: normalizedId, jid: u.jid || normalizedId }
-        })
+                    const freshMetadata = global.groupCache.get(m.chat) || await fetchGroupMetadataWithRetry(this, m.chat)
+                    if (freshMetadata) {
+                        freshMetadata.fetchTime = Date.now()
+                        global.groupCache.set(m.chat, freshMetadata, { ttl: 300 })
+                        groupMetadata = freshMetadata
+                        participants = groupMetadata.participants
+                        normalizedParticipants = participants.map(u => {
+                            const normalizedId = this.decodeJid(u.id)
+                            return { ...u, id: normalizedId, jid: u.jid || normalizedId }
+                        })
 
                         const normalizedOwner = groupMetadata.owner ? this.decodeJid(groupMetadata.owner) : null
                         const normalizedOwnerLid = groupMetadata.ownerLid ? this.decodeJid(groupMetadata.ownerLid) : null
