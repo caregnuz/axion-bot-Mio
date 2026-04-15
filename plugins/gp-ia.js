@@ -1,4 +1,4 @@
-// by deadly
+// by deadly e Bonzino
 
 import fetch from 'node-fetch'
 
@@ -36,31 +36,80 @@ async function call(messages) {
     }
 }
 
-let handler = async (m, { conn, text }) => {
-    if (!text) return 
-
+let handler = async (m, { conn, text, command, usedPrefix }) => {
     const chatId = m.chat
-    const name = conn.getName(m.sender) || 'User'
+    const name = await conn.getName(m.sender) || 'User'
 
-    if (!chatHistory.has(chatId)) chatHistory.set(chatId, [])
+    const isReply = !!m.quoted
+    const quotedText = m.quoted?.text || m.quoted?.caption || ''
+
+    const isReplyToBot = isReply && (
+        quotedText.includes('𝛥𝐗𝐈𝚶𝐍') ||
+        quotedText.includes('AXION') ||
+        m.quoted?.fromMe
+    )
+
+    const isNewSession = /^(ia|gpt|axion)$/i.test(command)
+
+    if (!text && !(isReply && isReplyToBot)) return
+
+    if (!chatHistory.has(chatId) || isNewSession) {
+        chatHistory.set(chatId, [])
+    }
+
     let hist = chatHistory.get(chatId)
+
+    let prompt = text
+
+    if (!prompt && isReply && isReplyToBot) {
+        prompt = m.text || m.message?.extendedTextMessage?.text || ''
+    }
+
+    if (!prompt) return
+
+    await conn.sendMessage(m.chat, {
+        react: {
+            text: '⏳',
+            key: m.key
+        }
+    })
 
     try {
         const msgs = [
             { role: 'system', content: sys(name) },
             ...hist,
-            { role: 'user', content: text }
+            { role: 'user', content: prompt }
         ]
 
         const out = await call(msgs)
 
-        hist.push({ role: 'user', content: text })
+        hist.push({ role: 'user', content: prompt })
         hist.push({ role: 'assistant', content: out })
-        if (hist.length > config.historyLimit) hist.shift()
 
-        await conn.sendMessage(m.chat, { text: out.trim() }, { quoted: m })
+        if (hist.length > config.historyLimit * 2) {
+            hist = hist.slice(-config.historyLimit * 2)
+            chatHistory.set(chatId, hist)
+        }
+
+        await conn.sendMessage(m.chat, {
+            text: out.trim()
+        }, { quoted: m })
+
+        await conn.sendMessage(m.chat, {
+            react: {
+                text: '✅️',
+                key: m.key
+            }
+        })
 
     } catch (e) {
+        await conn.sendMessage(m.chat, {
+            react: {
+                text: '❌',
+                key: m.key
+            }
+        })
+
         m.reply(`[ERROR]: ${e.message}`)
     }
 }
@@ -68,5 +117,28 @@ let handler = async (m, { conn, text }) => {
 handler.help = ['ia']
 handler.tags = ['main']
 handler.command = /^(ia|gpt|axion)$/i
+
+handler.before = async (m, { conn }) => {
+    if (m.fromMe) return
+    if (!m.quoted) return
+
+    const quotedText = m.quoted?.text || m.quoted?.caption || ''
+
+    const isReplyToBot = (
+        quotedText.includes('𝛥𝐗𝐈𝚶𝐍') ||
+        quotedText.includes('AXION') ||
+        m.quoted?.fromMe
+    )
+
+    if (!isReplyToBot) return
+
+    if (/^[./#!$]/.test(m.text || '')) return
+
+    return handler(m, {
+        conn,
+        text: m.text || m.message?.extendedTextMessage?.text || '',
+        command: 'reply'
+    })
+}
 
 export default handler
