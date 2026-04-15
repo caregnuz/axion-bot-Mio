@@ -1,122 +1,194 @@
-// by deadly
+// by Deadly e Bonzino
 
-import fetch from 'node-fetch'
+let axios, cheerio;
+let ready = false;
 
-const chatHistory = new Map()
-const aiMessageIds = new Set()
+try {
+  axios = (await import('axios')).default;
+  cheerio = await import('cheerio');
+  ready = true;
+} catch (e) {}
 
-const config = {
-    name: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-    model: 'openai',
-    historyLimit: 15
-}
+const headers = {
+  'User-Agent': 'Mozilla/5.0'
+};
 
-const sys = (name) => `Sei ${config.name}.
-Rispondi a ${name} seguendo fedelmente lo stile e la struttura degli esempi ricevuti.
+const sites = [
+  'https://receive-sms-online.info',
+  'https://receive-smss.com',
+  'https://www.receivesms.co',
+  'https://freephonenum.com',
+  'https://receive-sms.cc',
+  'https://sms-online.co',
+  'https://receiveasms.com'
+];
 
-REGOLE:
-1. Se ricevi codice o strutture tecniche, rispondi SOLTANTO con il codice aggiornato.
-2. NON aggiungere testo descrittivo, saluti o spiegazioni.
-3. Se ricevi testo normale, sii sintetico e diretto.
-4. Mantieni esattamente la logica e il formato che vedi nei messaggi precedenti.`
+const countries = [
+  { name: 'USA 🇺🇸', prefix: '+1' },
+  { name: 'UK 🇬🇧', prefix: '+44' },
+  { name: 'Francia 🇫🇷', prefix: '+33' },
+  { name: 'Germania 🇩🇪', prefix: '+49' },
+  { name: 'Spagna 🇪🇸', prefix: '+34' },
+  { name: 'Italia 🇮🇹', prefix: '+39' },
+  { name: 'Svezia 🇸🇪', prefix: '+46' },
+  { name: 'Canada 🇨🇦', prefix: '+1' },
+  { name: 'Paesi Bassi 🇳🇱', prefix: '+31' },
+  { name: 'Polonia 🇵🇱', prefix: '+48' },
+  { name: 'Russia 🇷🇺', prefix: '+7' },
+  { name: 'Ucraina 🇺🇦', prefix: '+380' },
+  { name: 'India 🇮🇳', prefix: '+91' },
+  { name: 'Indonesia 🇮🇩', prefix: '+62' },
+  { name: 'Filippine 🇵🇭', prefix: '+63' }
+];
 
-async function call(messages) {
+async function getNumbers() {
+  let results = [];
+
+  for (let site of sites) {
     try {
-        const res = await fetch('https://text.pollinations.ai/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                messages,
-                model: config.model,
-                seed: Math.floor(Math.random() * 999999)
-            })
-        })
-        return await res.text()
+      const { data } = await axios.get(site, { headers, timeout: 10000 });
+      const $ = cheerio.load(data);
+
+      $('a, td, div').each((i, el) => {
+        let t = $(el).text().trim();
+
+        let match = t.match(/\+\d{6,15}/g);
+        if (match) results.push(...match);
+      });
+
     } catch (e) {
-        throw new Error('CORE_OFFLINE')
+      console.log('Errore sito:', site);
     }
+  }
+
+  results = [...new Set(results)].filter(n => n.length >= 8);
+
+  return results;
 }
 
-function trimHistory(hist) {
-    const max = config.historyLimit * 2
-    if (hist.length > max) return hist.slice(-max)
-    return hist
-}
+async function getSMS(num) {
+  let clean = num.replace('+', '');
 
-let handler = async (m, { conn, text, command }) => {
-    const chatId = m.chat
-    const name = await conn.getName(m.sender) || 'User'
-    const isNewSession = /^(ia|gpt|axion)$/i.test(command)
-
-    if (!text || !text.trim()) return
-
-    if (!chatHistory.has(chatId) || isNewSession) {
-        chatHistory.set(chatId, [])
-    }
-
-    let hist = chatHistory.get(chatId)
-
-    await conn.sendMessage(m.chat, {
-        react: { text: '⏳', key: m.key }
-    })
-
+  for (let site of sites) {
     try {
-        const msgs = [
-            { role: 'system', content: sys(name) },
-            ...hist,
-            { role: 'user', content: text.trim() }
-        ]
+      const { data } = await axios.get(`${site}/${clean}`, { headers, timeout: 10000 });
+      const $ = cheerio.load(data);
 
-        const out = await call(msgs)
+      let msgs = [];
 
-        hist.push({ role: 'user', content: text.trim() })
-        hist.push({ role: 'assistant', content: out })
-        hist = trimHistory(hist)
-        chatHistory.set(chatId, hist)
+      $('table tr, .list, .sms, div').each((i, el) => {
+        let text = $(el).text().trim();
 
-        const sent = await conn.sendMessage(m.chat, {
-            text: out.trim()
-        }, { quoted: m })
-
-        if (sent?.key?.id) {
-            aiMessageIds.add(sent.key.id)
+        if (text.length > 10 && text.length < 300) {
+          msgs.push(text);
         }
+      });
 
-        await conn.sendMessage(m.chat, {
-            react: { text: '✅️', key: m.key }
-        })
+      if (msgs.length > 0) return msgs.slice(0, 10);
 
-    } catch (e) {
-        await conn.sendMessage(m.chat, {
-            react: { text: '❌', key: m.key }
-        })
-        m.reply(`[ERROR]: ${e.message}`)
-    }
+    } catch {}
+  }
+
+  return [];
 }
 
-handler.help = ['ia']
-handler.tags = ['main']
-handler.command = /^(ia|gpt|axion)$/i
+let sessions = {};
 
-handler.before = async (m, { conn }) => {
-    if (m.fromMe) return
-    if (!m.quoted) return
+let handler = async (m, { conn, args, usedPrefix }) => {
+  if (!ready) return m.reply("❌ Librerie mancanti.");
 
-    const text = (m.text || m.message?.extendedTextMessage?.text || '').trim()
-    if (!text) return
+  let user = m.sender;
 
-    if (/^[./#!$]/.test(text)) return
+  if (!args[0]) {
+    let txt = `🌍 *SCEGLI PAESE*\n\n`;
 
-    const quotedId = m.quoted?.id || m.quoted?.key?.id
-    if (!quotedId) return
+    countries.forEach((c, i) => {
+      txt += `${i + 1}. ${c.name}\n`;
+    });
 
-    if (!aiMessageIds.has(quotedId)) return
+    txt += `\nUsa: ${usedPrefix}voip <numero>`;
+    return m.reply(txt);
+  }
 
-    return handler(m, {
-        conn,
-        text,
-        command: 'reply'
-    })
-}
+  if (!isNaN(args[0])) {
+    let country = countries[parseInt(args[0]) - 1];
+    if (!country) return m.reply("❌ Paese non valido");
 
-export default handler
+    m.reply("⏳ Cerco numeri...");
+
+    let all = await getNumbers();
+
+    let nums = all.filter(n => n.startsWith(country.prefix));
+
+    if (nums.length === 0) return m.reply("❌ Nessun numero trovato");
+
+    sessions[user] = {
+      country,
+      nums,
+      current: 0
+    };
+
+    let num = nums[0];
+
+    return conn.sendMessage(m.chat, {
+      text: `📱 *NUMERO ATTIVO*\n\n🌍 ${country.name}\n📲 ${num}`,
+      buttons: [
+        { buttonId: `${usedPrefix}voip next`, buttonText: { displayText: '🔄 Cambia Numero' }, type: 1 },
+        { buttonId: `${usedPrefix}voip sms`, buttonText: { displayText: '📩 Controlla SMS' }, type: 1 },
+        { buttonId: `${usedPrefix}voip`, buttonText: { displayText: '🌍 Cambia Paese' }, type: 1 }
+      ],
+      headerType: 1
+    });
+  }
+
+  if (args[0] === 'next') {
+    let session = sessions[user];
+    if (!session) return m.reply("❌ Seleziona prima un paese");
+
+    session.current++;
+    if (session.current >= session.nums.length) session.current = 0;
+
+    let num = session.nums[session.current];
+
+    return conn.sendMessage(m.chat, {
+      text: `📱 *NUOVO NUMERO*\n\n🌍 ${session.country.name}\n📲 ${num}`,
+      buttons: [
+        { buttonId: `${usedPrefix}voip next`, buttonText: { displayText: '🔄 Cambia Numero' }, type: 1 },
+        { buttonId: `${usedPrefix}voip sms`, buttonText: { displayText: '📩 Controlla SMS' }, type: 1 },
+        { buttonId: `${usedPrefix}voip`, buttonText: { displayText: '🌍 Cambia Paese' }, type: 1 }
+      ],
+      headerType: 1
+    });
+  }
+
+  if (args[0] === 'sms') {
+    let session = sessions[user];
+    if (!session) return m.reply("❌ Nessuna sessione");
+
+    let num = session.nums[session.current];
+
+    m.reply("⏳ Controllo SMS...");
+
+    let msgs = await getSMS(num);
+
+    if (msgs.length === 0) return m.reply("❌ Nessun SMS");
+
+    let txt = `📩 *SMS ${num}*\n\n`;
+
+    msgs.forEach(x => {
+      txt += `💬 ${x}\n────────────\n`;
+    });
+
+    return m.reply(txt.trim());
+  }
+};
+
+handler.help = ['voip'];
+handler.tags = ['tools'];
+handler.command = /^(voip)$/i;
+handler.owner = true
+
+export default handler;
+```
+
+𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓

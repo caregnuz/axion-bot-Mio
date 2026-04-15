@@ -1,8 +1,9 @@
-// by deadly e Bonzino
+// by deadly
 
 import fetch from 'node-fetch'
 
 const chatHistory = new Map()
+const aiMessageIds = new Set()
 
 const config = {
     name: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
@@ -36,22 +37,18 @@ async function call(messages) {
     }
 }
 
-let handler = async (m, { conn, text, command, usedPrefix }) => {
+function trimHistory(hist) {
+    const max = config.historyLimit * 2
+    if (hist.length > max) return hist.slice(-max)
+    return hist
+}
+
+let handler = async (m, { conn, text, command }) => {
     const chatId = m.chat
     const name = await conn.getName(m.sender) || 'User'
-
-    const isReply = !!m.quoted
-    const quotedText = m.quoted?.text || m.quoted?.caption || ''
-
-    const isReplyToBot = isReply && (
-        quotedText.includes('𝛥𝐗𝐈𝚶𝐍') ||
-        quotedText.includes('AXION') ||
-        m.quoted?.fromMe
-    )
-
     const isNewSession = /^(ia|gpt|axion)$/i.test(command)
 
-    if (!text && !(isReply && isReplyToBot)) return
+    if (!text || !text.trim()) return
 
     if (!chatHistory.has(chatId) || isNewSession) {
         chatHistory.set(chatId, [])
@@ -59,57 +56,40 @@ let handler = async (m, { conn, text, command, usedPrefix }) => {
 
     let hist = chatHistory.get(chatId)
 
-    let prompt = text
-
-    if (!prompt && isReply && isReplyToBot) {
-        prompt = m.text || m.message?.extendedTextMessage?.text || ''
-    }
-
-    if (!prompt) return
-
     await conn.sendMessage(m.chat, {
-        react: {
-            text: '⏳',
-            key: m.key
-        }
+        react: { text: '⏳', key: m.key }
     })
 
     try {
         const msgs = [
             { role: 'system', content: sys(name) },
             ...hist,
-            { role: 'user', content: prompt }
+            { role: 'user', content: text.trim() }
         ]
 
         const out = await call(msgs)
 
-        hist.push({ role: 'user', content: prompt })
+        hist.push({ role: 'user', content: text.trim() })
         hist.push({ role: 'assistant', content: out })
+        hist = trimHistory(hist)
+        chatHistory.set(chatId, hist)
 
-        if (hist.length > config.historyLimit * 2) {
-            hist = hist.slice(-config.historyLimit * 2)
-            chatHistory.set(chatId, hist)
-        }
-
-        await conn.sendMessage(m.chat, {
+        const sent = await conn.sendMessage(m.chat, {
             text: out.trim()
         }, { quoted: m })
 
+        if (sent?.key?.id) {
+            aiMessageIds.add(sent.key.id)
+        }
+
         await conn.sendMessage(m.chat, {
-            react: {
-                text: '✅️',
-                key: m.key
-            }
+            react: { text: '✅️', key: m.key }
         })
 
     } catch (e) {
         await conn.sendMessage(m.chat, {
-            react: {
-                text: '❌',
-                key: m.key
-            }
+            react: { text: '❌', key: m.key }
         })
-
         m.reply(`[ERROR]: ${e.message}`)
     }
 }
@@ -122,21 +102,19 @@ handler.before = async (m, { conn }) => {
     if (m.fromMe) return
     if (!m.quoted) return
 
-    const quotedText = m.quoted?.text || m.quoted?.caption || ''
+    const text = (m.text || m.message?.extendedTextMessage?.text || '').trim()
+    if (!text) return
 
-    const isReplyToBot = (
-        quotedText.includes('𝛥𝐗𝐈𝚶𝐍') ||
-        quotedText.includes('AXION') ||
-        m.quoted?.fromMe
-    )
+    if (/^[./#!$]/.test(text)) return
 
-    if (!isReplyToBot) return
+    const quotedId = m.quoted?.id || m.quoted?.key?.id
+    if (!quotedId) return
 
-    if (/^[./#!$]/.test(m.text || '')) return
+    if (!aiMessageIds.has(quotedId)) return
 
     return handler(m, {
         conn,
-        text: m.text || m.message?.extendedTextMessage?.text || '',
+        text,
         command: 'reply'
     })
 }
