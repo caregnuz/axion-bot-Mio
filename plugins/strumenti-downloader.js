@@ -140,13 +140,11 @@ async function animateProgress(conn, chatId, key, state) {
       emoji = '🕒'
     } else if (state.phase === 'downloading') {
       title = '𝐃𝐨𝐰𝐧𝐥𝐨𝐚𝐝 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨'
-      emoji = ''
     } else if (state.phase === 'converting') {
       title = '𝐂𝐨𝐧𝐯𝐞𝐫𝐬𝐢𝐨𝐧𝐞 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨'
       emoji = '🔄'
     } else if (state.phase === 'uploading') {
-      title = '𝐈𝐧𝐯𝐢𝐨 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨'
-      emoji = '📤'
+      title = '𝐈𝐧𝐯𝐢𝐨 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨''
     }
 
     let body = `*${title}${dots}* ${emoji}\n\n*${percent}%*`
@@ -962,7 +960,7 @@ let handler = async (m, { conn, args, usedPrefix }) => {
     if (mode !== 'audio' && mode !== 'video') {
       const info = await getMediaInfo(url)
 
-      await setReaction(conn, m.chat, m.key, '📥')
+      await setReaction(conn, m.chat, m.key, '✅️')
 
       if (!info) {
         return conn.sendMessage(m.chat, {
