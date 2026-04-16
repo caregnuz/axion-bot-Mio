@@ -201,6 +201,6 @@ let handler = async (m, { conn, usedPrefix, command, args }) => {
 
 handler.help = ['converti', 'convdo']
 handler.tags = ['strumenti']
-handler.command = /^(converti|convdo)$/i
+handler.command = /^(converti|converter)$/i
 
 export default handler
