@@ -17,7 +17,7 @@ const DOWNLOAD_CONFIG = {
   ONE_JOB_PER_CHAT: true,
 
   MAX_VIDEO_MB: Number(process.env.DW_MAX_VIDEO_MB || 1000),
-  MAX_AUDIO_MB: Number(process.env.DW_MAX_AUDIO_MB || 50),
+  MAX_AUDIO_MB: Number(process.env.DW_MAX_AUDIO_MB || 1000),
 
   MAX_VIDEO_SECONDS: Number(process.env.DW_MAX_VIDEO_SECONDS || 60 * 60), // 1h
   MAX_AUDIO_SECONDS: Number(process.env.DW_MAX_AUDIO_SECONDS || 2 * 60 * 60), // 2h
@@ -939,7 +939,7 @@ let handler = async (m, { conn, args, usedPrefix }) => {
     if (url) url = extractUrl(url)
 
     if (!url) {
-      return m.reply(`*⚠️ 𝐈𝐧𝐬𝐞𝐫𝐢𝐬𝐜𝐢 𝐮𝐧 𝐥𝐢𝐧𝐤 𝐯𝐚𝐥𝐢𝐝𝐨.*\n\n*Esempi:*\n${usedPrefix}download https://...\n${usedPrefix}download video https://...\n${usedPrefix}download audio https://...`)
+      return m.reply(`*⚠️ 𝐈𝐧𝐬𝐞𝐫𝐢𝐬𝐜𝐢 𝐮𝐧 𝐥𝐢𝐧𝐤 𝐯𝐚𝐥𝐢𝐝𝐨.*`)
     }
 
     if (!isValidUrl(url)) {
@@ -1053,7 +1053,7 @@ let handler = async (m, { conn, args, usedPrefix }) => {
       done: false,
       percent: 0,
       phase: queuePosition > 1 ? 'queued' : 'analyzing',
-      note: queuePosition > 1 ? '𝐈𝐧 𝐚𝐭𝐭𝐞𝐬𝐚 𝐝𝐞𝐥 𝐭𝐮𝐨 𝐭𝐮𝐫𝐧𝐨...' : '𝐀𝐯𝐯𝐢𝐨 𝐨𝐩𝐞𝐫𝐚𝐳𝐢𝐨𝐧𝐞...',
+      note: queuePosition > 1 ? '*𝐈𝐧 𝐚𝐭𝐭𝐞𝐬𝐚 𝐝𝐞𝐥 𝐭𝐮𝐨 𝐭𝐮𝐫𝐧𝐨...' : '🔎 𝐀𝐧𝐚𝐥𝐢𝐬𝐢 𝐝𝐞𝐥 𝐥𝐢𝐧𝐤...*',
       forceRender: true
     }
 
