@@ -28,6 +28,8 @@ const AUTO_TRIES = 3
 const AUTO_POLL_EVERY = 8000
 const AUTO_MAX_WAIT = 30000
 
+const SESSION_TTL = 1000 * 60 * 30
+
 const guestHeaders = {
   Accept: 'application/json'
 }
@@ -46,6 +48,16 @@ function prettyCountry(name = '') {
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+function cleanupSessions() {
+  const now = Date.now()
+  for (const [user, session] of Object.entries(global.voip5Sessions || {})) {
+    if (!session?.lastUsed) continue
+    if (now - session.lastUsed > SESSION_TTL) {
+      delete global.voip5Sessions[user]
+    }
+  }
 }
 
 function parseCountries(data) {
@@ -191,15 +203,20 @@ async function cancel(id, API_KEY) {
 }
 
 function getSession(user) {
+  cleanupSessions()
+
   if (!global.voip5Sessions[user]) {
     global.voip5Sessions[user] = {
       countries: [],
       page: 0,
       selected: null,
       order: null,
-      autoRunning: false
+      autoRunning: false,
+      lastUsed: Date.now()
     }
   }
+
+  global.voip5Sessions[user].lastUsed = Date.now()
   return global.voip5Sessions[user]
 }
 
@@ -209,14 +226,18 @@ async function buyAndSave(session, countryKey, API_KEY) {
     id: data.id,
     phone: data.phone
   }
+  session.lastUsed = Date.now()
   return data
 }
 
 async function autoCycle(conn, chat, m, session, API_KEY) {
   session.autoRunning = true
+  session.lastUsed = Date.now()
 
   try {
     for (let attempt = 1; attempt <= AUTO_TRIES; attempt++) {
+      session.lastUsed = Date.now()
+
       if (!session.selected) throw new Error('Nessun paese selezionato.')
 
       if (!session.order?.id) {
@@ -235,6 +256,8 @@ async function autoCycle(conn, chat, m, session, API_KEY) {
       let found = null
 
       while (Date.now() - started < AUTO_MAX_WAIT) {
+        session.lastUsed = Date.now()
+
         const data = await check(session.order.id, API_KEY)
 
         if (data.sms?.length) {
@@ -274,7 +297,7 @@ async function autoCycle(conn, chat, m, session, API_KEY) {
 
     session.autoRunning = false
     return conn.sendMessage(chat, {
-      text: '*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Nessun SMS ricevuto dopo vari tentativi.'
+      text: '*❌ 𝐄𝐫𝐫𝐨𝐫𝐞:* Nessun SMS ricevuto dopo vari tentativi.'
     }, { quoted: m })
 
   } catch (e) {
@@ -285,10 +308,10 @@ async function autoCycle(conn, chat, m, session, API_KEY) {
 
 let handler = async (m, { conn, args, usedPrefix, command }) => {
   try {
-    const API_KEY = getEnvValue('FIVESIM_KEY')
+    const API_KEY = process.env.FIVESIM_KEY || getEnvValue('FIVESIM_KEY')
 
     if (!API_KEY) {
-      return m.reply('*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* API key mancante.')
+      return m.reply('*❌ 𝐄𝐫𝐫𝐨𝐫𝐞:* API key mancante.')
     }
 
     const cmd = command.toLowerCase()
@@ -311,7 +334,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
       const countries = await getCountries()
 
       if (!countries.length) {
-        return m.reply('*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Nessun paese disponibile.')
+        return m.reply('*❌ 𝐄𝐫𝐫𝐨𝐫𝐞:* Nessun paese disponibile.')
       }
 
       session.countries = countries
@@ -319,6 +342,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
       session.selected = null
       session.order = null
       session.autoRunning = false
+      session.lastUsed = Date.now()
 
       const pageData = buildCountryPage(session, usedPrefix)
 
@@ -332,10 +356,11 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
     if (cmd === 'voip2' && input === 'prev') {
       if (!session.countries?.length) {
-        return m.reply(`*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Apri prima il menu con \`${usedPrefix}voip2\`.`)
+        return m.reply(`*❌ 𝐄𝐫𝐫𝐨𝐫𝐞:* Apri prima il menu con \`${usedPrefix}voip2\`.`)
       }
 
       session.page = Math.max(0, (session.page || 0) - 1)
+      session.lastUsed = Date.now()
       const pageData = buildCountryPage(session, usedPrefix)
 
       return conn.sendMessage(m.chat, {
@@ -348,11 +373,12 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
     if (cmd === 'voip2' && input === 'page_next') {
       if (!session.countries?.length) {
-        return m.reply(`*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Apri prima il menu con \`${usedPrefix}voip2\`.`)
+        return m.reply(`*❌ 𝐄𝐫𝐫𝐨𝐫𝐞:* Apri prima il menu con \`${usedPrefix}voip2\`.`)
       }
 
       const totalPages = getTotalPages(session.countries)
       session.page = Math.min(totalPages - 1, (session.page || 0) + 1)
+      session.lastUsed = Date.now()
       const pageData = buildCountryPage(session, usedPrefix)
 
       return conn.sendMessage(m.chat, {
@@ -365,22 +391,28 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
     if (cmd === 'voip2' && !isNaN(input)) {
       if (!session.countries?.length) {
-        return m.reply(`*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Apri prima il menu con \`${usedPrefix}voip2\`.`)
+        return m.reply(`*❌ 𝐄𝐫𝐫𝐨𝐫𝐞:* Apri prima il menu con \`${usedPrefix}voip2\`.`)
+      }
+
+      if (session.autoRunning) {
+        return m.reply('*❌ 𝐄𝐫𝐫𝐨𝐫𝐞:* Modalità auto già in esecuzione.')
       }
 
       const pageItems = getPageItems(session.countries, session.page || 0)
       const country = pageItems[Number(input) - 1]
 
       if (!country) {
-        return m.reply('*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Paese non valido.')
+        return m.reply('*❌ 𝐄𝐫𝐫𝐨𝐫𝐞:* Paese non valido.')
       }
 
+      session.selected = country
+      session.lastUsed = Date.now()
+
       const { key } = await conn.sendMessage(m.chat, {
-        text: '📡 *✅ 𝐒𝐂𝐀𝐍𝐒𝐈𝐎𝐍𝐄 𝐈𝐍 𝐂𝐎𝐑𝐒𝐎...*'
+        text: '📡 *𝐀𝐭𝐭𝐢𝐯𝐚𝐳𝐢𝐨𝐧𝐞 𝐧𝐮𝐦𝐞𝐫𝐨 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨...*'
       })
 
       const data = await buyAndSave(session, country.key, API_KEY)
-      session.selected = country
 
       return conn.sendMessage(m.chat, {
         text:
@@ -399,7 +431,11 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
     if (cmd === 'voip2' && input === 'next') {
       if (!session.selected) {
-        return m.reply('*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Seleziona prima un paese.')
+        return m.reply('*❌ 𝐄𝐫𝐫𝐨𝐫𝐞:* Seleziona prima un paese.')
+      }
+
+      if (session.autoRunning) {
+        return m.reply('*❌ 𝐄𝐫𝐫𝐨𝐫𝐞:* Non puoi cambiare numero mentre la modalità auto è in esecuzione.')
       }
 
       if (session.order?.id) {
@@ -424,13 +460,14 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
     if (cmd === 'voip2' && input === 'sms') {
       if (!session.order?.id) {
-        return m.reply('*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Nessuna sessione attiva.')
+        return m.reply('*❌ 𝐄𝐫𝐫𝐨𝐫𝐞:* Nessuna sessione attiva.')
       }
 
       const data = await check(session.order.id, API_KEY)
+      session.lastUsed = Date.now()
 
       if (!data.sms?.length) {
-        return m.reply('*✅ 𝐄𝐫𝐫𝐨𝐫𝐫𝐞:* Nessun SMS.')
+        return m.reply('*❌ 𝐄𝐫𝐫𝐨𝐫𝐞:* Nessun SMS.')
       }
 
       let txt = `*✅ 𝐌𝐄𝐒𝐒𝐀𝐆𝐆𝐈 𝐑𝐈𝐂𝐄𝐕𝐔𝐓𝐈:* \`${session.order.phone}\`\n\n`
@@ -444,11 +481,11 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
     if (cmd === 'voip2' && input === 'auto') {
       if (!session.selected) {
-        return m.reply('*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Seleziona prima un paese.')
+        return m.reply('*❌ 𝐄𝐫𝐫𝐨𝐫𝐞:* Seleziona prima un paese.')
       }
 
       if (session.autoRunning) {
-        return m.reply('*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Modalità auto già in esecuzione.')
+        return m.reply('*❌ 𝐄𝐫𝐫𝐨𝐫𝐞:* Modalità auto già in esecuzione.')
       }
 
       if (!session.order?.id) {
@@ -460,19 +497,23 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
     if (cmd === 'voip2' && input === 'stop') {
       if (!session.order?.id) {
-        return m.reply('*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* Nessun ordine.')
+        return m.reply('*❌ 𝐄𝐫𝐫𝐨𝐫𝐞:* Nessun ordine.')
+      }
+
+      if (session.autoRunning) {
+        session.autoRunning = false
       }
 
       await cancel(session.order.id, API_KEY)
       session.order = null
-      session.autoRunning = false
+      session.lastUsed = Date.now()
 
       return m.reply('*✅ 𝐎𝐫𝐝𝐢𝐧𝐞 𝐚𝐧𝐧𝐮𝐥𝐥𝐚𝐭𝐨.*')
     }
 
   } catch (e) {
     console.error('voip/saldo error:', e?.response?.data || e)
-    return m.reply(`*✅ 𝐄𝐫𝐫𝐨𝐫𝐞:* ${e?.response?.data?.message || e?.response?.data?.error || e.message || e}`)
+    return m.reply(`*❌ 𝐄𝐫𝐫𝐨𝐫𝐞:* ${e?.response?.data?.message || e?.response?.data?.error || e.message || e}`)
   }
 }
 

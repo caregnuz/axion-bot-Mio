@@ -85,7 +85,7 @@ let handler = async (m, { conn, usedPrefix, command, args }) => {
       const type = detectSourceType(mime)
 
       if (!type) {
-        return m.reply('*𝐄𝐫𝐫𝐨𝐫𝐞:* 𝐑𝐢𝐬𝐩𝐨𝐧𝐝𝐢 𝐚 𝐮𝐧 𝐚𝐮𝐝𝐢𝐨 𝐨 𝐚 𝐮𝐧 𝐯𝐢𝐝𝐞𝐨.')
+        return m.reply('*⚠️ 𝐑𝐢𝐬𝐩𝐨𝐧𝐝𝐢 𝐚 𝐮𝐧 𝐚𝐮𝐝𝐢𝐨 𝐨 𝐚 𝐮𝐧 𝐯𝐢𝐝𝐞𝐨.*')
       }
 
       const buffer = await q.download()
