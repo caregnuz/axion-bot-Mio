@@ -6,20 +6,20 @@ let handler = async (m, { conn, command, usedPrefix }) => {
     const quota = 50
 
     const macchine = [
-        { name: "Fiat Panda 🚗", speed: 60, rarity: "Comune" },
-        { name: "BMW M3 🔵", speed: 85, rarity: "Comune" },
-        { name: "Tesla Model S ⚡", speed: 90, rarity: "Rara" },
-        { name: "Lamborghini 🟡", speed: 95, rarity: "Epica" },
-        { name: "Ferrari 🔴", speed: 97, rarity: "Epica" },
-        { name: "Bugatti ⚫", speed: 100, rarity: "Leggendaria" }
+        { name: "Fiat Panda 🚗", speed: 60 },
+        { name: "BMW M3 🔵", speed: 85 },
+        { name: "Tesla ⚡", speed: 90 },
+        { name: "Lamborghini 🟡", speed: 95 },
+        { name: "Ferrari 🔴", speed: 97 },
+        { name: "Bugatti ⚫", speed: 100 }
     ]
 
     const eventi = [
-        { text: u => `🚓 @${u} inseguito dalla polizia`, effect: p => p.performance -= 30 },
-        { text: u => `💥 @${u} incidente devastante`, effect: p => p.performance -= 40 },
-        { text: u => `⚡ @${u} usa il NITRO`, effect: p => p.performance += 30 },
-        { text: u => `🔥 @${u} drift perfetto`, effect: p => p.performance += 20 },
-        { text: u => `🛢️ @${u} scivola sull’olio`, effect: p => p.performance -= 20 }
+        "🚓 inseguito dalla polizia",
+        "💥 incidente",
+        "⚡ usa il nitro",
+        "🔥 drift perfetto",
+        "🛢️ perde controllo"
     ]
 
     if (command === 'gara') {
@@ -27,25 +27,14 @@ let handler = async (m, { conn, command, usedPrefix }) => {
 
         global.gare[chat] = {
             players: [],
-            started: false,
-            lastResults: []
+            started: false
         }
 
         await conn.sendMessage(chat, {
-            text: `╭━━━━━━━🏁━━━━━━━╮
-✦ 𝐆𝐀𝐑𝐀 𝐈𝐋𝐋𝐄𝐆𝐀𝐋𝐄 ✦
-╰━━━━━━━🏁━━━━━━━╯
+            text: `🏁 GARA ILLEGALE
 
-📢 Una gara è iniziata!
-
-💸 Quota ingresso: ${quota}€
-
-👥 Partecipanti:
-┌──────────────
-│ Nessuno
-└──────────────
-
-⏳ 30 secondi per entrare
+💸 Quota: ${quota}€
+⏳ 30s per entrare
 👉 ${usedPrefix}entragara`
         })
 
@@ -54,43 +43,23 @@ let handler = async (m, { conn, command, usedPrefix }) => {
 
     if (command === 'entragara') {
         let gara = global.gare[chat]
-        if (!gara) return m.reply("❌ Nessuna gara attiva")
-        if (gara.started) return m.reply("⏳ Gara già iniziata")
+        if (!gara) return m.reply("❌ Nessuna gara")
+        if (gara.started) return m.reply("⏳ Già iniziata")
 
         let user = m.sender
-
-        if (!global.db.data.users[user]) {
-            global.db.data.users[user] = { euro: 0 }
-        }
+        if (!global.db.data.users[user]) global.db.data.users[user] = { euro: 0 }
 
         let u = global.db.data.users[user]
+        if (u.euro < quota) return m.reply("❌ Soldi insufficienti")
 
-        if (u.euro < quota) {
-            return m.reply(`❌ Non hai abbastanza soldi
-
-💸 Quota: ${quota}€
-💼 Hai: ${u.euro}€`)
-        }
-
-        if (gara.players.includes(user)) {
-            return m.reply("⚠️ Sei già dentro")
-        }
+        if (gara.players.includes(user)) return m.reply("⚠️ Sei già dentro")
 
         u.euro -= quota
         gara.players.push(user)
 
-        let lista = gara.players.map((u, i) => `${i + 1}. @${u.split("@")[0]}`).join("\n")
-        let jackpot = gara.players.length * quota
-
         await conn.sendMessage(chat, {
-            text: `🏎️ 𝐏𝐀𝐑𝐓𝐄𝐂𝐈𝐏𝐀𝐍𝐓𝐈
-
-┌──────────────
-${lista}
-└──────────────
-
-💰 Jackpot: ${jackpot}€`,
-            mentions: gara.players
+            text: `🏎️ @${user.split("@")[0]} si unisce alla gara!`,
+            mentions: [user]
         })
     }
 }
@@ -101,107 +70,103 @@ async function startRace(conn, chat, quota, macchine, eventi) {
 
     if (gara.players.length < 2) {
         delete global.gare[chat]
-        return conn.sendMessage(chat, { text: "❌ Gara annullata (pochi giocatori)" })
+        return conn.sendMessage(chat, { text: "❌ Gara annullata" })
     }
 
     gara.started = true
 
-    let risultati = []
-    let eventiLog = []
-
-    for (let p of gara.players) {
+    let racers = gara.players.map(p => {
         let car = macchine[Math.floor(Math.random() * macchine.length)]
-        let performance = car.speed + Math.random() * 30
+        return {
+            id: p,
+            car,
+            score: car.speed + Math.random() * 20
+        }
+    })
 
-        let data = { id: p, car, performance }
+    let interval = setInterval(async () => {
+        racers.forEach(r => {
+            r.score += Math.random() * 15
+        })
 
-        if (Math.random() < 0.6) {
+        racers.sort((a, b) => b.score - a.score)
+
+        let i = Math.floor(Math.random() * (racers.length - 1))
+        let a = racers[i]
+        let b = racers[i + 1]
+
+        let sorpasso = Math.random() < 0.5
+
+        let msg = ""
+
+        if (sorpasso) {
+            a.score += 20
+            msg = `🔄 @${a.id.split("@")[0]} supera @${b.id.split("@")[0]}!`
+        } else {
             let ev = eventi[Math.floor(Math.random() * eventi.length)]
-            ev.effect(data)
-            eventiLog.push(ev.text(p.split("@")[0]))
+            let p = racers[Math.floor(Math.random() * racers.length)]
+            msg = `🎭 @${p.id.split("@")[0]} → ${ev}`
         }
 
-        risultati.push(data)
-    }
-
-    risultati.sort((a, b) => b.performance - a.performance)
-
-    gara.lastResults = risultati
-
-    let classifica = risultati.map((r, i) => {
-        let pos = ["🥇", "🥈", "🥉"][i] || `#${i + 1}`
-        return `${pos} @${r.id.split("@")[0]}
-   🚗 ${r.car.name}
-   ✦ ${r.car.rarity}`
-    }).join("\n\n")
-
-    let eventiTxt = eventiLog.length ? eventiLog.join("\n") : "😶 Nessun evento"
-
-    let jackpot = risultati.length * quota
-    let bonus = Math.floor(Math.random() * 1000)
-    let premioTot = jackpot + bonus
-
-    let premi = [
-        Math.floor(premioTot * 0.6),
-        Math.floor(premioTot * 0.25),
-        Math.floor(premioTot * 0.15)
-    ]
-
-    risultati.slice(0, 3).forEach((r, i) => {
-        if (!global.db.data.users[r.id]) global.db.data.users[r.id] = { euro: 0 }
-        global.db.data.users[r.id].euro += premi[i] || 0
-    })
-
-    let testo = `╭━━━━━━━🏁━━━━━━━╮
-✦ 𝐑𝐈𝐒𝐔𝐋𝐓𝐀𝐓𝐈 𝐆𝐀𝐑𝐀 ✦
-╰━━━━━━━🏁━━━━━━━╯
-
-🎭 Eventi:
-${eventiTxt}
-
-📊 Classifica:
-┌──────────────
-${classifica}
-└──────────────
-
-💰 Jackpot: ${jackpot}€
-🎁 Bonus: ${bonus}€
-
-🏆 Premi:
-🥇 ${premi[0]}€
-🥈 ${premi[1]}€
-🥉 ${premi[2]}€`
-
-    await conn.sendMessage(chat, {
-        text: testo,
-        mentions: risultati.map(r => r.id)
-    })
-
-    setTimeout(async () => {
-        let gara = global.gare[chat]
-        if (!gara || !gara.lastResults) return
-
-        let top = gara.lastResults.slice(0, 3)
-
-        let podio = top.map((r, i) => {
+        let top3 = racers.slice(0, 3).map((r, i) => {
             let pos = ["🥇", "🥈", "🥉"][i]
             return `${pos} @${r.id.split("@")[0]}`
         }).join("\n")
 
-        let testoPodio = `╭━━━━━━━🏆━━━━━━━╮
-✦ 𝐏𝐎𝐃𝐈𝐎 𝐔𝐅𝐅𝐈𝐂𝐈𝐀𝐋𝐄 ✦
-╰━━━━━━━🏆━━━━━━━╯
-
-${podio}
-
-🎉 Complimenti ai vincitori!`
-
         await conn.sendMessage(chat, {
-            text: testoPodio,
-            mentions: top.map(r => r.id)
+            text: `🏁 GARA LIVE
+
+${msg}
+
+📊 Top 3:
+${top3}`,
+            mentions: racers.map(r => r.id)
         })
 
-        delete global.gare[chat]
+    }, 15000)
+
+    setTimeout(async () => {
+        clearInterval(interval)
+
+        racers.sort((a, b) => b.score - a.score)
+
+        let jackpot = racers.length * quota
+        let bonus = Math.floor(Math.random() * 1000)
+        let totale = jackpot + bonus
+
+        let premi = [
+            Math.floor(totale * 0.6),
+            Math.floor(totale * 0.25),
+            Math.floor(totale * 0.15)
+        ]
+
+        racers.slice(0, 3).forEach((r, i) => {
+            if (!global.db.data.users[r.id]) global.db.data.users[r.id] = { euro: 0 }
+            global.db.data.users[r.id].euro += premi[i] || 0
+        })
+
+        await conn.sendMessage(chat, {
+            text: `🏁 FINE GARA`,
+        })
+
+        setTimeout(async () => {
+            let podio = racers.slice(0, 3).map((r, i) => {
+                let pos = ["🥇", "🥈", "🥉"][i]
+                return `${pos} @${r.id.split("@")[0]}
+🚗 ${r.car.name}
+💸 ${premi[i]}€`
+            }).join("\n\n")
+
+            await conn.sendMessage(chat, {
+                text: `🏆 PODIO FINALE
+
+${podio}`,
+                mentions: racers.slice(0, 3).map(r => r.id)
+            })
+
+            delete global.gare[chat]
+
+        }, 5000)
 
     }, 90000)
 }
