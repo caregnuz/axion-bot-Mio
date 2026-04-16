@@ -480,7 +480,6 @@ function buildInfoCaption(info, mode) {
 
   return txt
 }
-}
 
 let handler = async (m, { conn, args, usedPrefix }) => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dw-'))
