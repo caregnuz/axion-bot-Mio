@@ -440,9 +440,9 @@ async function runYtDlpWithProgress(args, onProgress, onNote) {
       }
 
       if (typeof onNote === 'function') {
-        if (/Downloading webpage/i.test(text)) onNote('🌐 𝐑𝐢𝐬𝐨𝐥𝐮𝐳𝐢𝐨𝐧𝐞 𝐬𝐨𝐫𝐠𝐞𝐧𝐭𝐞...')
-        else if (/Merging formats/i.test(text)) onNote('🔗 𝐔𝐧𝐢𝐨𝐧𝐞 𝐟𝐥𝐮𝐬𝐬𝐢...')
-        else if (/Extracting audio/i.test(text)) onNote('🎧 𝐄𝐬𝐭𝐫𝐚𝐳𝐢𝐨𝐧𝐞 𝐚𝐮𝐝𝐢𝐨...')
+        if (/Downloading webpage/i.test(text)) onNote('*🌐 𝐑𝐢𝐬𝐨𝐥𝐮𝐳𝐢𝐨𝐧𝐞 𝐬𝐨𝐫𝐠𝐞𝐧𝐭𝐞...*')
+        else if (/Merging formats/i.test(text)) onNote('*🔗 𝐔𝐧𝐢𝐨𝐧𝐞 𝐟𝐥𝐮𝐬𝐬𝐢...*')
+        else if (/Extracting audio/i.test(text)) onNote('*🎧 𝐄𝐬𝐭𝐫𝐚𝐳𝐢𝐨𝐧𝐞 𝐚𝐮𝐝𝐢𝐨...*')
       }
     }
 
@@ -1168,7 +1168,7 @@ await editMessage(
   }
 }
 
-handler.command = /^(download|dw)$/i
+handler.command = /^(download|dw|scarica)$/i
 handler.tags = ['download']
 handler.help = ['download', 'dw']
 
