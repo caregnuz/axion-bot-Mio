@@ -140,7 +140,7 @@ async function animateProgress(conn, chatId, key, state) {
       emoji = '🕒'
     } else if (state.phase === 'downloading') {
       title = '𝐃𝐨𝐰𝐧𝐥𝐨𝐚𝐝 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨'
-      emoji = '⏳'
+      emoji = ''
     } else if (state.phase === 'converting') {
       title = '𝐂𝐨𝐧𝐯𝐞𝐫𝐬𝐢𝐨𝐧𝐞 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨'
       emoji = '🔄'
