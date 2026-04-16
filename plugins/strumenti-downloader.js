@@ -321,8 +321,8 @@ function buildLongWarning(info, mode) {
 
 function buildInfoCaption(info, mode, url) {
   let txt = mode === 'video'
-    ? `*𝐕𝐢𝐝𝐞𝐨 𝐭𝐫𝐨𝐯𝐚𝐭𝐨*\n\n`
-    : `*𝐀𝐮𝐝𝐢𝐨 𝐭𝐫𝐨𝐯𝐚𝐭𝐨*\n\n`
+    ? `*𝐕𝐢𝐝𝐞𝐨 𝐭𝐫𝐨𝐯𝐚𝐭𝐨✅️*\n\n`
+    : `*𝐀𝐮𝐝𝐢𝐨 𝐭𝐫𝐨𝐯𝐚𝐭𝐨✅️*\n\n`
 
   txt += `🌐 *𝐒𝐨𝐫𝐠𝐞𝐧𝐭𝐞:* ${getSourceLabel(url)}\n`
   txt += `🎬 *𝐓𝐢𝐭𝐨𝐥𝐨:* ${info.title || '𝐍/𝐃'}\n`
