@@ -189,6 +189,3 @@ handler.command = /^(voip)$/i;
 handler.owner = true
 
 export default handler;
-```
-
-𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓
