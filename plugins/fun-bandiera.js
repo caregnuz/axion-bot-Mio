@@ -154,22 +154,25 @@ async function sendFlagCard(conn, chat, url, caption, quoted) {
       {
         text: caption,
         contextInfo: {
-externalAdReply: {
-  title: 'Quiz bandiere',
-  body: 'Indovina la nazione',
-  mediaType: 1,
-  renderLargerThumbnail: false,
-  showAdAttribution: false,
-  thumbnail: thumb,
-  sourceUrl: uniqueUrl
-}
-          },
-          jpegThumbnail: thumb
-        }
+return conn.sendMessage(
+  chat,
+  {
+    text: caption,
+    contextInfo: {
+      externalAdReply: {
+        title: 'Quiz bandiere',
+        body: 'Indovina la nazione',
+        mediaType: 1,
+        renderLargerThumbnail: false,
+        showAdAttribution: false,
+        thumbnail: thumb,
+        sourceUrl: uniqueUrl
       },
-      { quoted }
-    )
-  }
+      jpegThumbnail: thumb
+    }
+  },
+  { quoted }
+)
 
   return conn.sendMessage(chat, {
     image: { url },
