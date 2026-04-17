@@ -1,53 +1,76 @@
-let handler = async (m, { conn, text, participants, isROwner }) => {
-    if (!isROwner) return; 
+let handler = async (m, { conn, text, participants, isROwner, command }) => {
+    if (!isROwner) return
 
-    // Dividiamo il messaggio usando solo lo spazio
-    let args = text.trim().split(' ');
-    let count = parseInt(args[0]);
-    let customMessage = "";
+    global.bigtagStop = global.bigtagStop || false
 
-    // Se il primo argomento è un numero, lo usiamo come conteggio
+    if (/^stop$/i.test(command)) {
+        global.bigtagStop = true
+        return
+    }
+
+    let input = String(text || '').trim()
+
+    if (!input && !m.quoted) {
+        return m.reply('*.bigtag [numero] <messaggio>*\n*.bigtag [numero]*\n*.stop*')
+    }
+
+    let args = input ? input.split(' ') : []
+    let count = parseInt(args[0])
+    let customMessage = ''
+
     if (!isNaN(count)) {
-        customMessage = args.slice(1).join(' ');
+        customMessage = args.slice(1).join(' ').trim()
     } else {
-        // Se non è un numero, usiamo 5 come default
-        count = 5; 
-        customMessage = text.trim();
+        count = 5
+        customMessage = input
     }
 
-    if (!customMessage) {
-        return m.reply("⚠️ *Sintassi:* `.bigtag [numero] <messaggio>`");
+    if (!customMessage && !m.quoted) {
+        return m.reply('*.bigtag [numero] <messaggio>*\n*.bigtag [numero]*\n*.stop*')
     }
 
-    // Limite di sicurezza (massimo 50)
-    if (count > 50) count = 50; 
+    if (count > 50) count = 50
+    if (count < 1) count = 1
 
-    let users = participants.map((u) => u.id);
+    let users = participants.map(u => u.id)
 
     const send = async (msg) => {
-        await conn.relayMessage(m.chat, {
+        if (m.quoted) {
+            return await conn.sendMessage(m.chat, {
+                text: msg || m.quoted.text || m.quoted.caption || '',
+                mentions: users
+            }, { quoted: m.quoted })
+        }
+
+        return await conn.relayMessage(m.chat, {
             extendedTextMessage: {
                 text: msg,
-                contextInfo: { mentionedJid: users },
-            },
-        }, {});
-    };
+                contextInfo: { mentionedJid: users }
+            }
+        }, {})
+    }
 
-    const delay = (time) => new Promise((res) => setTimeout(res, time));
+    const delay = (time) => new Promise((res) => setTimeout(res, time))
 
     try {
-        // Spamma direttamente senza avvisi
+        global.bigtagStop = false
+
         for (let i = 0; i < count; i++) {
-            await send(customMessage);
-            await delay(1000); 
+            if (global.bigtagStop) {
+                global.bigtagStop = false
+                return
+            }
+
+            await send(customMessage)
+            await delay(1000)
         }
     } catch (e) {
-        console.error(e);
+        console.error(e)
     }
-};
+}
 
-handler.command = /^(bigtag)$/i;
-handler.group = true;
-handler.rowner = true;
+handler.command = /^(bigtag|stop)$/i
+handler.group = true
+handler.owner = true
 
-export default handler;
+export default handler

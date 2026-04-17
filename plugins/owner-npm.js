@@ -3,10 +3,29 @@
 import { execSync } from 'child_process'
 import fs from 'fs'
 
+function pushDipendenze() {
+  execSync('git add package.json package-lock.json', {
+    encoding: 'utf-8',
+    stdio: ['pipe', 'pipe', 'pipe']
+  })
+
+  try {
+    execSync('git commit -m "sync npm dependencies"', {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe']
+    })
+  } catch {}
+
+  execSync('git push', {
+    encoding: 'utf-8',
+    stdio: ['pipe', 'pipe', 'pipe']
+  })
+}
+
 let handler = async (m, { conn, text, command, usedPrefix }) => {
   global.npmBusy = global.npmBusy || false
 
-  if (!text && /^(npmi|npmrm|npmver|npmdl)$/i.test(command)) {
+  if (!text && /^(npmi|npmipush|npmrm|npmrmpush|npmver|npmdl)$/i.test(command)) {
     return conn.reply(
       m.chat,
       `📦 *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*
@@ -16,11 +35,17 @@ let handler = async (m, { conn, text, command, usedPrefix }) => {
 ${usedPrefix}npmi nomepacchetto
 𝐈𝐧𝐬𝐭𝐚𝐥𝐥𝐚 𝐮𝐧 𝐩𝐚𝐜𝐜𝐡𝐞𝐭𝐭𝐨
 
+${usedPrefix}npmipush nomepacchetto
+𝐈𝐧𝐬𝐭𝐚𝐥𝐥𝐚 𝐞 𝐬𝐢𝐧𝐜𝐫𝐨𝐧𝐢𝐳𝐳𝐚 𝐢𝐥 𝐩𝐚𝐜𝐜𝐡𝐞𝐭𝐭𝐨
+
 ${usedPrefix}npmi nomepacchetto,versione
 𝐈𝐧𝐬𝐭𝐚𝐥𝐥𝐚 𝐮𝐧𝐚 𝐯𝐞𝐫𝐬𝐢𝐨𝐧𝐞 𝐬𝐩𝐞𝐜𝐢𝐟𝐢𝐜𝐚
 
 ${usedPrefix}npmrm nomepacchetto
 𝐑𝐢𝐦𝐮𝐨𝐯𝐞 𝐮𝐧 𝐩𝐚𝐜𝐜𝐡𝐞𝐭𝐭𝐨
+
+${usedPrefix}npmrmpush nomepacchetto
+𝐑𝐢𝐦𝐮𝐨𝐯𝐞 𝐞 𝐬𝐢𝐧𝐜𝐫𝐨𝐧𝐢𝐳𝐳𝐚 𝐢𝐥 𝐩𝐚𝐜𝐜𝐡𝐞𝐭𝐭𝐨
 
 ${usedPrefix}npmver nomepacchetto
 𝐂𝐨𝐧𝐭𝐫𝐨𝐥𝐥𝐚 𝐥𝐚 𝐯𝐞𝐫𝐬𝐢𝐨𝐧𝐞 𝐢𝐧𝐬𝐭𝐚𝐥𝐥𝐚𝐭𝐚
@@ -31,8 +56,10 @@ ${usedPrefix}npmdl nomepacchetto
 𝐄𝐬𝐞𝐦𝐩𝐢:
 
 ${usedPrefix}npmi axios
+${usedPrefix}npmipush axios
 ${usedPrefix}npmi chalk,5.3.0
 ${usedPrefix}npmrm axios
+${usedPrefix}npmrmpush axios
 ${usedPrefix}npmver chalk
 ${usedPrefix}npmdl lodash
 ${usedPrefix}npmdl axios,1.6.8`,
@@ -100,7 +127,51 @@ ${usedPrefix}npmdl axios,1.6.8`,
         `✅ 𝐏𝐚𝐜𝐜𝐡𝐞𝐭𝐭𝐨 𝐢𝐧𝐬𝐭𝐚𝐥𝐥𝐚𝐭𝐨 𝐜𝐨𝐧 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐨
 
 𝐏𝐚𝐜𝐜𝐡𝐞𝐭𝐭𝐨: ${pkg}
+𝐕𝐞𝐫𝐬𝐢𝐨𝐧𝐞: ${version}
+
+⚠️ 𝐌𝐨𝐝𝐢𝐟𝐢𝐜𝐚 𝐬𝐨𝐥𝐨 𝐥𝐨𝐜𝐚𝐥𝐞.
+𝐏𝐞𝐫 𝐬𝐢𝐧𝐜𝐫𝐨𝐧𝐢𝐳𝐳𝐚𝐫𝐥𝐚 𝐮𝐬𝐚: ${usedPrefix}npmipush ${pkg}`,
+        m
+      )
+    }
+
+    if (/^npmipush$/i.test(command)) {
+      await conn.reply(
+        m.chat,
+        `📦 *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*
+
+𝐈𝐧𝐬𝐭𝐚𝐥𝐥𝐚𝐳𝐢𝐨𝐧𝐞 𝐞 𝐬𝐢𝐧𝐜𝐫𝐨𝐧𝐢𝐳𝐳𝐚𝐳𝐢𝐨𝐧𝐞 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨...
+
+𝐏𝐚𝐜𝐜𝐡𝐞𝐭𝐭𝐨: ${pkg}
 𝐕𝐞𝐫𝐬𝐢𝐨𝐧𝐞: ${version}`,
+        m
+      )
+
+      const installCmd = version === 'latest'
+        ? `npm install ${JSON.stringify(pkg)} --save`
+        : `npm install ${JSON.stringify(`${pkg}@${version}`)} --save`
+
+      execSync(installCmd, {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe']
+      })
+
+      pushDipendenze()
+
+      global.npmBusy = false
+
+      await conn.sendMessage(m.chat, {
+        react: { text: '✅', key: m.key }
+      }).catch(() => {})
+
+      return conn.reply(
+        m.chat,
+        `✅ 𝐏𝐚𝐜𝐜𝐡𝐞𝐭𝐭𝐨 𝐢𝐧𝐬𝐭𝐚𝐥𝐥𝐚𝐭𝐨 𝐞 𝐬𝐢𝐧𝐜𝐫𝐨𝐧𝐢𝐳𝐳𝐚𝐭𝐨
+
+𝐏𝐚𝐜𝐜𝐡𝐞𝐭𝐭𝐨: ${pkg}
+𝐕𝐞𝐫𝐬𝐢𝐨𝐧𝐞: ${version}
+
+𝐏𝐚𝐜𝐤𝐚𝐠𝐞.𝐣𝐬𝐨𝐧 𝐞 𝐏𝐚𝐜𝐤𝐚𝐠𝐞-𝐋𝐨𝐜𝐤.𝐣𝐬𝐨𝐧 𝐚𝐠𝐠𝐢𝐨𝐫𝐧𝐚𝐭𝐢 𝐧𝐞𝐥 𝐫𝐞𝐩𝐨.`,
         m
       )
     }
@@ -131,7 +202,45 @@ ${usedPrefix}npmdl axios,1.6.8`,
         m.chat,
         `✅ 𝐏𝐚𝐜𝐜𝐡𝐞𝐭𝐭𝐨 𝐫𝐢𝐦𝐨𝐬𝐬𝐨 𝐜𝐨𝐧 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐨
 
+𝐏𝐚𝐜𝐜𝐡𝐞𝐭𝐭𝐨: ${pkg}
+
+⚠️ 𝐌𝐨𝐝𝐢𝐟𝐢𝐜𝐚 𝐬𝐨𝐥𝐨 𝐥𝐨𝐜𝐚𝐥𝐞.
+𝐏𝐞𝐫 𝐬𝐢𝐧𝐜𝐫𝐨𝐧𝐢𝐳𝐳𝐚𝐫𝐥𝐚 𝐮𝐬𝐚: ${usedPrefix}npmrmpush ${pkg}`,
+        m
+      )
+    }
+
+    if (/^npmrmpush$/i.test(command)) {
+      await conn.reply(
+        m.chat,
+        `🗑️ *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*
+
+𝐑𝐢𝐦𝐨𝐳𝐢𝐨𝐧𝐞 𝐞 𝐬𝐢𝐧𝐜𝐫𝐨𝐧𝐢𝐳𝐳𝐚𝐳𝐢𝐨𝐧𝐞 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨...
+
 𝐏𝐚𝐜𝐜𝐡𝐞𝐭𝐭𝐨: ${pkg}`,
+        m
+      )
+
+      execSync(`npm uninstall ${JSON.stringify(pkg)}`, {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe']
+      })
+
+      pushDipendenze()
+
+      global.npmBusy = false
+
+      await conn.sendMessage(m.chat, {
+        react: { text: '✅', key: m.key }
+      }).catch(() => {})
+
+      return conn.reply(
+        m.chat,
+        `✅ 𝐏𝐚𝐜𝐜𝐡𝐞𝐭𝐭𝐨 𝐫𝐢𝐦𝐨𝐬𝐬𝐨 𝐞 𝐬𝐢𝐧𝐜𝐫𝐨𝐧𝐢𝐳𝐳𝐚𝐭𝐨
+
+𝐏𝐚𝐜𝐜𝐡𝐞𝐭𝐭𝐨: ${pkg}
+
+𝐏𝐚𝐜𝐤𝐚𝐠𝐞.𝐣𝐬𝐨𝐧 𝐞 𝐏𝐚𝐜𝐤𝐚𝐠𝐞-𝐋𝐨𝐜𝐤.𝐣𝐬𝐨𝐧 𝐚𝐠𝐠𝐢𝐨𝐫𝐧𝐚𝐭𝐢 𝐧𝐞𝐥 𝐫𝐞𝐩𝐨.`,
         m
       )
     }
@@ -275,9 +384,9 @@ ${e.message}`,
   }
 }
 
-handler.help = ['npmi', 'npmrm', 'npmver', 'npmdl']
+handler.help = ['npmi', 'npmipush', 'npmrm', 'npmrmpush', 'npmver', 'npmdl']
 handler.tags = ['owner']
-handler.command = /^(npmi|npmrm|npmver|npmdl)$/i
+handler.command = /^(npmi|npmipush|npmrm|npmrmpush|npmver|npmdl)$/i
 handler.owner = true
 
 export default handler
