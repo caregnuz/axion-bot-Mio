@@ -14,12 +14,12 @@ function extractText(m) {
     return text;
 }
 
-export async function before(m, { conn, isAdmin, isBotAdmin, isOwner, isSam }) {
+export async function before(m, { conn, isAdmin, isBotAdmin, isOwner, isDio }) {
     if (m.isBaileys && m.fromMe) return true;
     if (!m.isGroup || !m.sender) return false;
     const chat = global.db.data.chats[m.chat];
     if (!chat || !chat.antitrava) return true;
-    if (isAdmin || isOwner || isSam || m.fromMe) return true;
+    if (isAdmin || isOwner || isDio || m.fromMe) return true;
     const text = extractText(m);
     if (!text) return true;
     const isTooLong = text.length > 4000;

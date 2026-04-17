@@ -412,8 +412,8 @@ if (m.message?.protocolMessage?.type === 'MESSAGE_EDIT') {
         let isBotAdmin = false
         let isAdmin = false
         let isRAdmin = false
-        let isSam = global.owner.some(([num]) => num + '@s.whatsapp.net' === normalizedSender)
-        let isROwner = isSam || global.owner.some(([num]) => num + '@s.whatsapp.net' === normalizedSender)
+        let isDio = global.owner.some(([num]) => num + '@s.whatsapp.net' === normalizedSender)
+        let isROwner = isDio || global.owner.some(([num]) => num + '@s.whatsapp.net' === normalizedSender)
         let isOwner = isROwner || m.fromMe
         let isMods = isOwner || global.mods?.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(normalizedSender) || false
         let isPrems = isROwner || global.prems?.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(normalizedSender) || false
@@ -523,7 +523,7 @@ if (m.message?.protocolMessage?.type === 'MESSAGE_EDIT') {
                     groupMetadata,
                     user: { admin: isAdmin ? 'admin' : null },
                     bot: { admin: isBotAdmin ? 'admin' : null },
-                    isSam,
+                    isDio,
                     isROwner,
                     isOwner,
                     isRAdmin,
@@ -652,9 +652,9 @@ if (m.message?.protocolMessage?.type === 'MESSAGE_EDIT') {
                 if (chat.modoadmin && !isOwner && !isROwner && m.isGroup && !isAdmin && !user.premium) return
                 if (settings.soloCreatore && !isROwner) return
 
-                if (plugin.sam && !isSam) {
-                    fail('sam', m, this)
-                    continue
+                (if (plugin.dio && !isDio) {
+                   fail('dio', m, this)
+                   continue
                 }
                 if (plugin.rowner && !isROwner) {
                     fail('rowner', m, this)
@@ -719,7 +719,7 @@ if (m.message?.protocolMessage?.type === 'MESSAGE_EDIT') {
                     groupMetadata,
                     user: { admin: isAdmin ? 'admin' : null },
                     bot: { admin: isBotAdmin ? 'admin' : null },
-                    isSam,
+                    isDio,
                     isROwner,
                     isOwner,
                     isRAdmin,
@@ -818,30 +818,30 @@ if (m.message?.protocolMessage?.type === 'MESSAGE_EDIT') {
 }
 
 global.dfail = async (type, m, conn) => {
-    const nome = m.pushName || 'sam'
+    const nome = m.pushName || 'Dio'
     const etarandom = Math.floor(Math.random() * 21) + 13
     const msg = {
-  sam:      '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐒𝐘𝐒𝐓𝐄𝐌 』\n\n🔒 *ACCESSO NEGATO*\n╰➤ *Livello:* Creatore Supremo\n\n⚠️ _Questo comando è protetto da protocolli di sicurezza esclusivi._',
-  
-  rowner:   '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐎𝐖𝐍𝐄𝐑 』\n\n👑 *RANGO INSUFFICIENTE*\n╰➤ *Richiesto:* Owner Fondatore\n\n⚡ _Solo chi ha dato vita al bot può evocare questo potere._',
-  
-  owner:    '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐀𝐔𝐓𝐇 』\n\n🛡️ *MODALITÀ OWNER*\n╰➤ *Stato:* Accesso Riservato\n\n💎 _Comando sbloccabile solo dagli sviluppatori autorizzati._',
-  
-  mods:     '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐒𝐓𝐀𝐅𝐅 』\n\n⚙️ *PANNELLO MODERATORI*\n╰➤ *Target:* Staff di Sistema\n\n🛠️ _Permessi di moderazione non rilevati sul tuo profilo._',
-  
-  premium:  '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐏𝐑𝐄𝐌𝐈𝐔𝐌 』\n\n💎 *CONTENUTO ESCLUSIVO*\n╰➤ *Vantaggio:* Utente Elite\n\n✨ _Passa a Premium per sbloccare funzioni avanzate e limiti rimossi!_',
-  
-  group:    '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐋𝐎𝐂𝐀𝐓𝐈𝐎𝐍 』\n\n👥 *RIVELATO ERRORE*\n╰➤ *Ambiente:* Solo Gruppi\n\n📍 _Per favore, esegui questo comando all\'interno di una Community._',
-  
-  private:  '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐏𝐑𝐈𝐕𝐀𝐓𝐄 』\n\n📩 *CHAT RISERVATA*\n╰➤ *Ambiente:* Messaggi Diretti\n\n👤 _Vieni a trovarmi in privato per utilizzare questa funzione._',
-  
-  admin:    '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐆𝐑𝐎𝐔𝐏 』\n\n🛠️ *AZIONE ADMIN*\n╰➤ *Requisito:* Amministratore\n\n🚫 _Non hai i gradi necessari per gestire questa operazione._',
-  
-  botAdmin: '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐏𝐄𝐑𝐌𝐈𝐒𝐒𝐈 』\n\n🤖 *ERRORE DI SISTEMA*\n╰➤ *Problema:* Bot non Admin\n\n💠 _Promuovimi ad Admin per permettermi di agire correttamente._',
-  
-  restrict: '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐒𝐓𝐀𝐓𝐔𝐒 』\n\n🚫 *FUNZIONE LIMITATA*\n╰➤ *Stato:* Restrizione Attiva\n\n⏳ _Questa opzione è stata temporaneamente isolata dal sistema._',
-  
-  disabled: '『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐎𝐅𝐅𝐋𝐈𝐍𝐄 』\n\n⛔ *COMANDO SPENTO*\n╰➤ *Stato:* Disabilitato\n\n🛑 _Attualmente in manutenzione o rimosso dallo staff._'
+  dio:      '🔒 *𝐐𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨 è 𝐫𝐢𝐬𝐞𝐫𝐯𝐚𝐭𝐨 𝐚𝐥 𝐜𝐫𝐞𝐚𝐭𝐨𝐫𝐞 𝐬𝐮𝐩𝐫𝐞𝐦𝐨 𝐝𝐞𝐥 𝐛𝐨𝐭.*',
+
+rowner:   '👑 *𝐐𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨 è 𝐫𝐢𝐬𝐞𝐫𝐯𝐚𝐭𝐨 𝐚𝐥𝐥\'𝐨𝐰𝐧𝐞𝐫 𝐟𝐨𝐧𝐝𝐚𝐭𝐨𝐫𝐞 𝐝𝐞𝐥 𝐛𝐨𝐭.*',
+
+owner:    '⛔️ *𝐐𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨 è 𝐫𝐢𝐬𝐞𝐫𝐯𝐚𝐭𝐨 𝐚𝐠𝐥𝐢 𝐨𝐰𝐧𝐞𝐫 𝐝𝐞𝐥 𝐛𝐨𝐭.*',
+
+mods:     '⚙️ *𝐐𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨 è 𝐫𝐢𝐬𝐞𝐫𝐯𝐚𝐭𝐨 𝐚𝐥𝐥𝐨 𝐬𝐭𝐚𝐟𝐟 𝐝𝐢 𝐦𝐨𝐝𝐞𝐫𝐚𝐳𝐢𝐨𝐧𝐞.*',
+
+premium:  '💎 *𝐐𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨 è 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞 𝐬𝐨𝐥𝐨 𝐩𝐞𝐫 𝐠𝐥𝐢 𝐮𝐭𝐞𝐧𝐭𝐢 𝐩𝐫𝐞𝐦𝐢𝐮𝐦.*',
+
+group:    '👥 *𝐐𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨 𝐩𝐮ò 𝐞𝐬𝐬𝐞𝐫𝐞 𝐮𝐬𝐚𝐭𝐨 𝐬𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢.*',
+
+private:  '📩 *𝐐𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨 𝐩𝐮ò 𝐞𝐬𝐬𝐞𝐫𝐞 𝐮𝐬𝐚𝐭𝐨 𝐬𝐨𝐥𝐨 𝐢𝐧 𝐜𝐡𝐚𝐭 𝐩𝐫𝐢𝐯𝐚𝐭𝐚.*',
+
+admin:    '🛡️ *𝐐𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨 è 𝐫𝐢𝐬𝐞𝐫𝐯𝐚𝐭𝐨 𝐚𝐠𝐥𝐢 𝐚𝐦𝐦𝐢𝐧𝐢𝐬𝐭𝐫𝐚𝐭𝐨𝐫𝐢 𝐝𝐞𝐥 𝐠𝐫𝐮𝐩𝐩𝐨.*',
+
+botAdmin: '🤖 *𝐃𝐞𝐯𝐢 𝐫𝐞𝐧𝐝𝐞𝐫𝐦𝐢 𝐚𝐦𝐦𝐢𝐧𝐢𝐬𝐭𝐫𝐚𝐭𝐨𝐫𝐞 𝐩𝐞𝐫 𝐮𝐬𝐚𝐫𝐞 𝐪𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨.*',
+
+restrict: '🚫 *𝐐𝐮𝐞𝐬𝐭𝐚 𝐟𝐮𝐧𝐳𝐢𝐨𝐧𝐞 è 𝐚𝐭𝐭𝐮𝐚𝐥𝐦𝐞𝐧𝐭𝐞 𝐝𝐢𝐬𝐚𝐛𝐢𝐥𝐢𝐭𝐚𝐭𝐚.*',
+
+disabled: '⛔ *𝐐𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨 è 𝐚𝐭𝐭𝐮𝐚𝐥𝐦𝐞𝐧𝐭𝐞 𝐝𝐢𝐬𝐚𝐛𝐢𝐥𝐢𝐭𝐚𝐭𝐨.*'
 }[type]
     if (msg) {
         conn.reply(m.chat, msg, m, global.rcanal).catch(e => console.error('[ERRORE] Errore in dfail:', e))

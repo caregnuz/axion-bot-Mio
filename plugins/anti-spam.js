@@ -1,10 +1,10 @@
 const uzer = new Map();
 let bohtbhnonso = 0;
 const handler = m => m;
-handler.before = async function (m, { conn, isAdmin, isBotAdmin, isOwner, isSam }) {
+handler.before = async function (m, { conn, isAdmin, isBotAdmin, isOwner, isDio }) {
     if (!m.isGroup) return;
     const chat = global.db.data.chats[m.chat] || {};
-    if (!chat.antispam || chat.modoadmin || isOwner || isSam || isAdmin || !isBotAdmin) {
+    if (!chat.antispam || chat.modoadmin || isOwner || isDio || isAdmin || !isBotAdmin) {
         return;
     }
     if (m.message?.viewOnceMessage) return;
