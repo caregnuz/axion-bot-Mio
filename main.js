@@ -292,6 +292,16 @@ ${stackText}
         console.error('[ERRORE] Invio errore plugin in chat fallito:', e);
     }
 };
+
+setTimeout(async () => {
+    await global.sendPluginErrorToChat?.(
+        'Test debug chat',
+        new Error('Questo è un test di invio errori in chat'),
+        'main.js'
+    );
+}, 15000);
+
+
 if (!fs.existsSync(`./${authFile}/creds.json`)) {
     if (opzione === '2' || methodCode) {
         opzione = '2';
