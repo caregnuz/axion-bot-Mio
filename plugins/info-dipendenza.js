@@ -80,13 +80,34 @@ const scanMissing = () => {
   return missing
 }
 
-const install = (pkg) => {
+const execPromise = (cmd) => {
   return new Promise((resolve, reject) => {
-    exec(`npm install ${pkg}`, (err, stdout, stderr) => {
-      if (err) return reject(stderr || err.message)
+    exec(cmd, { maxBuffer: 1024 * 1024 * 10 }, (err, stdout, stderr) => {
+      if (err) return reject(stderr || err.message || String(err))
       resolve(stdout)
     })
   })
+}
+
+const install = async (pkg) => {
+  return await execPromise(`npm install ${pkg} --save`)
+}
+
+const uninstall = async (pkg) => {
+  return await execPromise(`npm uninstall ${pkg}`)
+}
+
+const pushDeps = async (msg) => {
+  await execPromise('git add package.json package-lock.json')
+
+  try {
+    await execPromise(`git commit -m "${msg.replace(/"/g, '\\"')}"`)
+  } catch (e) {
+    const text = String(e || '')
+    if (!/nothing to commit|no changes added to commit/i.test(text)) throw e
+  }
+
+  await execPromise('git push')
 }
 
 let handler = async (m, { conn, args, command, usedPrefix }) => {
@@ -106,22 +127,37 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
       text += `   ↳ ${[...new Set(files)].join(', ')}\n\n`
     }
 
-    const maxButtons = 10
+    const primo = mods[0]
+    const buttons = primo ? [
+      {
+        buttonId: `${usedPrefix}installa ${primo}`,
+        buttonText: { displayText: `📥 Installa ${primo}` },
+        type: 1
+      },
+      {
+        buttonId: `${usedPrefix}installapush ${primo}`,
+        buttonText: { displayText: `🚀 Installa+Push ${primo}` },
+        type: 1
+      },
+      {
+        buttonId: `${usedPrefix}installaall`,
+        buttonText: { displayText: '📦 Installa tutto' },
+        type: 1
+      }
+    ] : []
 
-    const buttons = mods.slice(0, maxButtons).map(dep => ({
-      buttonId: `${usedPrefix}installa ${dep}`,
-      buttonText: { displayText: `📥 ${dep}` },
-      type: 1
-    }))
-
-    if (mods.length > maxButtons) {
-      text += `⚠️ Mostro i primi ${maxButtons} moduli.\n`
-      text += `Usa: ${usedPrefix}installa <modulo> per gli altri`
+    if (mods.length > 1) {
+      text += `⚠️ Bottone rapido disponibile per il primo modulo.\n`
+      text += `Usa:\n`
+      text += `• ${usedPrefix}installa <modulo>\n`
+      text += `• ${usedPrefix}installapush <modulo>\n`
+      text += `• ${usedPrefix}rimuovi <modulo>\n`
+      text += `• ${usedPrefix}rimuovipush <modulo>`
     }
 
     return conn.sendMessage(m.chat, {
       text,
-      footer: 'Premi per installare',
+      footer: 'Gestione dipendenze',
       buttons,
       headerType: 1
     }, { quoted: m })
@@ -129,17 +165,79 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
 
   if (command === 'installa') {
     let mod = (args.join(' ') || '').replace(/[()]/g, '').trim()
-    if (!mod) return m.reply('📦 Scrivi il modulo')
+    if (!mod) return m.reply(`📦 Usa: *${usedPrefix}installa modulo*`)
 
     await m.reply(`⏳ Installo *${mod}*...`)
 
     try {
       await install(mod)
-      return m.reply(`✅ Installato: ${mod}
+      return m.reply(
+`✅ Installato: *${mod}*
 
-⚠️ Riavvia il bot per applicare le modifiche`)
+⚠️ Modifica locale completata.
+Per sincronizzarla con tutti i bot usa:
+*${usedPrefix}installapush ${mod}*
+
+Oppure pusha manualmente *package.json* e *package-lock.json*.`)
     } catch (e) {
-      return m.reply(`❌ Errore:\n${String(e).slice(0, 200)}`)
+      return m.reply(`❌ Errore:\n${String(e).slice(0, 300)}`)
+    }
+  }
+
+  if (command === 'installapush') {
+    let mod = (args.join(' ') || '').replace(/[()]/g, '').trim()
+    if (!mod) return m.reply(`📦 Usa: *${usedPrefix}installapush modulo*`)
+
+    await m.reply(`⏳ Installo e pusho *${mod}*...`)
+
+    try {
+      await install(mod)
+      await pushDeps(`add dependency: ${mod}`)
+
+      return m.reply(
+`✅ Installato e pushato: *${mod}*
+
+📦 *package.json* e *package-lock.json* sono stati sincronizzati nel repo.`)
+    } catch (e) {
+      return m.reply(`❌ Errore:\n${String(e).slice(0, 500)}`)
+    }
+  }
+
+  if (command === 'rimuovi') {
+    let mod = (args.join(' ') || '').replace(/[()]/g, '').trim()
+    if (!mod) return m.reply(`📦 Usa: *${usedPrefix}rimuovi modulo*`)
+
+    await m.reply(`⏳ Rimuovo *${mod}*...`)
+
+    try {
+      await uninstall(mod)
+      return m.reply(
+`✅ Rimosso: *${mod}*
+
+⚠️ Modifica locale completata.
+Per sincronizzarla con tutti i bot usa:
+*${usedPrefix}rimuovipush ${mod}*`)
+    } catch (e) {
+      return m.reply(`❌ Errore:\n${String(e).slice(0, 300)}`)
+    }
+  }
+
+  if (command === 'rimuovipush') {
+    let mod = (args.join(' ') || '').replace(/[()]/g, '').trim()
+    if (!mod) return m.reply(`📦 Usa: *${usedPrefix}rimuovipush modulo*`)
+
+    await m.reply(`⏳ Rimuovo e pusho *${mod}*...`)
+
+    try {
+      await uninstall(mod)
+      await pushDeps(`remove dependency: ${mod}`)
+
+      return m.reply(
+`✅ Rimosso e pushato: *${mod}*
+
+📦 *package.json* e *package-lock.json* sono stati sincronizzati nel repo.`)
+    } catch (e) {
+      return m.reply(`❌ Errore:\n${String(e).slice(0, 500)}`)
     }
   }
 
@@ -166,13 +264,13 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
     let out = `✅ Installate: ${ok.length ? ok.join(', ') : 'nessuna'}`
     if (ko.length) out += `\n❌ Fallite: ${ko.join(', ')}`
 
-    out += `\n\n⚠️ Riavvia il bot per applicare le modifiche`
+    out += `\n\n⚠️ Modifiche locali completate.\nPer sincronizzarle con tutti i bot devi pushare package.json e package-lock.json.`
 
     return m.reply(out)
   }
 }
 
-handler.command = /^(dipendenze|installa|installaall)$/i
+handler.command = /^(dipendenze|installa|installapush|installaall|rimuovi|rimuovipush)$/i
 handler.owner = true
 
 export default handler
