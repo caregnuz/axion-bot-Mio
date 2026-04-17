@@ -18,13 +18,22 @@ const playAgainButtons = () => [{
   })
 }]
 
-const gameButtons = () => [{
-  name: 'quick_reply',
-  buttonParamsJson: JSON.stringify({
-    display_text: '💡 Indizio',
-    id: '.indiziobandiera'
-  })
-}]
+const gameButtons = () => [
+  {
+    name: 'quick_reply',
+    buttonParamsJson: JSON.stringify({
+      display_text: '*💡 Indizio*',
+      id: '.indiziobandiera'
+    })
+  },
+  {
+    name: 'quick_reply',
+    buttonParamsJson: JSON.stringify({
+      display_text: '*🛑 Interrompi*',
+      id: '.skipbandiera'
+    })
+  }
+]
 
 function normalizeString(str = '') {
   return String(str)
