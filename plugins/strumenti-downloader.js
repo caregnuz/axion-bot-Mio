@@ -1146,7 +1146,7 @@ await editMessage(
 🕒 *𝐓𝐞𝐦𝐩𝐨 𝐭𝐫𝐚𝐬𝐜𝐨𝐫𝐬𝐨:* ${elapsed}
 📦 *𝐏𝐞𝐬𝐨:* ${formatBytes(stats.size)}
 
-> 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'`
+> 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓`
 )
 
     await setReaction(conn, m.chat, m.key, '✅')
