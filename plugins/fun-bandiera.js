@@ -145,17 +145,16 @@ async function sendFlagCard(conn, chat, url, caption, quoted) {
   const thumb = await createFlagThumb(url)
 
   if (thumb) {
-    const token = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-    const uniqueUrl = `https://flagcdn.com/?flag=${encodeURIComponent(url)}&t=${token}`
+    return conn.sendMessage(
+      chat,
+      {
+        text: caption,
+        jpegThumbnail: thumb
+      },
+      { quoted }
+    )
+  }
 
-  return conn.sendMessage(
-  chat,
-  {
-    text: caption,
-    jpegThumbnail: thumb
-  },
-  { quoted }
-)
   return conn.sendMessage(
     chat,
     {
