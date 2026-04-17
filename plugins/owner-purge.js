@@ -94,7 +94,7 @@ for (let i = 0; i < usersToRemove.length; i += dimensioneBlocco) {
 
     await new Promise(resolve => setTimeout(resolve, pausa))
 }
-
+}
 handler.command = ['purge', 'purgef']
 handler.group = true
 handler.botAdmin = true
