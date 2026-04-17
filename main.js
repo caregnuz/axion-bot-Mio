@@ -252,6 +252,30 @@ const connectionOptions = {
 };
 global.conn = makeWASocket(connectionOptions);
 global.store.bind(global.conn.ev);
+global.sendPluginErrorToChat = async function (title, err, extra = '') {
+    try {
+        const jid = process.env.BOT_ERROR_CHAT;
+
+        if (!jid || !global.conn) return;
+
+        const messageText = err?.message || String(err) || 'Errore sconosciuto';
+        const stackText = String(err?.stack || err || 'Nessuno stack disponibile').slice(0, 3500);
+
+        const text =
+`❌ *𝛥𝐗𝐈𝚶𝐍 𝐃𝐄𝐁𝐔𝐆*
+
+*Titolo:* ${title}
+${extra ? `*Plugin:* ${extra}\n` : ''}*Messaggio:* ${messageText}
+
+\`\`\`
+${stackText}
+\`\`\``;
+
+        await global.conn.sendMessage(jid, { text });
+    } catch (e) {
+        console.error('[ERRORE] Invio errore plugin in chat fallito:', e);
+    }
+};
 if (!fs.existsSync(`./${authFile}/creds.json`)) {
     if (opzione === '2' || methodCode) {
         opzione = '2';
@@ -388,14 +412,22 @@ global.isLogoPrinted = true;
         }
     }
 }
-process.on('uncaughtException', console.error);
+process.on('uncaughtException', async (err) => {
+    console.error(err);
+    await global.sendPluginErrorToChat?.('Uncaught Exception', err);
+});
+
+process.on('unhandledRejection', async (err) => {
+    console.error(err);
+    await global.sendPluginErrorToChat?.('Unhandled Rejection', err);
+});
 (async () => {
     try {
         conn.ev.on('connection.update', connectionUpdate);
         conn.ev.on('creds.update', saveCreds);
         console.log(chalk.hex('#2ECC71').bold(`𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 connesso correttamente`));
     } catch (error) {
-        console.error(chalk.bold.bgHex('#E74C3C')(`🥀 Errore nell'avvio del bot: `, error));
+        console.error(chalk.bold.bgHex('#E74C3C')(`🥀 Errore nell'avvio del bot: ${error?.stack || error}`));
     }
 })();
 let isInit = true;
@@ -478,6 +510,7 @@ async function filesInit() {
             global.plugins[filename] = module.default || module;
         } catch (e) {
             conn.logger.error(e);
+            await global.sendPluginErrorToChat?.('Errore caricamento plugin all’avvio', e, filename);
             delete global.plugins[filename];
         }
     }
@@ -486,21 +519,27 @@ filesInit().then((_) => Object.keys(global.plugins)).catch(console.error);
 global.reload = async (_ev, filename) => {
     if (pluginFilter(filename)) {
         const dir = global.__filename(join(pluginFolder, filename), true);
+
         if (filename in global.plugins) {
             if (existsSync(dir)) conn.logger.info(chalk.hex('#4920ffff')(`✅ AGGIORNATO - '${filename}' CON SUCCESSO`));
             else {
                 conn.logger.warn(`🗑️ FILE ELIMINATO: '${filename}'`);
                 return delete global.plugins[filename];
             }
-        } else conn.logger.info(chalk.hex('#a894ffff')(`🆕 NUOVO PLUGIN RILEVATO: '${filename}'`));
+        } else {
+            conn.logger.info(chalk.hex('#a894ffff')(`🆕 NUOVO PLUGIN RILEVATO: '${filename}'`));
+        }
 
         try {
             const module = (await import(`${global.__filename(dir)}?update=${Date.now()}`));
             global.plugins[filename] = module.default || module;
         } catch (e) {
             conn.logger.error(`⚠️ ERRORE NEL PLUGIN: '${filename}\n${format(e)}'`);
+            await global.sendPluginErrorToChat?.('Errore reload plugin', e, filename);
         } finally {
-            global.plugins = Object.fromEntries(Object.entries(global.plugins).sort(([a], [b]) => a.localeCompare(b)));
+            global.plugins = Object.fromEntries(
+                Object.entries(global.plugins).sort(([a], [b]) => a.localeCompare(b))
+            );
         }
     }
 };
