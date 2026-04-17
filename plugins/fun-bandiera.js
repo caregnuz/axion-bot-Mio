@@ -1,10 +1,19 @@
+Ecco il plugin sistemato come volevi:
+
+primo pulsante staccato dal messaggio della bandiera, così la thumb può uscire bene
+
+“Gioca ancora” attaccato ai messaggi finali
+
+ho anche corretto i problemi di sintassi nel codice che hai incollato
+
+
 // by Bonzino
 
 import fetch from 'node-fetch'
 import { createCanvas, loadImage } from 'canvas'
 
-const H = '*╭━━━〔 🏳️ 𝐁𝐀𝐍𝐃𝐈𝐄𝐑𝐀 〕━━━⬣*'
-const F = '*╰━━━━━━━━━━━━━━━━⬣*'
+const H = '╭━━━〔 🏳️ 𝐁𝐀𝐍𝐃𝐈𝐄𝐑𝐀 〕━━━⬣'
+const F = '╰━━━━━━━━━━━━━━━━⬣'
 const GAME_MS = 30_000
 const MAX_TENTATIVI = 3
 const ANSWER_COOLDOWN_MS = 1200
@@ -59,7 +68,7 @@ function getHintText(name = '') {
   const masked = clean
     .split('')
     .map((ch, i, arr) => {
-      if (ch === ' ' || ch === '-' || ch === '\'') return ch
+      if (ch === ' ' || ch === '-' || ch === "'") return ch
       if (i === 0 || i === arr.length - 1) return ch
       return '•'
     })
@@ -146,9 +155,9 @@ async function sendFlagCard(conn, chat, url, caption, quoted) {
   const thumb = await createFlagThumb(url)
 
   if (thumb) {
-    const PAD = '\u2003\u2003'
-    const title = `${PAD}Quiz bandiere!${PAD}`
-    const uniqueUrl = `https://flagcdn.com/?flag=${encodeURIComponent(url)}&t=${Date.now()}`
+    const token = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+    const title = `Quiz bandiere ${token}`
+    const uniqueUrl = `https://flagcdn.com/?flag=${encodeURIComponent(url)}&t=${token}`
 
     return conn.sendMessage(
       chat,
@@ -157,7 +166,7 @@ async function sendFlagCard(conn, chat, url, caption, quoted) {
         contextInfo: {
           externalAdReply: {
             title,
-            body: uniqueUrl,
+            body: `Bandiera ${token}`,
             mediaType: 1,
             previewType: 0,
             renderLargerThumbnail: true,
@@ -224,12 +233,12 @@ let handler = async (m, { conn, command, isAdmin }) => {
   global.bandieraGame = global.bandieraGame || {}
 
   if (command === 'indiziobandiera') {
-    if (!m.isGroup) return m.reply('*⚠️ 𝐒𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢*')
+    if (!m.isGroup) return m.reply('⚠️ 𝐒𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢')
     const game = global.bandieraGame[m.chat]
-    if (!game) return m.reply('*⚠️ 𝐍𝐞𝐬𝐬𝐮𝐧𝐚 𝐩𝐚𝐫𝐭𝐢𝐭𝐚 𝐚𝐭𝐭𝐢𝐯𝐚*')
+    if (!game) return m.reply('⚠️ 𝐍𝐞𝐬𝐬𝐮𝐧𝐚 𝐩𝐚𝐫𝐭𝐢𝐭𝐚 𝐚𝐭𝐭𝐢𝐯𝐚')
 
     if (game.hintUsed) {
-      return m.reply(`*⚠️ 𝐇𝐚𝐢 𝐠𝐢à 𝐮𝐬𝐚𝐭𝐨 𝐥'𝐢𝐧𝐝𝐢𝐳𝐢𝐨*\n\n${game.hintText}`)
+      return m.reply(`⚠️ 𝐇𝐚𝐢 𝐠𝐢à 𝐮𝐬𝐚𝐭𝐨 𝐥'𝐢𝐧𝐝𝐢𝐳𝐢𝐨\n\n${game.hintText}`)
     }
 
     game.hintUsed = true
@@ -246,9 +255,9 @@ ${F}`
   }
 
   if (command === 'skipbandiera') {
-    if (!m.isGroup) return m.reply('*⚠️ 𝐒𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢*')
-    if (!global.bandieraGame[m.chat]) return m.reply('*⚠️ 𝐍𝐞𝐬𝐬𝐮𝐧𝐚 𝐩𝐚𝐫𝐭𝐢𝐭𝐚 𝐚𝐭𝐭𝐢𝐯𝐚*')
-    if (!isAdmin && !m.fromMe) return m.reply('*❌ 𝐒𝐨𝐥𝐨 𝐚𝐝𝐦𝐢𝐧*')
+    if (!m.isGroup) return m.reply('⚠️ 𝐒𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢')
+    if (!global.bandieraGame[m.chat]) return m.reply('⚠️ 𝐍𝐞𝐬𝐬𝐮𝐧𝐚 𝐩𝐚𝐫𝐭𝐢𝐭𝐚 𝐚𝐭𝐭𝐢𝐯𝐚')
+    if (!isAdmin && !m.fromMe) return m.reply('❌ 𝐒𝐨𝐥𝐨 𝐚𝐝𝐦𝐢𝐧')
 
     const game = global.bandieraGame[m.chat]
     clearTimeout(game.timeout)
@@ -257,7 +266,7 @@ ${F}`
       text: `${H}
 ┃ ⛔ 𝐏𝐀𝐑𝐓𝐈𝐓𝐀 𝐈𝐍𝐓𝐄𝐑𝐑𝐎𝐓𝐓𝐀
 ┃
-┃ *🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚:* ${game.rispostaOriginale}
+┃ 🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚: ${game.rispostaOriginale}
 ${F}`
     }, { quoted: m })
 
@@ -265,14 +274,14 @@ ${F}`
     return
   }
 
-  if (!m.isGroup) return m.reply('*⚠️ 𝐒𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢*')
-  if (global.bandieraGame[m.chat]) return m.reply('*⚠️ 𝐂𝐞̀ 𝐠𝐢à 𝐮𝐧𝐚 𝐩𝐚𝐫𝐭𝐢𝐭𝐚 𝐚𝐭𝐭𝐢𝐯𝐚*')
+  if (!m.isGroup) return m.reply('⚠️ 𝐒𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢')
+  if (global.bandieraGame[m.chat]) return m.reply('⚠️ 𝐂𝐞̀ 𝐠𝐢à 𝐮𝐧𝐚 𝐩𝐚𝐫𝐭𝐢𝐭𝐚 𝐚𝐭𝐭𝐢𝐯𝐚')
 
   let bandiere
   try {
     bandiere = await loadAllFlags()
   } catch {
-    return m.reply('*❌ 𝐍𝐨𝐧 𝐫𝐢𝐞𝐬𝐜𝐨 𝐚 𝐜𝐚𝐫𝐢𝐜𝐚𝐫𝐞 𝐥𝐞 𝐛𝐚𝐧𝐝𝐢𝐞𝐫𝐞*')
+    return m.reply('❌ 𝐍𝐨𝐧 𝐫𝐢𝐞𝐬𝐜𝐨 𝐚 𝐜𝐚𝐫𝐢𝐜𝐚𝐫𝐞 𝐥𝐞 𝐛𝐚𝐧𝐝𝐢𝐞𝐫𝐞')
   }
 
   const frasi = [
@@ -295,15 +304,15 @@ ${F}`
 ┃
 ┃ ${frase}
 ┃
-┃ *🏳️ 𝐈𝐧𝐝𝐨𝐯𝐢𝐧𝐚 𝐥𝐚 𝐧𝐚𝐳𝐢𝐨𝐧𝐞*
-┃ *⏱️ 𝐓𝐞𝐦𝐩𝐨:* 30𝐬
-┃ *🎯 𝐓𝐞𝐧𝐭𝐚𝐭𝐢𝐯𝐢:* ${MAX_TENTATIVI} 𝐩𝐞𝐫 𝐮𝐭𝐞𝐧𝐭𝐞
+┃ 🏳️ 𝐈𝐧𝐝𝐨𝐯𝐢𝐧𝐚 𝐥𝐚 𝐧𝐚𝐳𝐢𝐨𝐧𝐞
+┃ ⏱️ 𝐓𝐞𝐦𝐩𝐨: 30𝐬
+┃ 🎯 𝐓𝐞𝐧𝐭𝐚𝐭𝐢𝐯𝐢: ${MAX_TENTATIVI} 𝐩𝐞𝐫 𝐮𝐭𝐞𝐧𝐭𝐞
 ${F}`,
     m
   )
 
   await conn.sendMessage(m.chat, {
-    text: '*💡 𝐔𝐬𝐚 𝐢𝐥 𝐩𝐮𝐥𝐬𝐚𝐧𝐭𝐞 𝐪𝐮𝐢 𝐬𝐨𝐭𝐭𝐨 𝐩𝐞𝐫 𝐥\'𝐢𝐧𝐝𝐢𝐳𝐢𝐨*',
+    text: '💡 𝐔𝐬𝐚 𝐢𝐥 𝐩𝐮𝐥𝐬𝐚𝐧𝐭𝐞 𝐪𝐮𝐢 𝐬𝐨𝐭𝐭𝐨 𝐩𝐞𝐫 𝐥\'𝐢𝐧𝐝𝐢𝐳𝐢𝐨',
     interactiveButtons: gameButtons()
   }, { quoted: sent })
 
@@ -325,12 +334,8 @@ ${F}`,
         text: `${H}
 ┃ ⏰ 𝐓𝐄𝐌𝐏𝐎 𝐒𝐂𝐀𝐃𝐔𝐓𝐎
 ┃
-┃ *🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚:* ${game.rispostaOriginale}
-${F}`
-      })
-
-      await conn.sendMessage(m.chat, {
-        text: '*⟲ 𝐕𝐮𝐨𝐢 𝐫𝐢𝐩𝐫𝐨𝐯𝐚𝐫𝐞?*',
+┃ 🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚: ${game.rispostaOriginale}
+${F}`,
         interactiveButtons: playAgainButtons()
       })
 
@@ -380,28 +385,24 @@ handler.before = async (m, { conn }) => {
     addReward(user, totalReward)
 
     const speedLine = speedBonus > 0
-      ? `┃ *⚡ 𝐁𝐨𝐧𝐮𝐬 𝐯𝐞𝐥𝐨𝐜𝐢𝐭à:* +${speedBonus}\n`
+      ? `┃ ⚡ 𝐁𝐨𝐧𝐮𝐬 𝐯𝐞𝐥𝐨𝐜𝐢𝐭à: +${speedBonus}\n`
       : ''
 
     const streakLine = streakBonus > 0
-      ? `┃ *${streakEmoji} 𝐁𝐨𝐧𝐮𝐬 𝐬𝐭𝐫𝐞𝐚𝐤:* +${streakBonus}\n`
-      : `┃ *${streakEmoji} 𝐒𝐭𝐫𝐞𝐚𝐤:* ${user.bandieraStreak}\n`
+      ? `┃ ${streakEmoji} 𝐁𝐨𝐧𝐮𝐬 𝐬𝐭𝐫𝐞𝐚𝐤: +${streakBonus}\n`
+      : `┃ ${streakEmoji} 𝐒𝐭𝐫𝐞𝐚𝐤: ${user.bandieraStreak}\n`
 
     await conn.sendMessage(m.chat, {
       text: `${H}
 ┃ ✅ 𝐂𝐎𝐑𝐑𝐄𝐓𝐓𝐎!
 ┃
-┃ *🏳️ 𝐁𝐚𝐧𝐝𝐢𝐞𝐫𝐚:* ${game.rispostaOriginale}
-┃ *⏱️ 𝐓𝐞𝐦𝐩𝐨:* ${seconds}𝐬
-┃ *🎖️ 𝐄𝐬𝐢𝐭𝐨:* ${speedLabel}
+┃ 🏳️ 𝐁𝐚𝐧𝐝𝐢𝐞𝐫𝐚: ${game.rispostaOriginale}
+┃ ⏱️ 𝐓𝐞𝐦𝐩𝐨: ${seconds}𝐬
+┃ 🎖️ 𝐄𝐬𝐢𝐭𝐨: ${speedLabel}
 ┃
-┃ *💰 𝐁𝐚𝐬𝐞:* +${baseReward}
-${speedLine}${streakLine}┃ *💸 𝐓𝐨𝐭𝐚𝐥𝐞:* +${totalReward}
-${F}`
-    }, { quoted: m })
-
-    await conn.sendMessage(m.chat, {
-      text: '*⟲ 𝐕𝐮𝐨𝐢 𝐠𝐢𝐨𝐜𝐚𝐫𝐞 𝐚𝐧𝐜𝐨𝐫𝐚?*',
+┃ 💰 𝐁𝐚𝐬𝐞: +${baseReward}
+${speedLine}${streakLine}┃ 💸 𝐓𝐨𝐭𝐚𝐥𝐞: +${totalReward}
+${F}`,
       interactiveButtons: playAgainButtons()
     }, { quoted: m })
 
@@ -418,8 +419,8 @@ ${F}`
     await conn.reply(m.chat, `${H}
 ┃ 🚫 𝐇𝐚𝐢 𝐟𝐢𝐧𝐢𝐭𝐨 𝐢 𝐭𝐞𝐧𝐭𝐚𝐭𝐢𝐯𝐢
 ┃
-┃ *🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚:* ${game.rispostaOriginale}
-┃ *💥 𝐒𝐭𝐫𝐞𝐚𝐤 𝐚𝐳𝐳𝐞𝐫𝐚𝐭𝐚*
+┃ 🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚: ${game.rispostaOriginale}
+┃ 💥 𝐒𝐭𝐫𝐞𝐚𝐤 𝐚𝐳𝐳𝐞𝐫𝐚𝐭𝐚
 ${F}`, m)
 
     delete global.bandieraGame[m.chat]
@@ -428,7 +429,7 @@ ${F}`, m)
 
   await conn.reply(m.chat, `${H}
 ┃ ❌ 𝐒𝐛𝐚𝐠𝐥𝐢𝐚𝐭𝐨
-┃ *📝 𝐓𝐞𝐧𝐭𝐚𝐭𝐢𝐯𝐢 𝐫𝐢𝐦𝐚𝐬𝐭𝐢:* ${left}
+┃ 📝 𝐓𝐞𝐧𝐭𝐚𝐭𝐢𝐯𝐢 𝐫𝐢𝐦𝐚𝐬𝐭𝐢: ${left}
 ${F}`, m)
   return true
 }
