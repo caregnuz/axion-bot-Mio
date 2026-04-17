@@ -161,7 +161,7 @@ ${truncate(item.stack, 3000)}
 
         await conn.sendMessage(m.chat, {
           text: shortMsg,
-          footer: 'Axion Bot',
+          footer: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓,
           buttons: [
             {
               buttonId: `${usedPrefix}debugplugin ${debugId}`,
