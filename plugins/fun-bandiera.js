@@ -158,14 +158,14 @@ async function sendFlagCard(conn, chat, url, caption, quoted) {
             title,
             body: 'Indovina la nazione',
             mediaType: 1,
+            previewType: 0,
             renderLargerThumbnail: true,
             showAdAttribution: false,
             thumbnail: thumb,
             sourceUrl: 'https://flagcdn.com'
           },
           jpegThumbnail: thumb
-        },
-        interactiveButtons: gameButtons()
+        }
       },
       { quoted }
     )
@@ -173,8 +173,7 @@ async function sendFlagCard(conn, chat, url, caption, quoted) {
 
   return conn.sendMessage(chat, {
     image: { url },
-    caption,
-    interactiveButtons: gameButtons()
+    caption
   }, { quoted })
 }
 
@@ -200,7 +199,7 @@ function getSpeedLabel(seconds) {
   if (seconds <= 3) return '⚡ 𝐅𝐮𝐥𝐦𝐢𝐧𝐞𝐨'
   if (seconds <= 5) return '🚀 𝐕𝐞𝐥𝐨𝐜𝐢𝐬𝐬𝐢𝐦𝐨'
   if (seconds <= 8) return '🔥 𝐎𝐭𝐭𝐢𝐦𝐚 𝐯𝐞𝐥𝐨𝐜𝐢𝐭𝐚̀'
-  if (seconds <= 12) return '⚡ 𝐁𝐮𝐨𝐧𝐚 𝐯𝐞𝐥𝐨𝐜𝐢𝐭𝐚̀'
+  if (seconds <= 12) return '⚡ 𝐁𝐮𝐨𝐧𝐚 𝐯𝐞𝐥𝐨𝐜𝐢𝐭à'
   return '🧠 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚 𝐜𝐨𝐫𝐫𝐞𝐭𝐭𝐚'
 }
 
@@ -239,8 +238,7 @@ let handler = async (m, { conn, command, isAdmin }) => {
 ┃ 💡 𝐈𝐍𝐃𝐈𝐙𝐈𝐎
 ┃
 ${game.hintText}
-${F}`,
-      interactiveButtons: gameButtons()
+${F}`
     }, { quoted: m })
 
     return
@@ -259,8 +257,7 @@ ${F}`,
 ┃ ⛔ 𝐏𝐀𝐑𝐓𝐈𝐓𝐀 𝐈𝐍𝐓𝐄𝐑𝐑𝐎𝐓𝐓𝐀
 ┃
 ┃ *🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚:* ${game.rispostaOriginale}
-${F}`,
-      interactiveButtons: playAgainButtons()
+${F}`
     }, { quoted: m })
 
     delete global.bandieraGame[m.chat]
@@ -323,8 +320,7 @@ ${F}`,
 ┃ ⏰ 𝐓𝐄𝐌𝐏𝐎 𝐒𝐂𝐀𝐃𝐔𝐓𝐎
 ┃
 ┃ *🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚:* ${game.rispostaOriginale}
-${F}`,
-        interactiveButtons: playAgainButtons()
+${F}`
       })
 
       delete global.bandieraGame[m.chat]
@@ -390,8 +386,7 @@ handler.before = async (m, { conn }) => {
 ┃
 ┃ *💰 𝐁𝐚𝐬𝐞:* +${baseReward}
 ${speedLine}${streakLine}┃ *💸 𝐓𝐨𝐭𝐚𝐥𝐞:* +${totalReward}
-${F}`,
-      interactiveButtons: playAgainButtons()
+${F}`
     }, { quoted: m })
 
     delete global.bandieraGame[m.chat]
