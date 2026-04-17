@@ -70,6 +70,7 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "ruhend-scraper": "latest",
+    "sharp": "^0.34.5",
     "yargs": "^18.0.0",
     "yt-search": "latest"
   },
