@@ -1,99 +1,84 @@
-// plugin restart.js by Bonzino
+// Plugin restart by 𝕯𝖊ⱥ𝖉𝖑𝐲 e Bonzino
 
 import fs from 'fs'
 import path from 'path'
+import { spawn } from 'child_process'
 
-const RESTART_FILE = path.resolve('./tmp/restart-state.json')
-const sleep = ms => new Promise(r => setTimeout(r, ms))
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
-async function editMessage(conn, chatId, key, text, mentions = []) {
-  await conn.relayMessage(
-    chatId,
-    {
-      protocolMessage: {
-        key,
-        type: 14,
-        editedMessage: {
-          extendedTextMessage: {
-            text,
-            contextInfo: mentions.length ? { mentionedJid: mentions } : {}
-          }
-        }
-      }
-    },
-    {}
-  )
-}
-
-let handler = async (m, { conn, isOwner }) => {
-  if (!isOwner) return m.reply('Solo il proprietario può usare questo comando.')
-
-  let errors = 0
-
+let handler = async (m, { conn }) => {
   try {
-    fs.mkdirSync(path.dirname(RESTART_FILE), { recursive: true })
+    const startTime = Date.now()
 
-    const sent = await conn.sendMessage(
-      m.chat,
-      {
-        text: '» Riavvio del bot...\n[░░░░░░░░░░]',
-        mentions: [m.sender]
-      },
-      { quoted: m }
-    )
+    await conn.reply(m.chat, '*🔄 𝐑𝐢𝐚𝐯𝐯𝐢𝐨 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨...*', m)
 
-    const key = sent?.key
-    if (!key) throw new Error('Messaggio animazione non inviato correttamente')
-
-    const frames = [
-      '» Riavvio del bot...\n[█░░░░░░░░░]',
-      '» Riavvio del bot...\n[██░░░░░░░░]',
-      '» Riavvio del bot...\n[███░░░░░░░]',
-      '» Riavvio del bot...\n[████░░░░░░]',
-      '» Riavvio del bot...\n[█████░░░░░]',
-      '» Riavvio del bot...\n[██████░░░░]',
-      '» Riavvio del bot...\n[███████░░░]',
-      '» Riavvio del bot...\n[████████░░]',
-      '» Riavvio del bot...\n[█████████░]',
-      '» Riavvio del bot...\n[██████████]'
+    const steps = [
+      '█▒▒▒▒▒▒▒▒▒ 10%',
+      '███▒▒▒▒▒▒▒ 30%',
+      '█████▒▒▒▒▒ 50%',
+      '███████▒▒▒ 70%',
+      '█████████▒ 90%',
+      '██████████ 100%'
     ]
 
-    for (const frame of frames) {
-      await sleep(180)
-      await editMessage(conn, m.chat, key, frame, [m.sender])
+    for (const step of steps) {
+      await sleep(350)
+      await conn.reply(m.chat, `*${step}*`, m)
     }
 
-    const payload = {
+    const tmpDir = path.join(process.cwd(), 'tmp')
+    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true })
+
+    const restartState = {
       chat: m.chat,
       sender: m.sender,
-      startedAt: Date.now(),
-      errors
+      messageId: m.key?.id || null,
+      startedAt: startTime,
+      type: 'restart'
     }
 
-    fs.writeFileSync(RESTART_FILE, JSON.stringify(payload, null, 2))
+    fs.writeFileSync(
+      path.join(tmpDir, 'restart-state.json'),
+      JSON.stringify(restartState, null, 2)
+    )
 
-    process.exit(0)
-  } catch (e) {
-    errors++
+    const isPm2 =
+      process.env.pm_id !== undefined ||
+      process.env.PM_ID !== undefined ||
+      process.env.NODE_APP_INSTANCE !== undefined
 
-    try {
-      fs.mkdirSync(path.dirname(RESTART_FILE), { recursive: true })
-      fs.writeFileSync(RESTART_FILE, JSON.stringify({
-        chat: m.chat,
-        sender: m.sender,
-        startedAt: Date.now(),
-        errors,
-        lastError: String(e?.message || e)
-      }, null, 2))
-    } catch {}
+    if (isPm2) {
+      setTimeout(() => {
+        process.exit(0)
+      }, 1000)
+      return
+    }
 
-    return m.reply(`» Riavvio fallito\n🧾 Errori: ${errors}`)
+    const child = spawn(process.argv[0], process.argv.slice(1), {
+      cwd: process.cwd(),
+      detached: true,
+      stdio: 'inherit'
+    })
+
+    child.unref()
+
+    setTimeout(() => {
+      process.exit(0)
+    }, 1000)
+
+  } catch (err) {
+    console.error('restart error:', err)
+    return conn.reply(
+      m.chat,
+      `*❌ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐝𝐮𝐫𝐚𝐧𝐭𝐞 𝐢𝐥 𝐫𝐢𝐚𝐯𝐯𝐢𝐨:*\n\n${err.message || err}`,
+      m
+    )
   }
 }
 
-handler.help = ['restart']
+handler.help = ['restart', 'riavvia']
 handler.tags = ['owner']
-handler.command = ['restart','riavvia']
+handler.command = /^(restart|riavvia|rbt)$/i
 handler.owner = true
 
 export default handler
