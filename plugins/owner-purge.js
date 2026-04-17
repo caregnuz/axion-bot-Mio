@@ -1,4 +1,3 @@
-
 //By Bonzino 
 
 let handler = async (m, { conn, participants, isBotAdmin, command }) => {
@@ -75,14 +74,25 @@ let usersToRemove = partecipanti
         mentions: tuttiJid
     }, { quoted: m })
     
+    
     if (usaLinkAttuale) return
     if (!usersToRemove.length) return
-        try {
-        await conn.groupParticipantsUpdate(m.chat, usersToRemove, 'remove')
+    
+//Piccolo delay
+    
+const dimensioneBlocco = 200
+const pausa = 500
+
+for (let i = 0; i < usersToRemove.length; i += dimensioneBlocco) {
+    const blocco = usersToRemove.slice(i, i + dimensioneBlocco)
+
+    try {
+        await conn.groupParticipantsUpdate(m.chat, blocco, 'remove')
     } catch (e) {
-        console.error(e)
-        await m.reply("Errore durante l'esecuzione.")
+        console.error(`Errore blocco ${i / dimensioneBlocco + 1}:`, e)
     }
+
+    await new Promise(resolve => setTimeout(resolve, pausa))
 }
 
 handler.command = ['purge', 'purgef']
