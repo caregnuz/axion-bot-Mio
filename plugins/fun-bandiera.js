@@ -148,6 +148,7 @@ async function sendFlagCard(conn, chat, url, caption, quoted) {
   if (thumb) {
     const PAD = '\u2003\u2003'
     const title = `${PAD}Quiz bandiere!${PAD}`
+    const uniqueUrl = `https://flagcdn.com/?flag=${encodeURIComponent(url)}&t=${Date.now()}`
 
     return conn.sendMessage(
       chat,
@@ -156,13 +157,13 @@ async function sendFlagCard(conn, chat, url, caption, quoted) {
         contextInfo: {
           externalAdReply: {
             title,
-            body: 'Indovina la nazione',
+            body: uniqueUrl,
             mediaType: 1,
             previewType: 0,
             renderLargerThumbnail: true,
             showAdAttribution: false,
             thumbnail: thumb,
-            sourceUrl: 'https://flagcdn.com'
+            sourceUrl: uniqueUrl
           },
           jpegThumbnail: thumb
         }
@@ -301,6 +302,11 @@ ${F}`,
     m
   )
 
+  await conn.sendMessage(m.chat, {
+    text: '*💡 𝐔𝐬𝐚 𝐢𝐥 𝐩𝐮𝐥𝐬𝐚𝐧𝐭𝐞 𝐪𝐮𝐢 𝐬𝐨𝐭𝐭𝐨 𝐩𝐞𝐫 𝐥\'𝐢𝐧𝐝𝐢𝐳𝐢𝐨*',
+    interactiveButtons: gameButtons()
+  }, { quoted: sent })
+
   global.bandieraGame[m.chat] = {
     id: sent.key.id,
     risposta: normalizeString(scelta.nome),
@@ -321,6 +327,11 @@ ${F}`,
 ┃
 ┃ *🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚:* ${game.rispostaOriginale}
 ${F}`
+      })
+
+      await conn.sendMessage(m.chat, {
+        text: '*⟲ 𝐕𝐮𝐨𝐢 𝐫𝐢𝐩𝐫𝐨𝐯𝐚𝐫𝐞?*',
+        interactiveButtons: playAgainButtons()
       })
 
       delete global.bandieraGame[m.chat]
@@ -387,6 +398,11 @@ handler.before = async (m, { conn }) => {
 ┃ *💰 𝐁𝐚𝐬𝐞:* +${baseReward}
 ${speedLine}${streakLine}┃ *💸 𝐓𝐨𝐭𝐚𝐥𝐞:* +${totalReward}
 ${F}`
+    }, { quoted: m })
+
+    await conn.sendMessage(m.chat, {
+      text: '*⟲ 𝐕𝐮𝐨𝐢 𝐠𝐢𝐨𝐜𝐚𝐫𝐞 𝐚𝐧𝐜𝐨𝐫𝐚?*',
+      interactiveButtons: playAgainButtons()
     }, { quoted: m })
 
     delete global.bandieraGame[m.chat]
