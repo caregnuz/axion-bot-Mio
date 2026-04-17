@@ -6,7 +6,9 @@ let handler = async (m, { conn, participants, isBotAdmin, command }) => {
 
     if (!isBotAdmin) return
 
-    const NuovoGruppo = global.NuovoGruppoLink || ''
+    const NuovoGruppo = /^purgef$/i.test(command)
+    ? newInviteLink
+    : (global.NuovoGruppoLink || '')
     const Prova = /^purgef$/i.test(command)
 
     const botId = conn.user.id.split(':')[0] + '@s.whatsapp.net'
