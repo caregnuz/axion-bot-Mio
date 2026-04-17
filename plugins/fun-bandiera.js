@@ -196,7 +196,7 @@ function getSpeedBonus(seconds) {
 function getSpeedLabel(seconds) {
   if (seconds <= 3) return '*⚡ 𝐅𝐮𝐥𝐦𝐢𝐧𝐞𝐨*'
   if (seconds <= 5) return '*🚀 𝐕𝐞𝐥𝐨𝐜𝐢𝐬𝐬𝐢𝐦𝐨*'
-  if (seconds <= 8) return '*🔥 𝐎𝐭𝐭𝐢𝐦𝐚 𝐯𝐞𝐥𝐨𝐜𝐢𝐭𝐚*̀'
+  if (seconds <= 8) return '*🔥 𝐎𝐭𝐭𝐢𝐦𝐚 𝐯𝐞𝐥𝐨𝐜𝐢𝐭𝐚̀*'
   if (seconds <= 12) return '*⚡ 𝐁𝐮𝐨𝐧𝐚 𝐯𝐞𝐥𝐨𝐜𝐢𝐭à*'
   return '*🧠 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚 𝐜𝐨𝐫𝐫𝐞𝐭𝐭𝐚*'
 }
@@ -223,7 +223,7 @@ let handler = async (m, { conn, command, isAdmin }) => {
   if (command === 'indiziobandiera') {
     if (!m.isGroup) return m.reply('*⚠️ 𝐒𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢*')
     const game = global.bandieraGame[m.chat]
-    if (!game) return m.reply('*⚠️ 𝐍𝐞𝐬𝐬𝐮𝐧𝐚 𝐩𝐚𝐫𝐭𝐢𝐭𝐚 𝐚𝐭𝐭𝐢𝐯𝐚'*)
+    if (!game) return m.reply('*⚠️ 𝐍𝐞𝐬𝐬𝐮𝐧𝐚 𝐩𝐚𝐫𝐭𝐢𝐭𝐚 𝐚𝐭𝐭𝐢𝐯𝐚*')
 
     if (game.hintUsed) {
       return m.reply(`*⚠️ 𝐇𝐚𝐢 𝐠𝐢à 𝐮𝐬𝐚𝐭𝐨 𝐥'𝐢𝐧𝐝𝐢𝐳𝐢𝐨*\n\n${game.hintText}`)
@@ -390,7 +390,7 @@ handler.before = async (m, { conn }) => {
 ┃ *🎖️ 𝐄𝐬𝐢𝐭𝐨:* ${speedLabel}
 ┃
 ┃ *💰 𝐁𝐚𝐬𝐞:* +${baseReward}
-${speedLine}${streakLine}┃ *💸 𝐓𝐨𝐭𝐚𝐥𝐞* +${totalReward}
+${speedLine}${streakLine}┃ *💸 𝐓𝐨𝐭𝐚𝐥𝐞:* +${totalReward}
 ${F}`,
       interactiveButtons: playAgainButtons()
     }, { quoted: m })
