@@ -1,13 +1,3 @@
-Ecco il plugin sistemato come volevi:
-
-primo pulsante staccato dal messaggio della bandiera, così la thumb può uscire bene
-
-“Gioca ancora” attaccato ai messaggi finali
-
-ho anche corretto i problemi di sintassi nel codice che hai incollato
-
-
-// by Bonzino
 
 import fetch from 'node-fetch'
 import { createCanvas, loadImage } from 'canvas'
