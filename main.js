@@ -1,5 +1,10 @@
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '1';
 import './config.js';
+try {
+    await import('./private.js');
+} catch {
+    console.log('private.js non trovato');
+}
 import { createRequire } from 'module';
 import path, { join } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
@@ -254,53 +259,31 @@ global.conn = makeWASocket(connectionOptions);
 global.store.bind(global.conn.ev);
 global.sendPluginErrorToChat = async function (title, err, extra = '') {
     try {
-        const jid = String(process.env.BOT_ERROR_CHAT || '')
+        const jid = String(global.botErrorChat || '')
             .trim()
             .replace(/^['"]|['"]$/g, '');
 
-        console.log('[DEBUG ERROR CHAT] jid:', jid);
-        console.log('[DEBUG ERROR CHAT] conn user:', global.conn?.user?.id);
-        console.log('[DEBUG ERROR CHAT] title:', title, '| plugin:', extra);
-
-        if (!jid) {
-            console.log('[DEBUG ERROR CHAT] BOT_ERROR_CHAT mancante o vuoto');
-            return;
-        }
-
-        if (!global.conn || !global.conn.user) {
-            console.log('[DEBUG ERROR CHAT] conn non pronta per invio');
-            return;
-        }
+        if (!jid) return;
+        if (!global.conn || !global.conn.user) return;
 
         const messageText = err?.message || String(err) || 'Errore sconosciuto';
         const stackText = String(err?.stack || err || 'Nessuno stack disponibile').slice(0, 3500);
 
         const text =
-`❌ *𝛥𝐗𝐈𝚶𝐍 𝐃𝐄𝐁𝐔𝐆*
+`❌ Errore rilevato
 
-*Titolo:* ${title}
-${extra ? `*Plugin:* ${extra}\n` : ''}*Messaggio:* ${messageText}
+Titolo: ${title}
+${extra ? `Plugin: ${extra}\n` : ''}Messaggio: ${messageText}
 
 \`\`\`
 ${stackText}
 \`\`\``;
 
-        console.log('[DEBUG ERROR CHAT] invio in corso...');
         await global.conn.sendMessage(jid, { text });
-        console.log('[DEBUG ERROR CHAT] inviato con successo');
     } catch (e) {
         console.error('[ERRORE] Invio errore plugin in chat fallito:', e);
     }
 };
-
-setTimeout(async () => {
-    await global.sendPluginErrorToChat?.(
-        'Test debug chat',
-        new Error('Questo è un test di invio errori in chat'),
-        'main.js'
-    );
-}, 15000);
-
 
 if (!fs.existsSync(`./${authFile}/creds.json`)) {
     if (opzione === '2' || methodCode) {
