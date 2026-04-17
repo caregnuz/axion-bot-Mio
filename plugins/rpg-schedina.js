@@ -262,12 +262,12 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
   } catch (e) {
     console.error('Errore creazione locandina:', e)
   }
-
-  const messaggioIniziale = await conn.sendMessage(m.chat, {
-    ...(immaginePartita && fs.existsSync(immaginePartita)
-      ? { image: fs.readFileSync(immaginePartita) }
-      : { image: fs.readFileSync(SNAI_PATH) }),
-    caption:
+  
+const messaggioIniziale = await conn.sendMessage(m.chat, {
+  ...(immaginePartita && fs.existsSync(immaginePartita)
+    ? { image: fs.readFileSync(immaginePartita) }
+    : { image: fs.readFileSync(SNAI_PATH) }),
+  caption:
 `╭━━━━━━━🎫━━━━━━━╮
 ✦ 𝐒𝐂𝐇𝐄𝐃𝐈𝐍𝐀 𝐂𝐎𝐍𝐅𝐄𝐑𝐌𝐀𝐓𝐀 ✦
 ╰━━━━━━━🎫━━━━━━━╯
@@ -278,12 +278,20 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 📈 𝐐𝐮𝐨𝐭𝐚: x${quota}
 🏆 𝐕𝐢𝐧𝐜𝐢𝐭𝐚 𝐩𝐨𝐬𝐬𝐢𝐛𝐢𝐥𝐞: ${formatNumber(vincita)}
 
-⏳ 𝐋𝐚 𝐩𝐚𝐫𝐭𝐢𝐭𝐚 𝐬𝐭𝐚 𝐢𝐧𝐢𝐳𝐢𝐚𝐧𝐝𝐨...`,
-    mentions: [who]
-  }, { quoted: m })
+⏳ 𝐋𝐚 𝐩𝐚𝐫𝐭𝐢𝐭𝐚 𝐬𝐭𝐚 𝐢𝐧𝐢𝐳𝐢𝐚𝐧𝐝𝐨...`
+}, { quoted: m })
 
-  const key = messaggioIniziale?.key
-  if (!key) return
+const messaggioLive = await conn.sendMessage(m.chat, {
+  text:
+`╭━━━━━━━📡━━━━━━━╮
+✦ 𝐂𝐑𝐎𝐍𝐀𝐂𝐀 𝐋𝐈𝐕𝐄 ✦
+╰━━━━━━━📡━━━━━━━╯
+
+${casa.nome} 0 - 0 ${trasf.nome}`
+}, { quoted: m })
+
+const key = messaggioLive.key
+if (!key) return
 
   let testoLive =
 `╭━━━━━━━📡━━━━━━━╮
