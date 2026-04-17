@@ -144,39 +144,42 @@ ${truncate(item.stack, 3000)}
       }
     }
 
-    if (pluginErrors.length > 0) {
-      for (const item of pluginErrors) {
-        const debugId = createDebugId()
+if (pluginErrors.length > 0) {
+  for (const item of pluginErrors) {
+    const debugId = createDebugId()
 
-        global.updateDebugErrors[debugId] = {
-          ...item,
-          createdAt: Date.now()
-        }
+    global.updateDebugErrors[debugId] = {
+      ...item,
+      createdAt: Date.now()
+    }
 
-        const shortMsg =
+    const shortMsg =
 `*❌ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐧𝐞𝐥 𝐩𝐥𝐮𝐠𝐢𝐧*
 
 📄 *𝐅𝐢𝐥𝐞:* ${item.file}
 💥 *𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨:* ${item.message}`
 
-        await conn.sendMessage(m.chat, {
-          text: shortMsg,
-          footer: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-          buttons: [
-            {
-              buttonId: `${usedPrefix}debugplugin ${debugId}`,
-              buttonText: { displayText: '🔧 Debug completo' },
-              type: 1
-            }
-          ],
-          headerType: 1
-        }, { quoted: m })
-      }
+    await conn.sendMessage(m.chat, {
+      text: shortMsg,
+      footer: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
+      buttons: [
+        {
+          buttonId: `${usedPrefix}debugplugin ${debugId}`,
+          buttonText: { displayText: '🔧 Debug completo' },
+          type: 1
+        }
+      ],
+      headerType: 1
+    }, { quoted: m })
 
-      await m.react('⚠️')
-      return
+    if (pluginErrors.length > 1) {
+      await sleep(1200)
     }
+  }
 
+  await m.react('⚠️')
+  return
+}
     await m.react('✅')
 
   } catch (err) {
