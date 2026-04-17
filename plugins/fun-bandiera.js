@@ -1,9 +1,9 @@
+// by Bonzino
 
 import fetch from 'node-fetch'
-import { createCanvas, loadImage } from 'canvas'
 
-const H = '╭━━━〔 🏳️ 𝐁𝐀𝐍𝐃𝐈𝐄𝐑𝐀 〕━━━⬣'
-const F = '╰━━━━━━━━━━━━━━━━⬣'
+const H = '*╭━━━〔 🏳️ 𝐁𝐀𝐍𝐃𝐈𝐄𝐑𝐀 〕━━━⬣*'
+const F = '*╰━━━━━━━━━━━━━━━━⬣*'
 const GAME_MS = 30_000
 const MAX_TENTATIVI = 3
 const ANSWER_COOLDOWN_MS = 1200
@@ -58,7 +58,7 @@ function getHintText(name = '') {
   const masked = clean
     .split('')
     .map((ch, i, arr) => {
-      if (ch === ' ' || ch === '-' || ch === "'") return ch
+      if (ch === ' ' || ch === '-' || ch === '\'') return ch
       if (i === 0 || i === arr.length - 1) return ch
       return '•'
     })
@@ -107,76 +107,6 @@ async function loadAllFlags() {
   return flags
 }
 
-async function createFlagThumb(url) {
-  try {
-    const img = await loadImage(url)
-
-    const SIZE = 320
-    const PADDING = 14
-    const W = SIZE
-    const H = SIZE
-
-    const canvas = createCanvas(W, H)
-    const ctx = canvas.getContext('2d')
-
-    ctx.fillStyle = '#000000ff'
-    ctx.fillRect(0, 0, W, H)
-
-    const innerW = W - PADDING * 2
-    const innerH = H - PADDING * 2
-
-    const scale = Math.min(innerW / img.width, innerH / img.height)
-    const newW = Math.max(1, Math.round(img.width * scale))
-    const newH = Math.max(1, Math.round(img.height * scale))
-    const x = Math.round((W - newW) / 2)
-    const y = Math.round((H - newH) / 2)
-
-    ctx.imageSmoothingEnabled = true
-    ctx.imageSmoothingQuality = 'high'
-    ctx.drawImage(img, x, y, newW, newH)
-
-    return canvas.toBuffer('image/jpeg', { quality: 0.9 })
-  } catch {
-    return null
-  }
-}
-
-async function sendFlagCard(conn, chat, url, caption, quoted) {
-  const thumb = await createFlagThumb(url)
-
-  if (thumb) {
-    const token = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-    const title = `Quiz bandiere ${token}`
-    const uniqueUrl = `https://flagcdn.com/?flag=${encodeURIComponent(url)}&t=${token}`
-
-    return conn.sendMessage(
-      chat,
-      {
-        text: caption,
-        contextInfo: {
-          externalAdReply: {
-            title,
-            body: `Bandiera ${token}`,
-            mediaType: 1,
-            previewType: 0,
-            renderLargerThumbnail: true,
-            showAdAttribution: false,
-            thumbnail: thumb,
-            sourceUrl: uniqueUrl
-          },
-          jpegThumbnail: thumb
-        }
-      },
-      { quoted }
-    )
-  }
-
-  return conn.sendMessage(chat, {
-    image: { url },
-    caption
-  }, { quoted })
-}
-
 function ensureUser(user) {
   if (typeof user.euro !== 'number') user.euro = 0
   if (typeof user.bandieraStreak !== 'number') user.bandieraStreak = 0
@@ -199,7 +129,7 @@ function getSpeedLabel(seconds) {
   if (seconds <= 3) return '⚡ 𝐅𝐮𝐥𝐦𝐢𝐧𝐞𝐨'
   if (seconds <= 5) return '🚀 𝐕𝐞𝐥𝐨𝐜𝐢𝐬𝐬𝐢𝐦𝐨'
   if (seconds <= 8) return '🔥 𝐎𝐭𝐭𝐢𝐦𝐚 𝐯𝐞𝐥𝐨𝐜𝐢𝐭𝐚̀'
-  if (seconds <= 12) return '⚡ 𝐁𝐮𝐨𝐧𝐚 𝐯𝐞𝐥𝐨𝐜𝐢𝐭à'
+  if (seconds <= 12) return '⚡ 𝐁𝐮𝐨𝐧𝐚 𝐯𝐞𝐥𝐨𝐜𝐢𝐭𝐚̀'
   return '🧠 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚 𝐜𝐨𝐫𝐫𝐞𝐭𝐭𝐚'
 }
 
@@ -223,12 +153,12 @@ let handler = async (m, { conn, command, isAdmin }) => {
   global.bandieraGame = global.bandieraGame || {}
 
   if (command === 'indiziobandiera') {
-    if (!m.isGroup) return m.reply('⚠️ 𝐒𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢')
+    if (!m.isGroup) return m.reply('*⚠️ 𝐒𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢*')
     const game = global.bandieraGame[m.chat]
-    if (!game) return m.reply('⚠️ 𝐍𝐞𝐬𝐬𝐮𝐧𝐚 𝐩𝐚𝐫𝐭𝐢𝐭𝐚 𝐚𝐭𝐭𝐢𝐯𝐚')
+    if (!game) return m.reply('*⚠️ 𝐍𝐞𝐬𝐬𝐮𝐧𝐚 𝐩𝐚𝐫𝐭𝐢𝐭𝐚 𝐚𝐭𝐭𝐢𝐯𝐚*')
 
     if (game.hintUsed) {
-      return m.reply(`⚠️ 𝐇𝐚𝐢 𝐠𝐢à 𝐮𝐬𝐚𝐭𝐨 𝐥'𝐢𝐧𝐝𝐢𝐳𝐢𝐨\n\n${game.hintText}`)
+      return m.reply(`*⚠️ 𝐇𝐚𝐢 𝐠𝐢à 𝐮𝐬𝐚𝐭𝐨 𝐥'𝐢𝐧𝐝𝐢𝐳𝐢𝐨*\n\n${game.hintText}`)
     }
 
     game.hintUsed = true
@@ -238,16 +168,17 @@ let handler = async (m, { conn, command, isAdmin }) => {
 ┃ 💡 𝐈𝐍𝐃𝐈𝐙𝐈𝐎
 ┃
 ${game.hintText}
-${F}`
+${F}`,
+      interactiveButtons: gameButtons()
     }, { quoted: m })
 
     return
   }
 
   if (command === 'skipbandiera') {
-    if (!m.isGroup) return m.reply('⚠️ 𝐒𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢')
-    if (!global.bandieraGame[m.chat]) return m.reply('⚠️ 𝐍𝐞𝐬𝐬𝐮𝐧𝐚 𝐩𝐚𝐫𝐭𝐢𝐭𝐚 𝐚𝐭𝐭𝐢𝐯𝐚')
-    if (!isAdmin && !m.fromMe) return m.reply('❌ 𝐒𝐨𝐥𝐨 𝐚𝐝𝐦𝐢𝐧')
+    if (!m.isGroup) return m.reply('*⚠️ 𝐒𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢*')
+    if (!global.bandieraGame[m.chat]) return m.reply('*⚠️ 𝐍𝐞𝐬𝐬𝐮𝐧𝐚 𝐩𝐚𝐫𝐭𝐢𝐭𝐚 𝐚𝐭𝐭𝐢𝐯𝐚*')
+    if (!isAdmin && !m.fromMe) return m.reply('*❌ 𝐒𝐨𝐥𝐨 𝐚𝐝𝐦𝐢𝐧*')
 
     const game = global.bandieraGame[m.chat]
     clearTimeout(game.timeout)
@@ -256,22 +187,23 @@ ${F}`
       text: `${H}
 ┃ ⛔ 𝐏𝐀𝐑𝐓𝐈𝐓𝐀 𝐈𝐍𝐓𝐄𝐑𝐑𝐎𝐓𝐓𝐀
 ┃
-┃ 🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚: ${game.rispostaOriginale}
-${F}`
+┃ *🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚:* ${game.rispostaOriginale}
+${F}`,
+      interactiveButtons: playAgainButtons()
     }, { quoted: m })
 
     delete global.bandieraGame[m.chat]
     return
   }
 
-  if (!m.isGroup) return m.reply('⚠️ 𝐒𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢')
-  if (global.bandieraGame[m.chat]) return m.reply('⚠️ 𝐂𝐞̀ 𝐠𝐢à 𝐮𝐧𝐚 𝐩𝐚𝐫𝐭𝐢𝐭𝐚 𝐚𝐭𝐭𝐢𝐯𝐚')
+  if (!m.isGroup) return m.reply('*⚠️ 𝐒𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢*')
+  if (global.bandieraGame[m.chat]) return m.reply('*⚠️ 𝐂𝐞̀ 𝐠𝐢à 𝐮𝐧𝐚 𝐩𝐚𝐫𝐭𝐢𝐭𝐚 𝐚𝐭𝐭𝐢𝐯𝐚*')
 
   let bandiere
   try {
     bandiere = await loadAllFlags()
   } catch {
-    return m.reply('❌ 𝐍𝐨𝐧 𝐫𝐢𝐞𝐬𝐜𝐨 𝐚 𝐜𝐚𝐫𝐢𝐜𝐚𝐫𝐞 𝐥𝐞 𝐛𝐚𝐧𝐝𝐢𝐞𝐫𝐞')
+    return m.reply('*❌ 𝐍𝐨𝐧 𝐫𝐢𝐞𝐬𝐜𝐨 𝐚 𝐜𝐚𝐫𝐢𝐜𝐚𝐫𝐞 𝐥𝐞 𝐛𝐚𝐧𝐝𝐢𝐞𝐫𝐞*')
   }
 
   const frasi = [
@@ -285,26 +217,19 @@ ${F}`
   const scelta = pickRandom(bandiere)
   const frase = pickRandom(frasi)
 
-  const sent = await sendFlagCard(
-    conn,
-    m.chat,
-    scelta.url,
-    `${H}
+  const sent = await conn.sendMessage(m.chat, {
+    image: { url: scelta.url },
+    caption: `${H}
 ┃ 🌍 𝐈𝐍𝐃𝐎𝐕𝐈𝐍𝐀 𝐋𝐀 𝐁𝐀𝐍𝐃𝐈𝐄𝐑𝐀
 ┃
 ┃ ${frase}
 ┃
-┃ 🏳️ 𝐈𝐧𝐝𝐨𝐯𝐢𝐧𝐚 𝐥𝐚 𝐧𝐚𝐳𝐢𝐨𝐧𝐞
-┃ ⏱️ 𝐓𝐞𝐦𝐩𝐨: 30𝐬
-┃ 🎯 𝐓𝐞𝐧𝐭𝐚𝐭𝐢𝐯𝐢: ${MAX_TENTATIVI} 𝐩𝐞𝐫 𝐮𝐭𝐞𝐧𝐭𝐞
+┃ *🏳️ 𝐈𝐧𝐝𝐨𝐯𝐢𝐧𝐚 𝐥𝐚 𝐧𝐚𝐳𝐢𝐨𝐧𝐞*
+┃ *⏱️ 𝐓𝐞𝐦𝐩𝐨:* 30𝐬
+┃ *🎯 𝐓𝐞𝐧𝐭𝐚𝐭𝐢𝐯𝐢:* ${MAX_TENTATIVI} 𝐩𝐞𝐫 𝐮𝐭𝐞𝐧𝐭𝐞
 ${F}`,
-    m
-  )
-
-  await conn.sendMessage(m.chat, {
-    text: '💡 𝐔𝐬𝐚 𝐢𝐥 𝐩𝐮𝐥𝐬𝐚𝐧𝐭𝐞 𝐪𝐮𝐢 𝐬𝐨𝐭𝐭𝐨 𝐩𝐞𝐫 𝐥\'𝐢𝐧𝐝𝐢𝐳𝐢𝐨',
     interactiveButtons: gameButtons()
-  }, { quoted: sent })
+  }, { quoted: m })
 
   global.bandieraGame[m.chat] = {
     id: sent.key.id,
@@ -324,7 +249,7 @@ ${F}`,
         text: `${H}
 ┃ ⏰ 𝐓𝐄𝐌𝐏𝐎 𝐒𝐂𝐀𝐃𝐔𝐓𝐎
 ┃
-┃ 🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚: ${game.rispostaOriginale}
+┃ *🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚:* ${game.rispostaOriginale}
 ${F}`,
         interactiveButtons: playAgainButtons()
       })
@@ -375,23 +300,23 @@ handler.before = async (m, { conn }) => {
     addReward(user, totalReward)
 
     const speedLine = speedBonus > 0
-      ? `┃ ⚡ 𝐁𝐨𝐧𝐮𝐬 𝐯𝐞𝐥𝐨𝐜𝐢𝐭à: +${speedBonus}\n`
+      ? `┃ *⚡ 𝐁𝐨𝐧𝐮𝐬 𝐯𝐞𝐥𝐨𝐜𝐢𝐭à:* +${speedBonus}\n`
       : ''
 
     const streakLine = streakBonus > 0
-      ? `┃ ${streakEmoji} 𝐁𝐨𝐧𝐮𝐬 𝐬𝐭𝐫𝐞𝐚𝐤: +${streakBonus}\n`
-      : `┃ ${streakEmoji} 𝐒𝐭𝐫𝐞𝐚𝐤: ${user.bandieraStreak}\n`
+      ? `┃ *${streakEmoji} 𝐁𝐨𝐧𝐮𝐬 𝐬𝐭𝐫𝐞𝐚𝐤:* +${streakBonus}\n`
+      : `┃ *${streakEmoji} 𝐒𝐭𝐫𝐞𝐚𝐤:* ${user.bandieraStreak}\n`
 
     await conn.sendMessage(m.chat, {
       text: `${H}
 ┃ ✅ 𝐂𝐎𝐑𝐑𝐄𝐓𝐓𝐎!
 ┃
-┃ 🏳️ 𝐁𝐚𝐧𝐝𝐢𝐞𝐫𝐚: ${game.rispostaOriginale}
-┃ ⏱️ 𝐓𝐞𝐦𝐩𝐨: ${seconds}𝐬
-┃ 🎖️ 𝐄𝐬𝐢𝐭𝐨: ${speedLabel}
+┃ *🏳️ 𝐁𝐚𝐧𝐝𝐢𝐞𝐫𝐚:* ${game.rispostaOriginale}
+┃ *⏱️ 𝐓𝐞𝐦𝐩𝐨:* ${seconds}𝐬
+┃ *🎖️ 𝐄𝐬𝐢𝐭𝐨:* ${speedLabel}
 ┃
-┃ 💰 𝐁𝐚𝐬𝐞: +${baseReward}
-${speedLine}${streakLine}┃ 💸 𝐓𝐨𝐭𝐚𝐥𝐞: +${totalReward}
+┃ *💰 𝐁𝐚𝐬𝐞:* +${baseReward}
+${speedLine}${streakLine}┃ *💸 𝐓𝐨𝐭𝐚𝐥𝐞:* +${totalReward}
 ${F}`,
       interactiveButtons: playAgainButtons()
     }, { quoted: m })
@@ -409,8 +334,8 @@ ${F}`,
     await conn.reply(m.chat, `${H}
 ┃ 🚫 𝐇𝐚𝐢 𝐟𝐢𝐧𝐢𝐭𝐨 𝐢 𝐭𝐞𝐧𝐭𝐚𝐭𝐢𝐯𝐢
 ┃
-┃ 🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚: ${game.rispostaOriginale}
-┃ 💥 𝐒𝐭𝐫𝐞𝐚𝐤 𝐚𝐳𝐳𝐞𝐫𝐚𝐭𝐚
+┃ *🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚:* ${game.rispostaOriginale}
+┃ *💥 𝐒𝐭𝐫𝐞𝐚𝐤 𝐚𝐳𝐳𝐞𝐫𝐚𝐭𝐚*
 ${F}`, m)
 
     delete global.bandieraGame[m.chat]
@@ -419,7 +344,7 @@ ${F}`, m)
 
   await conn.reply(m.chat, `${H}
 ┃ ❌ 𝐒𝐛𝐚𝐠𝐥𝐢𝐚𝐭𝐨
-┃ 📝 𝐓𝐞𝐧𝐭𝐚𝐭𝐢𝐯𝐢 𝐫𝐢𝐦𝐚𝐬𝐭𝐢: ${left}
+┃ *📝 𝐓𝐞𝐧𝐭𝐚𝐭𝐢𝐯𝐢 𝐫𝐢𝐦𝐚𝐬𝐭𝐢:* ${left}
 ${F}`, m)
   return true
 }
