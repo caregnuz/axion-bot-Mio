@@ -1,6 +1,6 @@
 // by Bonzino
 
-import { imageSearch } from '@mudbill/duckduckgo-images-api'
+import gis from 'g-i-s'
 
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -14,7 +14,16 @@ function cleanQuery(text = '') {
 }
 
 function pickImageUrl(item = {}) {
-  return item.image || item.thumbnail || item.url || null
+  return item.url || item.image || item.thumbnail || null
+}
+
+function cercaImmagini(query) {
+  return new Promise((resolve, reject) => {
+    gis(query, (error, results) => {
+      if (error) reject(error)
+      else resolve(results || [])
+    })
+  })
 }
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
@@ -36,12 +45,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       react: { text: '🔎', key: m.key }
     })
 
-    const results = await imageSearch({
-      query: searchTerm,
-      safe: true,
-      iterations: 1,
-      retries: 2
-    })
+    const results = await cercaImmagini(searchTerm)
 
     if (!results || !results.length) {
       await conn.sendMessage(m.chat, {
@@ -66,7 +70,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       validResults.push({
         image: imageUrl,
         title: cleanQuery(item.title || searchTerm),
-        source: cleanQuery(item.source || 'DuckDuckGo'),
+        source: cleanQuery(item.source || item.domain || 'Google Images'),
         pageUrl: item.url || imageUrl
       })
     }
@@ -86,40 +90,16 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
     shuffle(validResults)
 
-    const selectedImages = validResults.slice(0, 3)
+    const item = validResults[0]
 
-    for (let i = 0; i < selectedImages.length; i++) {
-      const item = selectedImages[i]
-
-      await conn.sendMessage(m.chat, {
-        image: { url: item.image },
-        caption:
-`*📸 𝐑𝐢𝐬𝐮𝐥𝐭𝐚𝐭𝐨 ${i + 1}/${selectedImages.length}*
+    await conn.sendMessage(m.chat, {
+      image: { url: item.image },
+      caption:
+`*📸 𝐑𝐢𝐬𝐮𝐥𝐭𝐚𝐭𝐨 𝐭𝐫𝐨𝐯𝐚𝐭𝐨*
 
 *🔎 𝐑𝐢𝐜𝐞𝐫𝐜𝐚:* *${searchTerm}*
 *🖼️ 𝐓𝐢𝐭𝐨𝐥𝐨:* *${item.title}*
 *🌐 𝐅𝐨𝐧𝐭𝐞:* *${item.source}*`,
-        contextInfo: {
-          ...(global.rcanal?.contextInfo || {}),
-          externalAdReply: {
-            title: item.title,
-            body: searchTerm,
-            thumbnailUrl: item.image,
-            sourceUrl: item.pageUrl,
-            mediaType: 1,
-            renderLargerThumbnail: true,
-            showAdAttribution: false
-          }
-        }
-      }, { quoted: i === 0 ? m : undefined })
-    }
-
-    await conn.sendMessage(m.chat, {
-      text:
-`*✅ 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*
-
-*𝐑𝐢𝐜𝐞𝐫𝐜𝐚 𝐜𝐨𝐦𝐩𝐥𝐞𝐭𝐚𝐭𝐚 𝐩𝐞𝐫:*
-*${searchTerm}*`,
       footer: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
       buttons: [
         {
@@ -128,8 +108,19 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
           type: 1
         }
       ],
-      headerType: 1,
-      contextInfo: global.rcanal?.contextInfo || {}
+      headerType: 4,
+      contextInfo: {
+        ...(global.rcanal?.contextInfo || {}),
+        externalAdReply: {
+          title: item.title,
+          body: searchTerm,
+          thumbnailUrl: item.image,
+          sourceUrl: item.pageUrl,
+          mediaType: 1,
+          renderLargerThumbnail: true,
+          showAdAttribution: false
+        }
+      }
     }, { quoted: m })
 
     await conn.sendMessage(m.chat, {
