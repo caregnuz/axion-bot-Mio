@@ -257,6 +257,9 @@ const connectionOptions = {
 };
 global.conn = makeWASocket(connectionOptions);
 global.store.bind(global.conn.ev);
+global.pluginDebugErrors = global.pluginDebugErrors || {};
+global.pluginDebugErrors = global.pluginDebugErrors || {};
+
 global.sendPluginErrorToChat = async function (title, err, extra = '', retry = 0) {
     try {
         const jid = String(global.botErrorChat || '')
@@ -276,18 +279,34 @@ global.sendPluginErrorToChat = async function (title, err, extra = '', retry = 0
 
         const messageText = err?.message || String(err) || 'Errore sconosciuto';
         const stackText = String(err?.stack || err || 'Nessuno stack disponibile').slice(0, 3500);
+        const debugId = `dbg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+        global.pluginDebugErrors[debugId] = {
+            title,
+            extra,
+            message: messageText,
+            stack: stackText,
+            createdAt: Date.now()
+        };
 
         const text =
-`❌ Errore rilevato
+`🛠️ *Errore rilevato*
 
-Titolo: ${title}
-${extra ? `Plugin: ${extra}\n` : ''}Messaggio: ${messageText}
+*Titolo:* ${title}
+${extra ? `*Plugin:* ${extra}\n` : ''}*Messaggio:* ${messageText}`;
 
-\`\`\`
-${stackText}
-\`\`\``;
-
-        await global.conn.sendMessage(jid, { text });
+        await global.conn.sendMessage(jid, {
+            text,
+            footer: 'Axion Bot',
+            buttons: [
+                {
+                    buttonId: `.debugplugin ${debugId}`,
+                    buttonText: { displayText: '🛠️ Debug completo' },
+                    type: 1
+                }
+            ],
+            headerType: 1
+        });
     } catch (e) {
         if (retry < 3) {
             setTimeout(() => {
@@ -298,6 +317,28 @@ ${stackText}
         }
     }
 };
+
+if (!global.__pluginDebugCleanupInterval) {
+    global.__pluginDebugCleanupInterval = setInterval(() => {
+        try {
+            const now = Date.now();
+            const maxAge = 1000 * 60 * 30; // 30 minuti
+
+            for (const [id, item] of Object.entries(global.pluginDebugErrors || {})) {
+                if (!item?.createdAt) {
+                    delete global.pluginDebugErrors[id];
+                    continue;
+                }
+
+                if (now - item.createdAt > maxAge) {
+                    delete global.pluginDebugErrors[id];
+                }
+            }
+        } catch (e) {
+            console.error('[ERRORE] Pulizia debug plugin fallita:', e);
+        }
+    }, 5 * 60 * 1000);
+}
 
 if (!fs.existsSync(`./${authFile}/creds.json`)) {
     if (opzione === '2' || methodCode) {

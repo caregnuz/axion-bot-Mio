@@ -5,6 +5,8 @@ import fs from 'fs'
 import path from 'path'
 import { pathToFileURL } from 'url'
 
+if (!global.updateDebugErrors) global.updateDebugErrors = {}
+
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
@@ -20,7 +22,33 @@ async function testPluginImport(filePath) {
   return mod?.default || mod
 }
 
-let handler = async (m, { conn }) => {
+function createDebugId() {
+  return `dbg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+}
+
+let handler = async (m, { conn, command, usedPrefix }) => {
+  if (/^debugplugin$/i.test(command)) {
+    const debugId = (m.text || '').trim().split(/\s+/)[1]
+
+    if (!debugId || !global.updateDebugErrors[debugId]) {
+      return conn.reply(m.chat, '*❌ 𝐃𝐞𝐛𝐮𝐠 𝐧𝐨𝐧 𝐭𝐫𝐨𝐯𝐚𝐭𝐨 𝐨 𝐬𝐜𝐚𝐝𝐮𝐭𝐨.*', m)
+    }
+
+    const item = global.updateDebugErrors[debugId]
+
+    const fullMsg =
+`*🔧 𝐃𝐞𝐛𝐮𝐠 𝐜𝐨𝐦𝐩𝐥𝐞𝐭𝐨*
+
+📄 *𝐅𝐢𝐥𝐞:* ${item.file}
+💥 *𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨:* ${item.message}
+
+\`\`\`
+${truncate(item.stack, 3000)}
+\`\`\``
+
+    return conn.reply(m.chat, fullMsg, m)
+  }
+
   try {
     await conn.reply(m.chat, '*🔄 𝐂𝐨𝐧𝐭𝐫𝐨𝐥𝐥𝐨 𝐚𝐠𝐠𝐢𝐨𝐫𝐧𝐚𝐦𝐞𝐧𝐭𝐢...*', m)
 
@@ -118,17 +146,31 @@ let handler = async (m, { conn }) => {
 
     if (pluginErrors.length > 0) {
       for (const item of pluginErrors) {
-        const errorMsg =
+        const debugId = createDebugId()
+
+        global.updateDebugErrors[debugId] = {
+          ...item,
+          createdAt: Date.now()
+        }
+
+        const shortMsg =
 `*❌ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐧𝐞𝐥 𝐩𝐥𝐮𝐠𝐢𝐧*
 
 📄 *𝐅𝐢𝐥𝐞:* ${item.file}
-💥 *𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨:* ${item.message}
+💥 *𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨:* ${item.message}`
 
-\`\`\`
-${truncate(item.stack, 3000)}
-\`\`\``
-
-        await conn.reply(m.chat, errorMsg, m)
+        await conn.sendMessage(m.chat, {
+          text: shortMsg,
+          footer: 'Axion Bot',
+          buttons: [
+            {
+              buttonId: `${usedPrefix}debugplugin ${debugId}`,
+              buttonText: { displayText: '🔧 Debug completo' },
+              type: 1
+            }
+          ],
+          headerType: 1
+        }, { quoted: m })
       }
 
       await m.react('⚠️')
@@ -147,9 +189,9 @@ ${truncate(item.stack, 3000)}
   }
 }
 
-handler.help = ['aggiorna']
+handler.help = ['aggiorna', 'debugplugin <id>']
 handler.tags = ['owner']
-handler.command = /^(aggiorna|update|aggiornabot)$/i
+handler.command = /^(aggiorna|update|aggiornabot|debugplugin)$/i
 handler.owner = true
 
 export default handler
