@@ -146,7 +146,6 @@ async function sendFlagCard(conn, chat, url, caption, quoted) {
 
   if (thumb) {
     const token = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-    const title = `Quiz bandiere ${token}`
     const uniqueUrl = `https://flagcdn.com/?flag=${encodeURIComponent(url)}&t=${token}`
 
     return conn.sendMessage(
@@ -154,30 +153,30 @@ async function sendFlagCard(conn, chat, url, caption, quoted) {
       {
         text: caption,
         contextInfo: {
-return conn.sendMessage(
-  chat,
-  {
-    text: caption,
-    contextInfo: {
-      externalAdReply: {
-        title: 'Quiz bandiere',
-        body: 'Indovina la nazione',
-        mediaType: 1,
-        renderLargerThumbnail: false,
-        showAdAttribution: false,
-        thumbnail: thumb,
-        sourceUrl: uniqueUrl
+          externalAdReply: {
+            title: 'Quiz bandiere',
+            body: 'Indovina la nazione',
+            mediaType: 1,
+            renderLargerThumbnail: false,
+            showAdAttribution: false,
+            thumbnail: thumb,
+            sourceUrl: uniqueUrl
+          },
+          jpegThumbnail: thumb
+        }
       },
-      jpegThumbnail: thumb
-    }
-  },
-  { quoted }
-)
+      { quoted }
+    )
+  }
 
-  return conn.sendMessage(chat, {
-    image: { url },
-    caption
-  }, { quoted })
+  return conn.sendMessage(
+    chat,
+    {
+      image: { url },
+      caption
+    },
+    { quoted }
+  )
 }
 
 function ensureUser(user) {
