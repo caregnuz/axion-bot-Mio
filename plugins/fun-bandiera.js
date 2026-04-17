@@ -151,7 +151,7 @@ async function sendFlagCard(conn, chat, url, caption, quoted) {
         text: caption,
         contextInfo: {
           externalAdReply: {
-            title: 'Quiz bandiere',
+            title: '      Quiz bandiere',
             mediaType: 1,
             renderLargerThumbnail: false,
             showAdAttribution: false,
