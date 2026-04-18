@@ -88,16 +88,16 @@ let handler = async (m, { conn }) => {
   const device = mapDeviceName(getDevice(getMessageId(m)))
   const groupUser = chat?.users?.[target] || {}
   const joinedLabel = groupUser.joinedAt
-  ? '*𝐄𝐧𝐭𝐫𝐚𝐭𝐚*'
+  ? '𝐄𝐧𝐭𝐫𝐚𝐭𝐚'
   : groupUser.firstMsgAt
-    ? '*𝐏𝐫𝐢𝐦𝐚 𝐀𝐭𝐭𝐢𝐯𝐢𝐭à*'
-    : '*𝐄𝐧𝐭𝐫𝐚𝐭𝐚*'
+    ? '𝐏𝐫𝐢𝐦𝐚 𝐀𝐭𝐭𝐢𝐯𝐢𝐭à'
+    : '𝐄𝐧𝐭𝐫𝐚𝐭𝐚'
 
 const joinedAt = groupUser.joinedAt
   ? formatDate(groupUser.joinedAt)
   : groupUser.firstMsgAt
     ? formatDate(groupUser.firstMsgAt)
-    : '*𝐍𝐨𝐧 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞*'
+    : '𝐍𝐨𝐧 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞'
 
   let meta
   try {
