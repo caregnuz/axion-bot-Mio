@@ -52,21 +52,35 @@ let handler = async (m, { conn }) => {
 *📸 𝐈𝐧𝐬𝐭𝐚𝐠𝐫𝐚𝐦:* ${instagram}`
 
   await conn.sendMessage(m.chat, {
-    text,
-    mentions: [target],
-    contextInfo: {
-      ...(global.rcanal?.contextInfo || {}),
-      mentionedJid: [target],
-      externalAdReply: {
-        title: nome,
-        body: ' ',
-        thumbnail: thumbnailBuffer,
-        mediaType: 1,
-        renderLargerThumbnail: false,
-        showAdAttribution: false
-      }
+  text,
+  mentions: [target],
+  footer: '𝐒𝐞𝐳𝐢𝐨𝐧𝐢 𝐫𝐚𝐩𝐢𝐝𝐞',
+  buttons: [
+    {
+      buttonId: '.wallet',
+      buttonText: { displayText: '💰 Portafoglio' },
+      type: 1
+    },
+    {
+      buttonId: '.posizione',
+      buttonText: { displayText: '🏆 Posizione' },
+      type: 1
     }
-  }, { quoted: m })
+  ],
+  headerType: 1,
+  contextInfo: {
+    ...(global.rcanal?.contextInfo || {}),
+    mentionedJid: [target],
+    externalAdReply: {
+      title: nome,
+      body: ' ',
+      thumbnail: thumbnailBuffer,
+      mediaType: 1,
+      renderLargerThumbnail: false,
+      showAdAttribution: false
+    }
+  }
+}, { quoted: m })
 }
 
 handler.help = ['profilo', 'profile']
