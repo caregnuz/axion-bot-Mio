@@ -3,7 +3,7 @@
 import fetch from 'node-fetch'
 import { createCanvas, loadImage } from 'canvas'
 
-const H = '╭━━━〔 *🌍 𝐐𝐔𝐈𝐙* 〕━━━⬣'
+const H = '╭━━━〔 🧠 𝐐𝐔𝐈𝐙 〕━━━⬣'
 const F = '╰━━━━━━━━━━━━━━━━⬣'
 const GAME_MS = 30_000
 const MAX_TENTATIVI = 3
