@@ -25,7 +25,7 @@ let handler = async (m, { conn }) => {
 
   const instagram = user.profile?.instagram
     ? `instagram.com/${user.profile.instagram}`
-    : '𝐍𝐨𝐧 𝐢𝐦𝐩𝐨𝐬𝐭𝐚𝐭𝐨'
+    : '*𝐍𝐨𝐧 𝐢𝐦𝐩𝐨𝐬𝐭𝐚𝐭𝐨*'
 
   let profilo
   try {
@@ -38,9 +38,9 @@ let handler = async (m, { conn }) => {
     ? await (await fetch(profilo)).buffer()
     : profilo
 
-  const text = `╭━━━━━━━✨━━━━━━━╮*
+  const text = `╭━━━━━━━✨━━━━━━━╮
 *✦ 𝐏𝐑𝐎𝐅𝐈𝐋𝐎 ✦*
-*╰━━━━━━━✨━━━━━━━╯
+╰━━━━━━━✨━━━━━━━╯
 
 *👤 𝐍𝐨𝐦𝐞:* ${nome}
 *💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢:* ${totalMessages} *(𝐨𝐠𝐠𝐢: ${oggiCount})*

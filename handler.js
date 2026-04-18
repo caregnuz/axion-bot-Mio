@@ -221,16 +221,27 @@ export async function participantsUpdate({ id, participants, action }) {
               userName = (await this.getName(normalizedUser)) || normalizedUser.split('@')[0] || 'Sconosciuto'
               global.nameCache.set(normalizedUser, userName);
             }
+            
             switch (action) {
-                case 'add':
-                    break
-                case 'remove':
-                    break
-                case 'promote':
-                    break
-                case 'demote':
-                    break
-            }
+    case 'add':
+        if (!global.db.data.chats[id]) global.db.data.chats[id] = {}
+        if (!global.db.data.chats[id].users) global.db.data.chats[id].users = {}
+
+        if (!global.db.data.chats[id].users[normalizedUser]) {
+            global.db.data.chats[id].users[normalizedUser] = {}
+        }
+
+        if (!global.db.data.chats[id].users[normalizedUser].joinedAt) {
+            global.db.data.chats[id].users[normalizedUser].joinedAt = Date.now()
+        }
+        break
+    case 'remove':
+        break
+    case 'promote':
+        break
+    case 'demote':
+        break
+}
         }
     } catch (e) {
         console.error(`[ERRORE] Errore in participantsUpdate per ${id}:`, e)

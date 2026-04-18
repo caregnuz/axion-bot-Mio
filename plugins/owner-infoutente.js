@@ -86,7 +86,18 @@ let handler = async (m, { conn }) => {
   const warn = user.warn || 0
   const muted = !!user.muto
   const device = mapDeviceName(getDevice(getMessageId(m)))
-  const joinedAt = formatDate(user.regTime > 0 ? user.regTime : user.firstTime)
+  const groupUser = chat?.users?.[target] || {}
+  const joinedLabel = groupUser.joinedAt
+  ? '*𝐄𝐧𝐭𝐫𝐚𝐭𝐚*'
+  : groupUser.firstMsgAt
+    ? '*𝐏𝐫𝐢𝐦𝐚 𝐀𝐭𝐭𝐢𝐯𝐢𝐭à*'
+    : '*𝐄𝐧𝐭𝐫𝐚𝐭𝐚*'
+
+const joinedAt = groupUser.joinedAt
+  ? formatDate(groupUser.joinedAt)
+  : groupUser.firstMsgAt
+    ? formatDate(groupUser.firstMsgAt)
+    : '*𝐍𝐨𝐧 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞*'
 
   let meta
   try {
@@ -117,7 +128,7 @@ let handler = async (m, { conn }) => {
 *📱 𝐃𝐞𝐯𝐢𝐜𝐞:* ${device}
 *💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢:* ${totalMessages} *(𝐨𝐠𝐠𝐢: ${oggiCount})*
 *💸 𝐃𝐞𝐧𝐚𝐫𝐨:* ${denaro}
-*📅 𝐄𝐧𝐭𝐫𝐚𝐭𝐚:* ${joinedAt}
+*📅 ${joinedLabel}:* ${joinedAt}
 *⚠️ 𝐖𝐚𝐫𝐧:* ${warn}/3
 *🔇 𝐌𝐮𝐭𝐞:* ${muted ? '𝐒𝐢' : '𝐍𝐨'}`
 
@@ -142,6 +153,6 @@ let handler = async (m, { conn }) => {
 handler.help = ['infoutente', 'userinfo', 'whoami', 'info']
 handler.tags = ['info']
 handler.command = /^(infoutente|userinfo|whoami|info)$/i
-handler.owner = true
+handler.admin = true
 
 export default handler

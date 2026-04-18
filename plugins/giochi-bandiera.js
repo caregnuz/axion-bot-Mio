@@ -311,7 +311,7 @@ ${F}${WM}` ,
   await delay(1200)
 
   await conn.sendMessage(m.chat, {
-    text: '*💡 𝐔𝐬𝐚 𝐢𝐥 𝐩𝐮𝐥𝐬𝐚𝐧𝐭𝐞 𝐪𝐮𝐢 𝐬𝐨𝐭𝐭𝐨 𝐩𝐞𝐫 𝐥\'𝐢𝐧𝐝𝐢𝐳𝐢𝐨*',
+    text: '*👇 𝐒𝐜𝐞𝐠𝐥𝐢 𝐮𝐧 𝐚𝐳𝐢𝐨𝐧𝐞 𝐪𝐮𝐢 𝐬𝐨𝐭𝐭𝐨*',
     interactiveButtons: gameButtons()
   }, { quoted: sent })
 
