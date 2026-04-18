@@ -8,6 +8,7 @@ const F = '╰━━━━━━━━━━━━━━━━⬣'
 const GAME_MS = 30_000
 const MAX_TENTATIVI = 3
 const ANSWER_COOLDOWN_MS = 1200
+const WM = '\n> 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 const playAgainButtons = () => [{
@@ -123,7 +124,7 @@ async function createFlagThumb(url) {
     const img = await loadImage(url)
 
     const SIZE = 320
-    const PADDING = 14
+    const PADDING = 12
     const W = SIZE
     const H = SIZE
 
@@ -245,7 +246,7 @@ let handler = async (m, { conn, command, isAdmin }) => {
 ┃ 💡 𝐈𝐍𝐃𝐈𝐙𝐈𝐎
 ┃
 ${game.hintText}
-${F}`
+${F}${WM}`
     }, { quoted: m })
 
     return
@@ -264,7 +265,7 @@ ${F}`
 ┃ *⛔ 𝐏𝐀𝐑𝐓𝐈𝐓𝐀 𝐈𝐍𝐓𝐄𝐑𝐑𝐎𝐓𝐓𝐀*
 ┃
 ┃ *🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚:* ${game.rispostaOriginale}
-${F}`
+${F}${WM}`
     }, { quoted: m })
 
     delete global.bandieraGame[m.chat]
@@ -303,7 +304,7 @@ ${F}`
 ┃
 ┃ ⏱️ *𝐓𝐞𝐦𝐩𝐨:* 30𝐬
 ┃ 🎯 *𝐓𝐞𝐧𝐭𝐚𝐭𝐢𝐯𝐢:* ${MAX_TENTATIVI} *𝐩𝐞𝐫 𝐮𝐭𝐞𝐧𝐭𝐞*
-${F}` ,
+${F}${WM}` ,
     m
   )
   
@@ -333,12 +334,12 @@ ${F}` ,
 ┃ *⏰ 𝐓𝐄𝐌𝐏𝐎 𝐒𝐂𝐀𝐃𝐔𝐓𝐎*
 ┃
 ┃ *🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚:* ${game.rispostaOriginale}
-${F}`,
+${F}${WM}`,
         interactiveButtons: playAgainButtons()
-      })
+      },  { quoted: sent })
 
       delete global.bandieraGame[m.chat]
-    }, GAME_MS)
+    }, GAME_MS) 
   }
 }
 
@@ -400,7 +401,7 @@ handler.before = async (m, { conn }) => {
 ┃
 ┃ *💰 𝐁𝐚𝐬𝐞:* +${baseReward}
 ${speedLine}${streakLine}┃ *💸 𝐓𝐨𝐭𝐚𝐥𝐞:* +${totalReward}
-${F}`,
+${F}${WM}`,
       interactiveButtons: playAgainButtons()
     }, { quoted: m })
 
@@ -419,7 +420,7 @@ ${F}`,
 ┃
 ┃ *🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚:* ${game.rispostaOriginale}
 ┃ *💥 𝐒𝐭𝐫𝐞𝐚𝐤 𝐚𝐳𝐳𝐞𝐫𝐚𝐭𝐚*
-${F}`, m)
+${F}${WM}`, m)
 
     delete global.bandieraGame[m.chat]
     return true
@@ -428,7 +429,7 @@ ${F}`, m)
   await conn.reply(m.chat, `${H}
 ┃ *❌ 𝐒𝐛𝐚𝐠𝐥𝐢𝐚𝐭𝐨*
 ┃ *📝 𝐓𝐞𝐧𝐭𝐚𝐭𝐢𝐯𝐢 𝐫𝐢𝐦𝐚𝐬𝐭𝐢:* ${left}
-${F}`, m)
+${F}${WM}`, m)
   return true
 }
 

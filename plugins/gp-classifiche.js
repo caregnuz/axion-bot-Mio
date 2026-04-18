@@ -1,4 +1,4 @@
-// Plugin Top Classifica by Bonzino
+// Plugin Classifiche by Bonzino
 
 const DELAY_TRA_GRUPPI_MS = 2000
 const PREMI_TOP10 = [500, 300, 200, 150, 100, 80, 60, 50, 40, 30]
@@ -11,13 +11,6 @@ function ensureChat(chat, oggi) {
       totali: 0,
       utenti: {},
       ultimoReset: oggi
-    }
-  }
-
-  if (!chat.classificaTotale) {
-    chat.classificaTotale = {
-      totali: 0,
-      utenti: {}
     }
   }
 
@@ -84,8 +77,8 @@ async function inviaTopNotturna(conn, chatId, chatData, dataLabel) {
     mentions: menzioni,
     footer: '𝐏𝐫𝐞𝐦𝐢 𝐠𝐢𝐨𝐫𝐧𝐚𝐥𝐢𝐞𝐫𝐢 𝐚𝐬𝐬𝐞𝐠𝐧𝐚𝐭𝐢',
     buttons: [
-      { buttonId: `.top`, buttonText: { displayText: '📊 Top Oggi' }, type: 1 },
-      { buttonId: `.topall`, buttonText: { displayText: '🌐 TopAll' }, type: 1 }
+      { buttonId: `.top`, buttonText: { displayText: 'Top Oggi' }, type: 1 },
+      { buttonId: `.topall`, buttonText: { displayText: 'TopAll' }, type: 1 }
     ],
     headerType: 1
   })
@@ -122,6 +115,7 @@ async function processaTopNotturnaSeNecessaria(conn, currentChatId) {
 
     const classificaVecchia = chat.classificaGiornaliera
     if (!classificaVecchia || classificaVecchia.ultimoReset === dataOggi) continue
+
     if ((classificaVecchia.totali || 0) <= 0) {
       chat.topNotturna.ultimoInvio = dataOggi
       chat.classificaGiornaliera = {
@@ -192,17 +186,44 @@ let handler = async (m, { conn, command, usedPrefix, isAdmin, isOwner }) => {
   if (command.includes('5')) limite = 5
   if (command.includes('10')) limite = 10
 
-  let archivio = isAll ? chat.classificaTotale : chat.classificaGiornaliera
-  let totaleMessaggi = archivio.totali || 0
+  let classifica = []
+  let totaleMessaggi = 0
 
-  let classifica = getClassifica(archivio.utenti || {}, limite)
+  if (isAll) {
+    let utenti = chat.users || {}
 
-  if (!classifica.length) {
-    return m.reply(`*╭━━━━━━━📊━━━━━━━╮*
+    classifica = Object.entries(utenti)
+      .map(([id, data]) => [id, { conteggio: data.messages || 0 }])
+      .filter(u => u[1].conteggio > 0)
+      .sort((a, b) => b[1].conteggio - a[1].conteggio)
+      .slice(0, limite)
+
+    totaleMessaggi = Object.values(utenti)
+      .reduce((acc, u) => acc + (u.messages || 0), 0)
+
+    if (!classifica.length) {
+      return m.reply(`*╭━━━━━━━📊━━━━━━━╮*
 *✦ 𝐂𝐋𝐀𝐒𝐒𝐈𝐅𝐈𝐂𝐀 ✦*
 *╰━━━━━━━📊━━━━━━━╯*
 
-*❌ 𝐍𝐞𝐬𝐬𝐮𝐧 𝐝𝐚𝐭𝐨 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞*`)
+*❌ 𝐍𝐞𝐬𝐬𝐮𝐧 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨*`)
+    }
+  } else {
+    if (!chat.classificaGiornaliera || chat.classificaGiornaliera.totali === 0) {
+      return m.reply(`*╭━━━━━━━📊━━━━━━━╮*
+*✦ 𝐂𝐋𝐀𝐒𝐒𝐈𝐅𝐈𝐂𝐀 ✦*
+*╰━━━━━━━📊━━━━━━━╯*
+
+*⏳ 𝐍𝐞𝐬𝐬𝐮𝐧 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐨𝐠𝐠𝐢*`)
+    }
+
+    let dati = chat.classificaGiornaliera
+    totaleMessaggi = dati.totali
+
+    classifica = Object.entries(dati.utenti || {})
+      .filter(u => (u[1].conteggio || 0) > 0)
+      .sort((a, b) => b[1].conteggio - a[1].conteggio)
+      .slice(0, limite)
   }
 
   const medaglie = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟']
@@ -290,20 +311,20 @@ ${isAll
 }
 
 handler.before = async function (m, { conn }) {
-  if (!m.chat || m.isBaileys || !m.isGroup) return
+  if (!m.chat || !m.text || m.isBaileys || !m.isGroup) return
 
   if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
 
   let chat = global.db.data.chats[m.chat]
   let oggi = new Date().toDateString()
 
-  if (!chat.classificaGiornaliera || !chat.classificaTotale || !chat.topNotturna) {
+  if (!chat.classificaGiornaliera || !chat.topNotturna) {
     ensureChat(chat, oggi)
   }
 
   await processaTopNotturnaSeNecessaria(conn, m.chat)
 
-  if (chat.classificaGiornaliera.ultimoReset !== oggi) {
+  if (!chat.classificaGiornaliera || chat.classificaGiornaliera.ultimoReset !== oggi) {
     chat.classificaGiornaliera = {
       totali: 0,
       utenti: {},
@@ -312,21 +333,13 @@ handler.before = async function (m, { conn }) {
   }
 
   let giornaliera = chat.classificaGiornaliera
-  let totale = chat.classificaTotale
-
   giornaliera.totali++
-  totale.totali++
 
   if (!giornaliera.utenti[m.sender]) {
     giornaliera.utenti[m.sender] = { conteggio: 0 }
   }
 
-  if (!totale.utenti[m.sender]) {
-    totale.utenti[m.sender] = { conteggio: 0 }
-  }
-
   giornaliera.utenti[m.sender].conteggio++
-  totale.utenti[m.sender].conteggio++
 }
 
 handler.command = /^(top|top5|top10|topall|topall5|topall10|resettp)$/i

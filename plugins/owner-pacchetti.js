@@ -1,3 +1,5 @@
+//Plugin pacchetti by Bonzino
+
 import fs from 'fs'
 import path from 'path'
 import { exec } from 'child_process'
@@ -115,12 +117,12 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
     const missing = scanMissing()
 
     if (!Object.keys(missing).length) {
-      return m.reply('✅ Nessuna dipendenza mancante')
+      return m.reply('✅ Nessun pacchetto nancante!')
     }
 
     const mods = Object.keys(missing)
 
-    let text = `📦 *DIPENDENZE MANCANTI*\n\n`
+    let text = `📦 *Pacchetti/Moduli mancanti*\n\n`
 
     for (const [dep, files] of Object.entries(missing)) {
       text += `❌ *${dep}*\n`
@@ -157,7 +159,7 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
 
     return conn.sendMessage(m.chat, {
       text,
-      footer: 'Gestione dipendenze',
+      footer: 'Gestione pacchetti/moduli,
       buttons,
       headerType: 1
     }, { quoted: m })
@@ -245,7 +247,7 @@ Per sincronizzarla con tutti i bot usa:
     const missing = scanMissing()
     const mods = Object.keys(missing)
 
-    if (!mods.length) return m.reply('✅ Nessuna dipendenza mancante')
+    if (!mods.length) return m.reply('✅ Nessun pacchetto mancante!')
 
     await m.reply(`🚀 Installo:\n${mods.join(', ')}`)
 
@@ -261,7 +263,7 @@ Per sincronizzarla con tutti i bot usa:
       }
     }
 
-    let out = `✅ Installate: ${ok.length ? ok.join(', ') : 'nessuna'}`
+    let out = `✅ Installati: ${ok.length ? ok.join(', ') : 'nessuno'}`
     if (ko.length) out += `\n❌ Fallite: ${ko.join(', ')}`
 
     out += `\n\n⚠️ Modifiche locali completate.\nPer sincronizzarle con tutti i bot devi pushare package.json e package-lock.json.`
@@ -270,7 +272,7 @@ Per sincronizzarla con tutti i bot usa:
   }
 }
 
-handler.command = /^(dipendenze|installa|installapush|installaall|rimuovi|rimuovipush)$/i
+handler.command = /^(pacchetti|installa|installapush|installaall|rimuovi|rimuovipush)$/i
 handler.owner = true
 
 export default handler
