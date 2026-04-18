@@ -159,7 +159,7 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
 
     return conn.sendMessage(m.chat, {
       text,
-      footer: 'Gestione pacchetti/moduli,'
+      footer: 'Gestione pacchetti/moduli,' ,
       buttons,
       headerType: 1
     }, { quoted: m })
