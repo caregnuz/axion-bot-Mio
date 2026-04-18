@@ -162,7 +162,7 @@ async function sendFlagCard(conn, chat, url, caption, quoted) {
         text: caption,
         contextInfo: {
           externalAdReply: {
-            title: "\u200B'',
+            title: '\u200B' ,
             mediaType: 1,
             renderLargerThumbnail: false,
             showAdAttribution: false,
