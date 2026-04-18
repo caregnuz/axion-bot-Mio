@@ -45,7 +45,7 @@ let handler = async (m, { conn }) => {
 
   await conn.sendMessage(m.chat, {
     text,
-    footer: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
+    footer: '\n𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
     buttons: [
       {
         buttonId: '.top',
