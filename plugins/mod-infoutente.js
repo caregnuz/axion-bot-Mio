@@ -130,7 +130,9 @@ const joinedAt = groupUser.joinedAt
 *💸 𝐃𝐞𝐧𝐚𝐫𝐨:* ${denaro}
 *📅 ${joinedLabel}:* ${joinedAt}
 *⚠️ 𝐖𝐚𝐫𝐧:* ${warn}/3
-*🔇 𝐌𝐮𝐭𝐚𝐭𝐨:* ${muted ? '𝐒𝐢' : '𝐍𝐨'}`
+*🔇 𝐌𝐮𝐭𝐚𝐭𝐨:* ${muted ? '𝐒𝐢' : '𝐍𝐨'}
+
+> 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓`
 
   await conn.sendMessage(m.chat, {
     text,
