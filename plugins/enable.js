@@ -3,6 +3,7 @@ import fetch from 'node-fetch'
 
 let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner }) => {
   const isEnable = /attiva|enable|1/i.test(command)
+
   const chats = global.db.data.chats
   const settings = global.db.data.settings
 
@@ -12,19 +13,17 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner }) => 
   const chat = chats[m.chat]
   const bot = settings[conn.user.jid]
 
-  let pp
+  let pp = null
   try {
     pp = await conn.profilePictureUrl(m.sender, 'image')
-  } catch {
-    pp = null
-  }
+  } catch {}
 
   const getBuffer = async (url) => {
     if (!url) return null
     try {
       const res = await fetch(url)
       if (!res.ok) return null
-      return buffer.from(await res.arrayBuffer())
+      return Buffer.from(await res.arrayBuffer())
     } catch {
       return null
     }
@@ -39,10 +38,14 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner }) => 
     }
   }
 
-  const senderName = await conn.getName(m.sender).catch(() => m.pushName || 'Utente')
+  let senderName = 'Utente'
+  try {
+    senderName = await conn.getName(m.sender)
+  } catch {
+    senderName = m.pushName || 'Utente'
+  }
 
-  const box = (title, stato, desc) => {
-    return `
+  const box = (title, stato, desc) => `
 『 𝚫𝐗𝐈𝐎𝐍 • 𝐂𝐎𝐑𝐄 』
 ╼━━━━━━━━━━━━━━╾
   ◈ *ғᴜɴᴢɪᴏɴᴇ:* ${title}
@@ -50,7 +53,6 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner }) => 
 ╼━━━━━━━━━━━━━━╾
   ⌬ ${desc}
 `.trim()
-  }
 
   const noAdmin = box('ᴀᴄᴄᴇssᴏ NEGATO', '🛑 sɪsᴛᴇᴍ ʟᴏᴄᴋ', 'Permessi amministratore mancanti.')
   const noOwner = box('ᴘʀɪᴠɪʟᴇɢɪᴏ 𝛥𝐗𝐈𝚶𝐍', '⚠️ ʀᴇsᴛʀɪᴛᴛᴏ', 'Accesso riservato al Mainframe Owner.')
@@ -60,8 +62,8 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner }) => 
 『 𝚫𝐗𝐈𝐎𝐍 • 𝐈𝐍𝐓𝐄𝐑𝐅𝐀𝐂𝐄 』
 ╼━━━━━━━━━━━━━━╾
   💡 *ᴄᴍᴅ:*
-.1 <funzione>
-.0 <funzione>
+  .1 <funzione>
+  .0 <funzione>
 
   *sɪᴄᴜʀᴇᴢᴢᴀ:*
   🛡️ antilink, antispam, antibot
@@ -72,101 +74,114 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner }) => 
   📱 antiinsta, antitelegram, antitiktok
   
   *ɢᴇsᴛɪᴏɴᴇ:*
-  ⚙️ modoadmin, benvenuto, addio
+  ⚙️ soloadmin, benvenuto, addio
 ╼━━━━━━━━━━━━━━╾`.trim()
   }
 
   let feature = args[0].toLowerCase()
   let result = ''
 
+  const requireAdmin = () => {
+    if (m.isGroup && !(isAdmin || isOwner || isROwner)) {
+      throw noAdmin
+    }
+  }
+
+  const requireOwner = () => {
+    if (!(isOwner || isROwner)) {
+      throw noOwner
+    }
+  }
+
   switch (feature) {
+
     case 'antilink':
-      if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin)
+      requireAdmin()
       chat.antiLink = isEnable
-      result = box('ᴀɴᴛɪʟɪɴᴋ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), '🔒 Protocollo AntiLink attivo')
+      result = box('ᴀɴᴛɪʟɪɴᴋ', isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ', '🔒 Protocollo AntiLink attivo')
       break
 
     case 'antiinsta':
-      if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin)
+      requireAdmin()
       chat.antiInsta = isEnable
-      result = box('ᴀɴᴛɪ-ɪɴsᴛᴀɢʀᴀᴍ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), 'Filtro sorgente Instagram')
+      result = box('ᴀɴᴛɪ-ɪɴsᴛᴀɢʀᴀᴍ', isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ', 'Filtro Instagram')
       break
 
     case 'antitelegram':
-      if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin)
+      requireAdmin()
       chat.antiTelegram = isEnable
-      result = box('ᴀɴᴛɪ-ᴛᴇʟᴇɢʀᴀᴍ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), 'Filtro sorgente Telegram')
+      result = box('ᴀɴᴛɪ-ᴛᴇʟᴇɢʀᴀᴍ', isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ', 'Filtro Telegram')
       break
 
     case 'antitiktok':
-      if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin)
+      requireAdmin()
       chat.antiTiktok = isEnable
-      result = box('ᴀɴᴛɪ-ᴛɪᴋᴛᴏᴋ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), 'Filtro sorgente TikTok')
+      result = box('ᴀɴᴛɪ-ᴛɪᴋᴛᴏᴋ', isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ', 'Filtro TikTok')
       break
 
     case 'antitag':
-      if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin)
+      requireAdmin()
       chat.antiTag = isEnable
-      result = box('ᴀɴᴛɪ-ᴛᴀɢ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), 'Protezione tag invasivi')
+      result = box('ᴀɴᴛɪ-ᴛᴀɢ', isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ', 'Protezione tag')
       break
 
     case 'antigore':
-      if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin)
+      requireAdmin()
       chat.antigore = isEnable
-      result = box('ᴀɴᴛɪ-ɢᴏʀᴇ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), 'Soppressione contenuti violenti')
+      result = box('ᴀɴᴛɪ-ɢᴏʀᴇ', isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ', 'Filtro contenuti violenti')
       break
 
     case 'antiporno':
     case 'antiporn':
-      if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin)
+      requireAdmin()
       chat.antiporno = isEnable
-      result = box('ᴀɴᴛɪ-ᴘᴏʀɴᴏ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), 'Filtro neurale NSFW')
+      result = box('ᴀɴᴛɪ-ᴘᴏʀɴᴏ', isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ', 'Filtro NSFW')
       break
 
     case 'soloadmin':
-      if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin)
+      requireAdmin()
       chat.modoadmin = isEnable
-      result = box('ᴍᴏᴅᴏ ᴀᴅᴍɪɴ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), 'Restrizione comandi allo staff')
+      result = box('ᴍᴏᴅᴏ ᴀᴅᴍɪɴ', isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ', 'Solo admin possono usare il bot')
       break
 
     case 'benvenuto':
-      if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin)
+      requireAdmin()
       chat.welcome = isEnable
-      result = box('ᴡᴇʟᴄᴏᴍᴇ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), 'Log d\'ingresso abilitato')
+      result = box('ᴡᴇʟᴄᴏᴍᴇ', isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ', 'Messaggi di benvenuto')
       break
 
     case 'addio':
-      if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin)
+      requireAdmin()
       chat.goodbye = isEnable
-      result = box('ɢᴏᴏᴅʙʏᴇ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), 'Log d\'uscita abilitato')
+      result = box('ɢᴏᴏᴅʙʏᴇ', isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ', 'Messaggi di uscita')
       break
 
     case 'antiprivato':
-      if (!isOwner && !isROwner) return m.reply(noOwner)
+      requireOwner()
       bot.antiprivato = isEnable
-      result = box('ᴀɴᴛɪ-ᴘʀɪᴠᴀᴛᴏ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), 'Firewall DM attivato')
+      result = box('ᴀɴᴛɪ-ᴘʀɪᴠᴀᴛᴏ', isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ', 'Blocca chat private')
       break
 
     case 'antibot':
-      if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin)
+      requireAdmin()
       chat.antiBot = isEnable
-      result = box('ᴀɴᴛɪ-ʙᴏᴛ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), 'Neutralizzazione bot esterni')
+      result = box('ᴀɴᴛɪ-ʙᴏᴛ', isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ', 'Blocca altri bot')
       break
 
     case 'antispam':
-      if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin)
+      requireAdmin()
       chat.antispam = isEnable
-      result = box('ᴀɴᴛɪ-sᴘᴀᴍ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), 'Analisi traffico messaggi')
+      result = box('ᴀɴᴛɪ-sᴘᴀᴍ', isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ', 'Filtro spam')
       break
 
     case 'antitrava':
-      if (m.isGroup && !(isAdmin || isOwner || isROwner)) return m.reply(noAdmin)
+      requireAdmin()
       chat.antitrava = isEnable
-      result = box('ᴀɴᴛɪ-ᴛʀᴀᴠᴀ', (isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ'), 'Difesa crash-payload')
+      result = box('ᴀɴᴛɪ-ᴛʀᴀᴠᴀ', isEnable ? '🔵 ᴀᴛᴛɪᴠᴏ' : '⚪ ᴅɪsᴀᴛᴛɪᴠᴏ', 'Protezione crash')
       break
 
     default:
-      return m.reply(box('ᴜɴᴋɴᴏᴡɴ', '⚠️ ᴡᴀʀɴɪɴɢ', 'Modulo non riconosciuto dal sistema Axion.'))
+      throw box('ᴜɴᴋɴᴏᴡɴ', '⚠️ ᴡᴀʀɴɪɴɢ', 'Funzione non riconosciuta')
   }
 
   await conn.sendMessage(m.chat, {
@@ -180,18 +195,17 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner }) => 
         newsletterName: '𝛥𝐗𝐈𝐎𝐍 𝚩𝚯𝐓'
       },
       externalAdReply: {
-        title: '𝚫𝐗𝐈𝐎𝐍 • 𝐒𝐘𝐒𝐓𝐄𝐌 𝐎𝐒',
+        title: '𝚫𝐗𝐈𝐎𝐍 • 𝐒𝐘𝐒𝐓𝐄𝐌',
         body: `Utenza: ${senderName}`,
         thumbnail: profileBuffer,
         sourceUrl: '',
-        mediaType: 1,
-        renderLargerThumbnail: false
+        mediaType: 1
       }
     }
   }, { quoted: m })
 }
 
-handler.help = ['attiva', 'disattiva']
+handler.help = ['attiva <feature>', 'disattiva <feature>']
 handler.tags = ['group']
 handler.command = ['attiva', 'disattiva', 'enable', 'disable', '1', '0']
 
