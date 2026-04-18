@@ -1,7 +1,6 @@
 import { performance } from 'perf_hooks';
 
 const handler = async (message, { conn, usedPrefix = '.' }) => {
-
     const userId = message.sender
     const uptimeMs = process.uptime() * 1000
     const uptimeStr = clockString(uptimeMs)
@@ -30,30 +29,30 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ ✅ ${usedPrefix}unwarn <reply/tag>
 ╰━━━━━━━━━━━━━━━━⬣
 
-╭━━━〔 🔇 ᴄᴏɴᴛʀᴏʟʟᴏ 〕━⬣
+╭━━━〔 🧰 ᴄᴏᴍᴀɴᴅɪ 〕━⬣
 ┃ 🤫 ${usedPrefix}muta <reply/tag>
 ┃ 🔊 ${usedPrefix}smuta <reply/tag>
 ┃ 🏹 ${usedPrefix}tag <messaggio>
 ┃ 📖 ${usedPrefix}setbio <messaggio>
 ┃ 🚨 ${usedPrefix}setname <messaggio>
+┃ 🖼️ ${usedPrefix}pic <reply/tag>
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 🔒 ɪᴍᴘᴏsᴛᴀᴢɪᴏɴɪ 〕━⬣
-┃ 🌙 ${usedPrefix}aperto
+┃ 🔓 ${usedPrefix}aperto
 ┃ 🔐 ${usedPrefix}chiuso
 ┃ 📳 ${usedPrefix}listamod
 ╰━━━━━━━━━━━━━━━━⬣
 
-╭━━━〔 👥 ɢᴇsᴛɪᴏɴᴇ 〕━⬣
-┃ 🆔 ${usedPrefix}idgp
+╭━━━〔 👥 ɢᴇsᴛɪᴏɴᴇ ᴜᴛᴇɴᴛɪ 〕━⬣
 ┃ ⚔️ ${usedPrefix}kick
-┃ 🚨 ${usedPrefix}nuke
 ┃ 🔮 ${usedPrefix}resuscita
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 🔗 ʟɪɴᴋ ɢʀᴜᴘᴘᴏ 〕━⬣
 ┃ 🔗 ${usedPrefix}link
 ┃ 📥 ${usedPrefix}linkqr
+┃ 🆔 ${usedPrefix}idgp
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 📌 ɪɴғᴏ 〕━⬣
