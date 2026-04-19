@@ -86,18 +86,23 @@ let handler = async (m, { conn }) => {
   const warn = user.warn || 0
   const muted = !!user.muto
   const device = mapDeviceName(getDevice(getMessageId(m)))
+
+  const totalCommands = user.commandCount || 0
+  const lastCommand = user.lastCommand || '-'
+  const lastMessageTime = user.lastMessage || null
+
   const groupUser = chat?.users?.[target] || {}
   const joinedLabel = groupUser.joinedAt
-  ? '𝐄𝐧𝐭𝐫𝐚𝐭𝐚'
-  : groupUser.firstMsgAt
-    ? '𝐏𝐫𝐢𝐦𝐚 𝐀𝐭𝐭𝐢𝐯𝐢𝐭à'
-    : '𝐄𝐧𝐭𝐫𝐚𝐭𝐚'
+    ? '𝐄𝐧𝐭𝐫𝐚𝐭𝐚'
+    : groupUser.firstMsgAt
+      ? '𝐏𝐫𝐢𝐦𝐚 𝐀𝐭𝐭𝐢𝐯𝐢𝐭à'
+      : '𝐄𝐧𝐭𝐫𝐚𝐭𝐚'
 
-const joinedAt = groupUser.joinedAt
-  ? formatDate(groupUser.joinedAt)
-  : groupUser.firstMsgAt
-    ? formatDate(groupUser.firstMsgAt)
-    : '𝐍𝐨𝐧 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞'
+  const joinedAt = groupUser.joinedAt
+    ? formatDate(groupUser.joinedAt)
+    : groupUser.firstMsgAt
+      ? formatDate(groupUser.firstMsgAt)
+      : '𝐍𝐨𝐧 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞'
 
   let meta
   try {
@@ -114,9 +119,14 @@ const joinedAt = groupUser.joinedAt
     profilo = fs.readFileSync('./media/default-avatar.png')
   }
 
-  const thumbnailBuffer = typeof profilo === 'string'
-    ? await (await fetch(profilo)).buffer()
-    : profilo
+  let thumbnailBuffer
+  try {
+    thumbnailBuffer = typeof profilo === 'string'
+      ? await (await fetch(profilo)).buffer()
+      : profilo
+  } catch {
+    thumbnailBuffer = fs.readFileSync('./media/default-avatar.png')
+  }
 
   const text = `╭━━━━━━━📌━━━━━━━╮
 ✦ 𝐈𝐍𝐅𝐎 𝐔𝐓𝐄𝐍𝐓𝐄 ✦
@@ -131,6 +141,10 @@ const joinedAt = groupUser.joinedAt
 *📅 ${joinedLabel}:* ${joinedAt}
 *⚠️ 𝐖𝐚𝐫𝐧:* ${warn}/3
 *🔇 𝐌𝐮𝐭𝐚𝐭𝐨:* ${muted ? '𝐒𝐢' : '𝐍𝐨'}
+*📊 𝐂𝐨𝐦𝐚𝐧𝐝𝐢 𝐭𝐨𝐭𝐚𝐥𝐢:* ${totalCommands}
+*⚡ 𝐔𝐥𝐭𝐢𝐦𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨:* ${lastCommand}
+*🕓 𝐔𝐥𝐭𝐢𝐦𝐨 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨:* ${formatDate(lastMessageTime)}
+╰━━━━━━━━━━━━━━╯
 
 > 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓`
 
