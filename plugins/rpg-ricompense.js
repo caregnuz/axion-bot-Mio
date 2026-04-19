@@ -70,14 +70,17 @@ async function controllaRicompensaMessaggi(m, conn) {
 
     await conn.sendMessage(m.chat, {
       text:
-`╭━━━〔 🏆 𝐍𝐔𝐎𝐕𝐎 𝐎𝐁𝐈𝐄𝐓𝐓𝐈𝐕𝐎 𝐑𝐀𝐆𝐆𝐈𝐔𝐍𝐓𝐎 〕━━━⬣
-┃ *📝 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐫𝐚𝐠𝐠𝐢𝐮𝐧𝐭𝐢:* *${formatNumber(traguardo)}*
-┃ *💰 𝐑𝐢𝐜𝐨𝐦𝐩𝐞𝐧𝐬𝐚 𝐛𝐚𝐬𝐞:* *${formatNumber(premioBase)}€*
+`🏆 *𝐍𝐮𝐨𝐯𝐨 𝐨𝐛𝐢𝐞𝐭𝐭𝐢𝐯𝐨 𝐫𝐚𝐠𝐠𝐢𝐮𝐧𝐭𝐨!*
+
+╭━━━━━━━━━━━━━━⬣
+┃ *📝 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢:* *${formatNumber(traguardo)}*
+┃ *💰 𝐑𝐢𝐜𝐨𝐦𝐩𝐞𝐧𝐬𝐚:* *${formatNumber(premioBase)}€*
 ┃ ${evento}: *+${formatNumber(bonus)}€*
-┃ *🏦 𝐓𝐨𝐭𝐚𝐥𝐞 𝐨𝐭𝐭𝐞𝐧𝐮𝐭𝐨:* *${formatNumber(totale)}€*
+┃ *🏦 𝐓𝐨𝐭𝐚𝐥𝐞:* *${formatNumber(totale)}€*
 ┃
 ┃ *🚀 𝐂𝐨𝐧𝐭𝐢𝐧𝐮𝐚 𝐚 𝐬𝐜𝐫𝐢𝐯𝐞𝐫𝐞 𝐩𝐞𝐫 𝐬𝐛𝐥𝐨𝐜𝐜𝐚𝐫𝐞 𝐫𝐢𝐜𝐨𝐦𝐩𝐞𝐧𝐬𝐞 𝐬𝐞𝐦𝐩𝐫𝐞 𝐩𝐢ù 𝐚𝐥𝐭𝐞!*
-╰━━━━━━━━━━━━━━━━━━━━⬣`,
+╰━━━━━━━━━━━━━━⬣`,
+
       mentions: [m.sender]
     }, { quoted: m })
   } catch (e) {
@@ -130,14 +133,17 @@ let handler = async (m, { conn }) => {
 
   const { traguardo, premioBase } = getMessageRewardData(user)
 
-  return m.reply(
-`╭━━━〔 🎁 𝐑𝐈𝐂𝐎𝐌𝐏𝐄𝐍𝐒𝐀 𝐆𝐈𝐎𝐑𝐍𝐀𝐋𝐈𝐄𝐑𝐀 〕━━━⬣
-┃ *💰 𝐑𝐢𝐜𝐨𝐦𝐩𝐞𝐧𝐬𝐚 𝐛𝐚𝐬𝐞:* *${formatNumber(base)}€*
-┃ *🔥 𝐁𝐨𝐧𝐮𝐬 𝐬𝐭𝐫𝐞𝐚𝐤:* *+${formatNumber(bonus)}€*
-┃ *🏦 𝐓𝐨𝐭𝐚𝐥𝐞 𝐨𝐭𝐭𝐞𝐧𝐮𝐭𝐨:* *${formatNumber(reward)}€*
+return m.reply(
+`🏆 *𝐍𝐮𝐨𝐯𝐨 𝐨𝐛𝐢𝐞𝐭𝐭𝐢𝐯𝐨 𝐫𝐚𝐠𝐠𝐢𝐮𝐧𝐭𝐨!*
+
+╭━━━━━━━━━━━━━━⬣
+┃ *📝 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢:* *${formatNumber(traguardo)}*
+┃ *💰 𝐑𝐢𝐜𝐨𝐦𝐩𝐞𝐧𝐬𝐚:* *${formatNumber(premioBase)}€*
+┃ ${evento}: *+${formatNumber(bonus)}€*
+┃ *🏦 𝐓𝐨𝐭𝐚𝐥𝐞:* *${formatNumber(totale)}€*
 ┃
-┃ *🔥 𝐂𝐨𝐧𝐭𝐢𝐧𝐮𝐚 𝐥𝐚 𝐬𝐭𝐫𝐞𝐚𝐤 𝐩𝐞𝐫 𝐨𝐭𝐭𝐞𝐧𝐞𝐫𝐞 𝐛𝐨𝐧𝐮𝐬 𝐬𝐞𝐦𝐩𝐫𝐞 𝐩𝐢ù 𝐚𝐥𝐭𝐢!*
-╰━━━━━━━━━━━━━━━━━━━━⬣
+┃ *🚀 𝐂𝐨𝐧𝐭𝐢𝐧𝐮𝐚 𝐚 𝐬𝐜𝐫𝐢𝐯𝐞𝐫𝐞 𝐩𝐞𝐫 𝐬𝐛𝐥𝐨𝐜𝐜𝐚𝐫𝐞 𝐫𝐢𝐜𝐨𝐦𝐩𝐞𝐧𝐬𝐞 𝐬𝐞𝐦𝐩𝐫𝐞 𝐩𝐢ù 𝐚𝐥𝐭𝐞!*
+╰━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 📊 𝐒𝐓𝐀𝐓𝐈𝐒𝐓𝐈𝐂𝐇𝐄 〕━━━⬣
 ┃ *📅 𝐒𝐭𝐫𝐞𝐚𝐤 𝐚𝐭𝐭𝐮𝐚𝐥𝐞:* *${formatNumber(user.dailyStreak)}*
