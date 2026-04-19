@@ -68,7 +68,6 @@ let handler = async (m, { conn, args, text }) => {
   text: testoGruppo,
   mentions: [m.sender]
 }, { quoted: m })
-      })
     }
   } catch (e) {
     console.error('Errore invio segnalazione al gruppo:', e)
