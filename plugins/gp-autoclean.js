@@ -5,7 +5,7 @@ import path from 'path'
 
 const CLEANUP_INTERVAL_HOURS = 6
 const START_HOUR = 20
-const START_MINUTE = 0
+const START_MINUTE = 35
 const RUN_WINDOW_MINUTES = 10
 const DELAY_TRA_GRUPPI_MS = 3000
 const MIN_FILE_AGE_MS = 30 * 60 * 1000
