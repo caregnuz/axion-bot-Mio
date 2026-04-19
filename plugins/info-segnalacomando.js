@@ -62,16 +62,16 @@ let handler = async (m, { conn, args, text }) => {
 *💬 𝐂𝐡𝐚𝐭:* *${m.chat}*
 *🕒 𝐃𝐚𝐭𝐚:* *${new Date(data).toLocaleString('it-IT')}*`
 
-  try {
-    if (reportChat && reportChat.endsWith('@g.us')) {
-      await conn.sendMessage(reportChat, {
-  text: testoGruppo,
-  mentions: [m.sender]
-}, { quoted: m })
-    }
-  } catch (e) {
-    console.error('Errore invio segnalazione al gruppo:', e)
+try {
+  if (reportChat && reportChat.endsWith('@g.us')) {
+    await conn.sendMessage(reportChat, {
+      text: testoGruppo,
+      mentions: [m.sender]
+    }, { quoted: m })
   }
+} catch (e) {
+  console.error('Errore invio segnalazione al gruppo:', e)
+}
 
   await m.reply(
 `╭━━━━━━━🚨━━━━━━━╮
