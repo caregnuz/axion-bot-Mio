@@ -20,10 +20,9 @@ let handler = async (m, { conn, usedPrefix }) => {
   if (!m.isGroup) return m.reply('*⚠️ 𝐒𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢*')
 
   const chat = global.db.data.chats?.[m.chat] || {}
-  const user = global.db.data.users?.[m.sender] || {}
-
   const giornaliera = chat.classificaGiornaliera || { utenti: {}, totali: 0 }
   const utentiTotali = chat.users || {}
+  const groupUser = chat?.users?.[m.sender] || {}
 
   const classificaOggi = Object.entries(giornaliera.utenti || {})
     .filter(([_, data]) => (data?.conteggio || 0) > 0)
@@ -38,7 +37,7 @@ let handler = async (m, { conn, usedPrefix }) => {
   const rankTotale = getRank(classificaTotale, m.sender)
 
   const msgOggi = giornaliera.utenti?.[m.sender]?.conteggio || 0
-  const msgTotali = user.messages || 0
+  const msgTotali = groupUser.messages || 0
 
   if (!rankOggi && !rankTotale && !msgOggi && !msgTotali) {
     return m.reply('*❌ 𝐍𝐞𝐬𝐬𝐮𝐧 𝐝𝐚𝐭𝐨 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞*')
@@ -48,8 +47,7 @@ let handler = async (m, { conn, usedPrefix }) => {
   const medalTotale = getMedal(rankTotale)
 
   const text = `╭━━━〔 📊 𝐌𝐘 𝐓𝐎𝐏 〕━━━⬣
-┃  
-┃ 👤 @${m.sender.split('@')[0]}
+┃ *👤* @${m.sender.split('@')[0]}
 ┃
 ┃ *⏳ 𝐎𝐆𝐆𝐈*
 ┃ ${rankOggi ? `${medalOggi} *#${rankOggi}* • *${formatNumber(msgOggi)} 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢*` : '🏅 *𝐍𝐨𝐧 𝐢𝐧 𝐜𝐥𝐚𝐬𝐬𝐢𝐟𝐢𝐜𝐚*'}
@@ -60,6 +58,8 @@ let handler = async (m, { conn, usedPrefix }) => {
 ┃ *🌐 𝐓𝐎𝐓𝐀𝐋𝐄*
 ┃ ${rankTotale ? `${medalTotale} *#${rankTotale}* • *${formatNumber(msgTotali)} 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢*` : '🏅 *𝐍𝐨𝐧 𝐢𝐧 𝐜𝐥𝐚𝐬𝐬𝐢𝐟𝐢𝐜𝐚*'}
 ┃ *👥 𝐔𝐭𝐞𝐧𝐭𝐢:* *${formatNumber(classificaTotale.length)}*
+┃ 
+┃ > 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓
 ╰━━━━━━━━━━━━━━⬣`
 
   await conn.sendMessage(m.chat, {

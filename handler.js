@@ -742,10 +742,24 @@ if (m.message?.protocolMessage?.type === 'MESSAGE_EDIT') {
                     __filename
                 }
 
-                try {
-                    await plugin.call(this, m, extra)
-                    if (!isPrems) m.euro = plugin.euro || false
-                } catch (e) {
+try {
+    if (!global.db.data.users[m.sender]) global.db.data.users[m.sender] = {}
+
+    const user = global.db.data.users[m.sender]
+
+    user.commandCount = user.commandCount || 0
+
+    if (command) {
+        user.commandCount += 1
+        user.lastCommand = command
+    }
+
+    user.lastMessage = Date.now()
+
+    await plugin.call(this, m, extra)
+
+    if (!isPrems) m.euro = plugin.euro || false
+} catch (e) {
                     m.error = e
                     console.error(`[ERRORE] Errore nell'esecuzione del plugin per la chat ${m.chat}, mittente ${m.sender}:`, e)
                     if (e.message.includes('rate-overlimit')) {

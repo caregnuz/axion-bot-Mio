@@ -76,6 +76,9 @@ let handler = async (m, { conn }) => {
   const user = global.db.data.users[target] || {}
   const chat = global.db.data.chats?.[m.chat] || {}
 
+const commandCount = user.commandCount || 0
+const lastMessage = user.lastMessage ? formatDate(user.lastMessage) : '𝐍𝐨𝐧 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞'
+
   const oggiCount = chat?.classificaGiornaliera?.utenti?.[target]?.conteggio || 0
   const totalMessages = user.messages || 0
 
@@ -137,7 +140,9 @@ let handler = async (m, { conn }) => {
 *🛠 𝐑𝐮𝐨𝐥𝐨:* ${ruolo}
 *📱 𝐃𝐞𝐯𝐢𝐜𝐞:* ${device}
 *💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢:* ${totalMessages} *(𝐨𝐠𝐠𝐢: ${oggiCount})*
+*🕒 𝐔𝐥𝐭𝐢𝐦𝐨 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨:* ${lastMessage}
 *💸 𝐃𝐞𝐧𝐚𝐫𝐨:* ${denaro}
+*🕹 𝐂𝐨𝐦𝐚𝐧𝐝𝐢 𝐮𝐬𝐚𝐭𝐢:* ${commandCount}
 *📅 ${joinedLabel}:* ${joinedAt}
 *⚠️ 𝐖𝐚𝐫𝐧:* ${warn}/3
 *🔇 𝐌𝐮𝐭𝐚𝐭𝐨:* ${muted ? '𝐒𝐢' : '𝐍𝐨'}
