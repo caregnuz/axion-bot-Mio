@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { uploadFile } from '../lib/uploadFile.js' // Assicurati che questo path sia corretto per il tuo bot
+import { uploadFile } from '../lib/uploadFile.js' 
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
     if (!text) return m.reply(`*⚠️ Formato richiesto:*
