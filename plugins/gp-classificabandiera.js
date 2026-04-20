@@ -9,49 +9,55 @@ function getPercent(vittorie, giocate) {
   return Math.round((vittorie / giocate) * 100)
 }
 
+function getJid(conn, participant = {}) {
+  return conn.decodeJid?.(participant.id || participant.jid || '') || participant.id || participant.jid || ''
+}
+
 let handler = async (m, { conn, usedPrefix, command }) => {
   if (!m.isGroup) return m.reply('*⚠️ 𝐒𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢*')
 
-const ordinaPerGiocate = /^topbandieragiocate$/i.test(command)
+  const ordinaPerGiocate = /^topbandieragiocate$/i.test(command)
+  const metadata = await conn.groupMetadata(m.chat)
+  const participants = metadata?.participants || []
 
-const metadata = await conn.groupMetadata(m.chat)
-const participants = metadata?.participants || []
+  const classifica = participants
+    .map(p => {
+      const jid = getJid(conn, p)
+      const user = global.db.data.users?.[jid] || {}
+      return {
+        jid,
+        vittorie: user.bandieraVittorie || 0,
+        giocate: user.bandieraGiocate || 0,
+        streak: user.bandieraStreak || 0,
+        record: user.bandieraRecord || 0
+      }
+    })
+    .filter(user => user.jid && (user.vittorie > 0 || user.giocate > 0))
+    .sort((a, b) => {
+      if (ordinaPerGiocate) {
+        return (b.giocate - a.giocate) || (b.vittorie - a.vittorie) || (b.record - a.record)
+      }
+      return (b.vittorie - a.vittorie) || (b.giocate - a.giocate) || (b.record - a.record)
+    })
+    .slice(0, 10)
 
-const classifica = participants
-  .map(p => {
-    const jid = p.id || p.jid
-    const user = global.db.data.users?.[jid] || {}
-    return {
-      jid,
-      vittorie: user.bandieraVittorie || 0,
-      giocate: user.bandieraGiocate || 0
-    }
-  })
-  .filter(user => user.vittorie > 0 || user.giocate > 0)
-  .sort((a, b) => {
-    if (ordinaPerGiocate) {
-      return (b.giocate - a.giocate) || (b.vittorie - a.vittorie)
-    }
-    return (b.vittorie - a.vittorie) || (b.giocate - a.giocate)
-  })
-  .slice(0, 10)
   if (!classifica.length) {
-    return m.reply(`╭━━━━━━━🏳️━━━━━━━╮
+    return m.reply(`╭━━━━━━━📊━━━━━━━╮
 *✦ 𝐓𝐎𝐏 𝐁𝐀𝐍𝐃𝐈𝐄𝐑𝐀 ✦*
-╰━━━━━━━🏳️━━━━━━━╯
+╰━━━━━━━📊━━━━━━━╯
 
-*❌ 𝐍𝐞𝐬𝐬𝐮𝐧 𝐝𝐚𝐭𝐨 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞 𝐩𝐞𝐫 𝐢𝐥 𝐠𝐢𝐨𝐜𝐨 𝐛𝐚𝐧𝐝𝐢𝐞𝐫𝐚*`)
+*❌ 𝐍𝐞𝐬𝐬𝐮𝐧 𝐝𝐚𝐭𝐨 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞*`)
   }
 
   const medaglie = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟']
   const menzioni = classifica.map(user => user.jid)
   const sottotitolo = ordinaPerGiocate
     ? '*📊 𝐂𝐥𝐚𝐬𝐬𝐢𝐟𝐢𝐜𝐚 𝐨𝐫𝐝𝐢𝐧𝐚𝐭𝐚 𝐩𝐞𝐫 𝐠𝐢𝐨𝐜𝐚𝐭𝐞*'
-    : '*📊 𝐂𝐥𝐚𝐬𝐬𝐢𝐟𝐢𝐜𝐚 𝐨𝐫𝐝𝐢𝐧𝐚𝐭𝐚 𝐩𝐞𝐫 𝐯𝐢𝐭𝐭𝐨𝐫𝐢𝐞*'
+    : '*🏆 𝐂𝐥𝐚𝐬𝐬𝐢𝐟𝐢𝐜𝐚 𝐨𝐫𝐝𝐢𝐧𝐚𝐭𝐚 𝐩𝐞𝐫 𝐯𝐢𝐭𝐭𝐨𝐫𝐢𝐞*'
 
-  let testo = `╭━━━━━━━🏳️━━━━━━━╮
+  let testo = `╭━━━━━━━📊━━━━━━━╮
 *✦ 𝐓𝐎𝐏 𝐁𝐀𝐍𝐃𝐈𝐄𝐑𝐀 ✦*
-╰━━━━━━━🏳️━━━━━━━╯
+╰━━━━━━━📊━━━━━━━╯
 
 ${sottotitolo}
 
@@ -64,13 +70,15 @@ ${sottotitolo}
     if (ordinaPerGiocate) {
       testo += `
 
-*${medaglia} ${i + 1}°* *@${user.jid.split('@')[0]}* • *${formatNumber(user.giocate)} 𝐠𝐢𝐨𝐜𝐚𝐭𝐞*
-*(🏆 ${formatNumber(user.vittorie)} 𝐯𝐢𝐭𝐭𝐨𝐫𝐢𝐞 • 📈 ${percent}%)*`
+*${medaglia} ${i + 1}°* *@${user.jid.split('@')[0]}*
+*🎮 𝐆𝐢𝐨𝐜𝐚𝐭𝐞:* ${formatNumber(user.giocate)} *(𝐯𝐢𝐭𝐭𝐨𝐫𝐢𝐞: ${formatNumber(user.vittorie)})*
+*📈 𝐖𝐢𝐧𝐫𝐚𝐭𝐞:* ${percent}%`
     } else {
       testo += `
 
-*${medaglia} ${i + 1}°* *@${user.jid.split('@')[0]}* • *${formatNumber(user.vittorie)} 𝐯𝐢𝐭𝐭𝐨𝐫𝐢𝐞*
-*(🎮 ${formatNumber(user.giocate)} 𝐠𝐢𝐨𝐜𝐚𝐭𝐞 • 📈 ${percent}%)*`
+*${medaglia} ${i + 1}°* *@${user.jid.split('@')[0]}*
+*🏆 𝐕𝐢𝐭𝐭𝐨𝐫𝐢𝐞:* ${formatNumber(user.vittorie)} *(𝐠𝐢𝐨𝐜𝐚𝐭𝐞: ${formatNumber(user.giocate)})*
+*📈 𝐖𝐢𝐧𝐫𝐚𝐭𝐞:* ${percent}%`
     }
   })
 
@@ -84,8 +92,8 @@ ${sottotitolo}
     text: testo,
     mentions: menzioni,
     buttons: [
-      { buttonId: `${usedPrefix}topbandiera`, buttonText: { displayText: '🏆 𝐎𝐫𝐝𝐢𝐧𝐚 𝐩𝐞𝐫 𝐯𝐢𝐭𝐭𝐨𝐫𝐢𝐞' }, type: 1 },
-      { buttonId: `${usedPrefix}topbandieragiocate`, buttonText: { displayText: '🎮 𝐎𝐫𝐝𝐢𝐧𝐚 𝐩𝐞𝐫 𝐠𝐢𝐨𝐜𝐚𝐭𝐞' }, type: 1 }
+      { buttonId: `${usedPrefix}topbandiera`, buttonText: { displayText: '🏆 𝐎𝐫𝐝𝐢𝐧𝐚 𝐩𝐞𝐫 𝐕𝐢𝐭𝐭𝐨𝐫𝐢𝐞' }, type: 1 },
+      { buttonId: `${usedPrefix}topbandieragiocate`, buttonText: { displayText: '🎮 𝐎𝐫𝐝𝐢𝐧𝐚 𝐩𝐞𝐫 𝐆𝐢𝐨𝐜𝐚𝐭𝐞' }, type: 1 }
     ],
     headerType: 1
   }, { quoted: m })

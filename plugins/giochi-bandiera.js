@@ -163,7 +163,7 @@ async function sendFlagCard(conn, chat, url, caption, quoted) {
         text: caption,
         contextInfo: {
           externalAdReply: {
-            title: '\u200B' ,
+            title: '\u200B',
             mediaType: 1,
             renderLargerThumbnail: false,
             showAdAttribution: false,
@@ -187,7 +187,10 @@ async function sendFlagCard(conn, chat, url, caption, quoted) {
 
 function ensureUser(user) {
   if (typeof user.euro !== 'number') user.euro = 0
+  if (typeof user.bandieraVittorie !== 'number') user.bandieraVittorie = 0
+  if (typeof user.bandieraGiocate !== 'number') user.bandieraGiocate = 0
   if (typeof user.bandieraStreak !== 'number') user.bandieraStreak = 0
+  if (typeof user.bandieraRecord !== 'number') user.bandieraRecord = 0
 }
 
 function addReward(user, coins) {
@@ -304,10 +307,10 @@ ${F}${WM}`
 ┃
 ┃ ⏱️ *𝐓𝐞𝐦𝐩𝐨:* 30𝐬
 ┃ 🎯 *𝐓𝐞𝐧𝐭𝐚𝐭𝐢𝐯𝐢:* ${MAX_TENTATIVI} *𝐩𝐞𝐫 𝐮𝐭𝐞𝐧𝐭𝐞*
-${F}${WM}` ,
+${F}${WM}`,
     m
   )
-  
+
   await delay(1200)
 
   await conn.sendMessage(m.chat, {
@@ -325,28 +328,28 @@ ${F}${WM}` ,
     tentativi: {},
     lastAnswerAt: {},
     startTime: Date.now(),
-timeout: setTimeout(async () => {
-  const game = global.bandieraGame?.[m.chat]
-  if (!game) return
+    timeout: setTimeout(async () => {
+      const game = global.bandieraGame?.[m.chat]
+      if (!game) return
 
-  for (const jid of Object.keys(game.tentativi || {})) {
-    const user = global.db.data.users[jid] || (global.db.data.users[jid] = {})
-    ensureUser(user)
-    user.bandieraGiocate = (user.bandieraGiocate || 0) + 1
-    user.bandieraStreak = 0
-  }
+      for (const jid of Object.keys(game.tentativi || {})) {
+        const user = global.db.data.users[jid] || (global.db.data.users[jid] = {})
+        ensureUser(user)
+        user.bandieraGiocate = (user.bandieraGiocate || 0) + 1
+        user.bandieraStreak = 0
+      }
 
-  await conn.sendMessage(m.chat, {
-    text: `${H}
+      await conn.sendMessage(m.chat, {
+        text: `${H}
 ┃ *⏰ 𝐓𝐄𝐌𝐏𝐎 𝐒𝐂𝐀𝐃𝐔𝐓𝐎*
 ┃
 ┃ *🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚:* ${game.rispostaOriginale}
 ${F}${WM}`,
-    interactiveButtons: playAgainButtons()
-  }, { quoted: sent })
+        interactiveButtons: playAgainButtons()
+      }, { quoted: sent })
 
-  delete global.bandieraGame[m.chat]
-}, GAME_MS) 
+      delete global.bandieraGame[m.chat]
+    }, GAME_MS)
   }
 }
 
@@ -379,12 +382,12 @@ handler.before = async (m, { conn }) => {
     clearTimeout(game.timeout)
 
     user.bandieraStreak = (user.bandieraStreak || 0) + 1
-user.bandieraVittorie = (user.bandieraVittorie || 0) + 1
-user.bandieraGiocate = (user.bandieraGiocate || 0) + 1
+    user.bandieraVittorie = (user.bandieraVittorie || 0) + 1
+    user.bandieraGiocate = (user.bandieraGiocate || 0) + 1
 
-if (!user.bandieraRecord || user.bandieraStreak > user.bandieraRecord) {
-  user.bandieraRecord = user.bandieraStreak
-}
+    if (!user.bandieraRecord || user.bandieraStreak > user.bandieraRecord) {
+      user.bandieraRecord = user.bandieraStreak
+    }
 
     const seconds = Math.floor((Date.now() - game.startTime) / 1000)
     const baseReward = Math.floor(Math.random() * 31) + 20
@@ -426,25 +429,25 @@ ${F}${WM}`,
   const left = MAX_TENTATIVI - game.tentativi[m.sender]
 
   if (left <= 0) {
-  user.bandieraGiocate = (user.bandieraGiocate || 0) + 1
-  user.bandieraStreak = 0
+    user.bandieraGiocate = (user.bandieraGiocate || 0) + 1
+    user.bandieraStreak = 0
 
-  await conn.reply(m.chat, `${H}
+    await conn.reply(m.chat, `${H}
 ┃ *🚫 𝐇𝐚𝐢 𝐟𝐢𝐧𝐢𝐭𝐨 𝐢 𝐭𝐞𝐧𝐭𝐚𝐭𝐢𝐯𝐢*
 ┃
 ┃ *🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚:* ${game.rispostaOriginale}
 ┃ *💥 𝐒𝐭𝐫𝐞𝐚𝐤 𝐚𝐳𝐳𝐞𝐫𝐚𝐭𝐚*
 ${F}${WM}`, m)
 
-  return true
-}
+    return true
+  }
 
-await conn.reply(m.chat, `${H}
+  await conn.reply(m.chat, `${H}
 ┃ *❌ 𝐒𝐛𝐚𝐠𝐥𝐢𝐚𝐭𝐨*
 ┃ *📝 𝐓𝐞𝐧𝐭𝐚𝐭𝐢𝐯𝐢 𝐫𝐢𝐦𝐚𝐬𝐭𝐢:* ${left}
 ${F}${WM}`, m)
 
-return true
+  return true
 }
 
 handler.help = ['bandiera', 'skipbandiera', 'indiziobandiera']
