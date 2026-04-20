@@ -75,7 +75,7 @@ async function controllaRicompensaMessaggi(m, conn) {
 ╭━━━━━━━━━━━━━━⬣
 ┃ *💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢:* *${formatNumber(traguardo)}*
 ┃ *💰 𝐑𝐢𝐜𝐨𝐦𝐩𝐞𝐧𝐬𝐚:* *${formatNumber(premioBase)}€*
-┃ ${evento}: *+${formatNumber(bonus)}€*
+┃ *🎁 𝐁𝐨𝐧𝐮𝐬:* *+${formatNumber(bonus)}€*
 ┃ *🏦 𝐓𝐨𝐭𝐚𝐥𝐞:* *${formatNumber(totale)}€*
 ┃
 ┃ *🚀 𝐂𝐨𝐧𝐭𝐢𝐧𝐮𝐚 𝐚 𝐬𝐜𝐫𝐢𝐯𝐞𝐫𝐞 𝐩𝐞𝐫 𝐬𝐛𝐥𝐨𝐜𝐜𝐚𝐫𝐞 𝐫𝐢𝐜𝐨𝐦𝐩𝐞𝐧𝐬𝐞 𝐬𝐞𝐦𝐩𝐫𝐞 𝐩𝐢ù 𝐚𝐥𝐭𝐞!*
@@ -134,12 +134,12 @@ let handler = async (m, { conn }) => {
   const { traguardo, premioBase } = getMessageRewardData(user)
 
 return m.reply(
-`🏆 *𝐍𝐮𝐨𝐯𝐨 𝐨𝐛𝐢𝐞𝐭𝐭𝐢𝐯𝐨 𝐫𝐚𝐠𝐠𝐢𝐮𝐧𝐭𝐨!*
+`🎉 *𝐍𝐮𝐨𝐯𝐨 𝐨𝐛𝐢𝐞𝐭𝐭𝐢𝐯𝐨 𝐫𝐚𝐠𝐠𝐢𝐮𝐧𝐭𝐨!🥳*
 
 ╭━━━━━━━━━━━━━━⬣
-┃ *📝 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢:* *${formatNumber(traguardo)}*
+┃ *💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢:* *${formatNumber(traguardo)}*
 ┃ *💰 𝐑𝐢𝐜𝐨𝐦𝐩𝐞𝐧𝐬𝐚:* *${formatNumber(premioBase)}€*
-┃ ${evento}: *+${formatNumber(bonus)}€*
+┃ *🎁 𝐁𝐨𝐧𝐮𝐬:* *+${formatNumber(bonus)}€*
 ┃ *🏦 𝐓𝐨𝐭𝐚𝐥𝐞:* *${formatNumber(totale)}€*
 ┃
 ┃ *🚀 𝐂𝐨𝐧𝐭𝐢𝐧𝐮𝐚 𝐚 𝐬𝐜𝐫𝐢𝐯𝐞𝐫𝐞 𝐩𝐞𝐫 𝐬𝐛𝐥𝐨𝐜𝐜𝐚𝐫𝐞 𝐫𝐢𝐜𝐨𝐦𝐩𝐞𝐧𝐬𝐞 𝐬𝐞𝐦𝐩𝐫𝐞 𝐩𝐢ù 𝐚𝐥𝐭𝐞!*
