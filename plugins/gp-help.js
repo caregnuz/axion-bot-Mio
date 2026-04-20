@@ -46,8 +46,6 @@ function isStaffJid(jid, participants = []) {
 
 function getButtonId(m) {
   try {
-    if (m.text) return m.text
-
     const msg = m.message || {}
 
     if (msg.buttonsResponseMessage?.selectedButtonId) {
@@ -67,6 +65,8 @@ function getButtonId(m) {
     if (msg.listResponseMessage?.singleSelectReply?.selectedRowId) {
       return msg.listResponseMessage.singleSelectReply.selectedRowId
     }
+
+    if (m.text) return m.text
   } catch {}
 
   return ''
@@ -139,17 +139,17 @@ let handler = async (m, { conn, text }) => {
 handler.before = async function (m) {
   const txt = getButtonId(m)
 
-  let meta
-  try {
-    meta = await this.groupMetadata(m.chat)
-  } catch {
-    return true
-  }
-
-  const participants = meta.participants || []
-  const isStaff = isStaffJid(m.sender, participants)
-
   if (txt === 'help_risolto') {
+    let meta
+    try {
+      meta = await this.groupMetadata(m.chat)
+    } catch {
+      return true
+    }
+
+    const participants = meta.participants || []
+    const isStaff = isStaffJid(m.sender, participants)
+
     if (!isStaff) {
       await this.sendMessage(m.chat, {
         text: '*⚠️ 𝐒𝐨𝐥𝐨 𝐥𝐨 𝐬𝐭𝐚𝐟𝐟 𝐩𝐮𝐨̀ 𝐟𝐚𝐫𝐥𝐨*'
@@ -207,9 +207,9 @@ handler.before = async function (m) {
   return true
 }
 
-handler.help = ['supporto <motivo>', 'help <motivo>']
+handler.help = ['supporto <motivo>']
 handler.tags = ['group']
-handler.command = /^(supporto|help)$/i
+handler.command = /^(supporto)$/i
 handler.group = true
 
 export default handler
