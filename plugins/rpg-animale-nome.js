@@ -91,7 +91,7 @@ let handler = async (m, { conn, text }) => {
       },
       {
         buttonId: '.gioca',
-        buttonText: { displayText: '🦴' Gioca' },
+        buttonText: { displayText: '🦴 Gioca' },
         type: 1
       }
     ],
