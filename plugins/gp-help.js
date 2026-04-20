@@ -206,7 +206,7 @@ handler.before = async function (m) {
 
 handler.help = ['help <motivo>']
 handler.tags = ['group']
-handler.command = /^(supporto)$/i
+handler.command = /^(support)$/i
 handler.group = true
 
 export default handler
