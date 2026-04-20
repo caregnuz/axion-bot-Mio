@@ -46,7 +46,9 @@ ${body}
   }
 
   const groupMetadata = await conn.groupMetadata(chatId)
-  const groupOwner = groupMetadata.owner || chatId.split('-')[0] + '@s.whatsapp.net'
+  const participants = groupMetadata.participants || []
+  const targetParticipant = participants.find(p => p.id === mentionedJid)
+  const targetIsAdmin = !!targetParticipant?.admin
 
   if (!(isAdmin || isOwner || isROwner)) {
     throw box(
@@ -77,8 +79,8 @@ ${body}
       ? '🤖 𝐍𝐨𝐧 𝐩𝐮𝐨𝐢 𝐰𝐚𝐫𝐧𝐚𝐫𝐞 𝐢𝐥 𝐛𝐨𝐭'
       : protectedOwners.includes(mentionedJid)
         ? '👑 𝐍𝐨𝐧 𝐩𝐮𝐨𝐢 𝐰𝐚𝐫𝐧𝐚𝐫𝐞 𝐃𝐢𝐨'
-        : mentionedJid === groupOwner
-          ? '`*🛡 𝐍𝐨𝐧 𝐩𝐮𝐨𝐢 𝐰𝐚𝐫𝐧𝐚𝐫𝐞 𝐮𝐧 𝐚𝐝𝐦𝐢𝐧*`
+        : targetIsAdmin
+          ? '🛡 𝐍𝐨𝐧 𝐩𝐮𝐨𝐢 𝐰𝐚𝐫𝐧𝐚𝐫𝐞 𝐮𝐧 𝐚𝐝𝐦𝐢𝐧'
           : null
 
   if (protectedReason) {
@@ -97,7 +99,9 @@ ${body}
   if (typeof user.warn !== 'number') user.warn = 0
 
   const tag = '@' + mentionedJid.split('@')[0]
-  const reasonText = reason?.trim() ? reason.trim() : '𝐍𝐞𝐬𝐬𝐮𝐧 𝐦𝐨𝐭𝐢𝐯𝐨 𝐬𝐩𝐞𝐜𝐢𝐟𝐢𝐜𝐚𝐭𝐨'
+  const reasonText = reason?.trim()
+    ? reason.trim()
+    : '𝐍𝐞𝐬𝐬𝐮𝐧 𝐦𝐨𝐭𝐢𝐯𝐨 𝐬𝐩𝐞𝐜𝐢𝐟𝐢𝐜𝐚𝐭𝐨'
 
   if (command === 'warn') {
     user.warn += 1
