@@ -120,7 +120,7 @@ let handler = async (m, { conn, text, command }) => {
     text: msg,
     mentions: [m.sender],
     buttons: [
-      { buttonId: 'help_risolto', buttonText: { displayText: '✅ 𝐑𝐢𝐬𝐨𝐥𝐭𝐨' }, type: 1 }
+      { buttonId: 'helprisolto', buttonText: { displayText: '✅ 𝐑𝐢𝐬𝐨𝐥𝐭𝐨' }, type: 1 }
     ],
     headerType: 1
   }, { quoted: m })
@@ -138,7 +138,7 @@ let handler = async (m, { conn, text, command }) => {
 handler.before = async function (m) {
   const btnId = getButtonId(m)
 
-  if (btnId === 'help_risolto') {
+  if (btnId === 'helprisolto') {
     let meta
     try {
       meta = await this.groupMetadata(m.chat)
