@@ -445,6 +445,7 @@ await conn.reply(m.chat, `${H}
 ${F}${WM}`, m)
 
 return true
+}
 
 handler.help = ['bandiera', 'skipbandiera', 'indiziobandiera']
 handler.tags = ['fun']
