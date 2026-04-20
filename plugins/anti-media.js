@@ -35,7 +35,7 @@ handler.before = async (m, { conn, isAdmin, isBotAdmin, isOwner, isROwner }) => 
   const isBlockedMedia = blockedTypes.includes(type) && !isViewOnce
 
   if (!isBlockedMedia) return false
-  
+
   try {
     await conn.sendMessage(m.chat, {
       delete: m.key
@@ -46,9 +46,7 @@ handler.before = async (m, { conn, isAdmin, isBotAdmin, isOwner, isROwner }) => 
   const warn = user.warn
   const maxWarn = 3
 
-  try {
-    await conn.sendMessage(m.chat, { delete: m.key })
-  } catch {}
+  const mention = `@${m.sender.split('@')[0]}`
 
   const box = (title, body) => `╭━━━━━━━⚠️━━━━━━━╮
 *✦ ${title} ✦*
@@ -64,51 +62,54 @@ ${body}
         await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')
       } catch {}
 
-      await conn.reply(
-        m.chat,
-        box(
-          '𝐀𝐍𝐓𝐈 𝐌𝐄𝐃𝐈𝐀',
-          `
-
-*📸 𝐈𝐧 𝐪𝐮𝐞𝐬𝐭𝐨 𝐠𝐫𝐮𝐩𝐩𝐨 𝐬𝐨𝐧𝐨 𝐩𝐞𝐫𝐦𝐞𝐬𝐬𝐢 𝐬𝐨𝐥𝐨 𝐢 𝐦𝐞𝐝𝐢𝐚 𝐯𝐢𝐞𝐰 𝐨𝐧𝐜𝐞 / 𝐮𝐧𝐚 𝐯𝐢𝐬𝐮𝐚𝐥𝐢𝐳𝐳𝐚𝐳𝐢𝐨𝐧𝐞*
-
-*🚫 𝐇𝐚𝐢 𝐫𝐚𝐠𝐠𝐢𝐮𝐧𝐭𝐨 𝟑/𝟑 𝐰𝐚𝐫𝐧*
-*👢 𝐔𝐭𝐞𝐧𝐭𝐞 𝐫𝐢𝐦𝐨𝐬𝐬𝐨 𝐝𝐚𝐥 𝐠𝐫𝐮𝐩𝐩𝐨*`
-        ),
-        m
-      )
-    } else {
-      await conn.reply(
-        m.chat,
-        box(
+      await conn.sendMessage(m.chat, {
+        text: box(
           '𝐀𝐍𝐓𝐈 𝐌𝐄𝐃𝐈𝐀',
           `*❌ 𝐌𝐞𝐝𝐢𝐚 𝐧𝐨𝐫𝐦𝐚𝐥𝐞 𝐧𝐨𝐧 𝐜𝐨𝐧𝐬𝐞𝐧𝐭𝐢𝐭𝐨*
 
+${mention}
+
 *📸 𝐈𝐧 𝐪𝐮𝐞𝐬𝐭𝐨 𝐠𝐫𝐮𝐩𝐩𝐨 𝐬𝐨𝐧𝐨 𝐩𝐞𝐫𝐦𝐞𝐬𝐬𝐢 𝐬𝐨𝐥𝐨 𝐢 𝐦𝐞𝐝𝐢𝐚 𝐯𝐢𝐞𝐰 𝐨𝐧𝐜𝐞 / 𝐮𝐧𝐚 𝐯𝐢𝐬𝐮𝐚𝐥𝐢𝐳𝐳𝐚𝐳𝐢𝐨𝐧𝐞*
 
-*🚫 𝐇𝐚𝐢 𝐫𝐚𝐠𝐠𝐢𝐮𝐧𝐭𝐨 𝟑/𝟑 𝐰𝐚𝐫𝐧*
-*⚠️ 𝐍𝐨𝐧 𝐩𝐨𝐬𝐬𝐨 𝐫𝐢𝐦𝐮𝐨𝐯𝐞𝐫𝐭𝐢 𝐩𝐞𝐫𝐜𝐡𝐞́ 𝐧𝐨𝐧 𝐬𝐨𝐧𝐨 𝐚𝐝𝐦𝐢𝐧*`
+*⚠️ 𝐇𝐚𝐢 𝐫𝐚𝐠𝐠𝐢𝐮𝐧𝐭𝐨 𝟑/𝟑 𝐰𝐚𝐫𝐧*
+*🚫 𝐔𝐭𝐞𝐧𝐭𝐞 𝐫𝐢𝐦𝐨𝐬𝐬𝐨 𝐝𝐚𝐥 𝐠𝐫𝐮𝐩𝐩𝐨*`
         ),
-        m
-      )
+        mentions: [m.sender]
+      }, { quoted: m })
+    } else {
+      await conn.sendMessage(m.chat, {
+        text: box(
+          '𝐀𝐍𝐓𝐈 𝐌𝐄𝐃𝐈𝐀',
+          `*❌ 𝐌𝐞𝐝𝐢𝐚 𝐧𝐨𝐫𝐦𝐚𝐥𝐞 𝐧𝐨𝐧 𝐜𝐨𝐧𝐬𝐞𝐧𝐭𝐢𝐭𝐨*
+
+${mention}
+
+*📸 𝐈𝐧 𝐪𝐮𝐞𝐬𝐭𝐨 𝐠𝐫𝐮𝐩𝐩𝐨 𝐬𝐨𝐧𝐨 𝐩𝐞𝐫𝐦𝐞𝐬𝐬𝐢 𝐬𝐨𝐥𝐨 𝐢 𝐦𝐞𝐝𝐢𝐚 𝐯𝐢𝐞𝐰 𝐨𝐧𝐜𝐞 / 𝐮𝐧𝐚 𝐯𝐢𝐬𝐮𝐚𝐥𝐢𝐳𝐳𝐚𝐳𝐢𝐨𝐧𝐞*
+
+*⚠️ 𝐇𝐚𝐢 𝐫𝐚𝐠𝐠𝐢𝐮𝐧𝐭𝐨 𝟑/𝟑 𝐰𝐚𝐫𝐧*
+*⛔️ 𝐍𝐨𝐧 𝐩𝐨𝐬𝐬𝐨 𝐫𝐢𝐦𝐮𝐨𝐯𝐞𝐫𝐭𝐢 𝐩𝐞𝐫𝐜𝐡𝐞́ 𝐧𝐨𝐧 𝐬𝐨𝐧𝐨 𝐚𝐝𝐦𝐢𝐧*`
+        ),
+        mentions: [m.sender]
+      }, { quoted: m })
     }
 
     return true
   }
 
-  await conn.reply(
-    m.chat,
-    box(
+  await conn.sendMessage(m.chat, {
+    text: box(
       '𝐀𝐍𝐓𝐈 𝐌𝐄𝐃𝐈𝐀',
       `*❌ 𝐌𝐞𝐝𝐢𝐚 𝐧𝐨𝐫𝐦𝐚𝐥𝐞 𝐧𝐨𝐧 𝐜𝐨𝐧𝐬𝐞𝐧𝐭𝐢𝐭𝐨*
+
+${mention}
 
 *📸 𝐈𝐧 𝐪𝐮𝐞𝐬𝐭𝐨 𝐠𝐫𝐮𝐩𝐩𝐨 𝐬𝐨𝐧𝐨 𝐩𝐞𝐫𝐦𝐞𝐬𝐬𝐢 𝐬𝐨𝐥𝐨 𝐢 𝐦𝐞𝐝𝐢𝐚 𝐯𝐢𝐞𝐰 𝐨𝐧𝐜𝐞 / 𝐮𝐧𝐚 𝐯𝐢𝐬𝐮𝐚𝐥𝐢𝐳𝐳𝐚𝐳𝐢𝐨𝐧𝐞*
 
 *⚠️ 𝐖𝐚𝐫𝐧:* ${warn}/${maxWarn}
-*👢 𝐀𝐥 𝐭𝐞𝐫𝐳𝐨 𝐰𝐚𝐫𝐧 𝐬𝐚𝐫𝐚𝐢 𝐫𝐢𝐦𝐨𝐬𝐬𝐨 𝐝𝐚𝐥 𝐠𝐫𝐮𝐩𝐩𝐨*`
+*‼️ 𝐀𝐥 𝐭𝐞𝐫𝐳𝐨 𝐰𝐚𝐫𝐧 𝐬𝐚𝐫𝐚𝐢 𝐫𝐢𝐦𝐨𝐬𝐬𝐨 𝐝𝐚𝐥 𝐠𝐫𝐮𝐩𝐩𝐨*`
     ),
-    m
-  )
+    mentions: [m.sender]
+  }, { quoted: m })
 
   return true
 }
