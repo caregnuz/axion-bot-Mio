@@ -35,7 +35,6 @@ ${body}
           '𝐈𝐍 𝐂𝐄𝐋𝐋𝐀',
           `*⏳ 𝐓𝐢 𝐫𝐞𝐬𝐭𝐚𝐧𝐨 𝐚𝐧𝐜𝐨𝐫𝐚:* ${minuti} 𝐦𝐢𝐧𝐮𝐭𝐢
 
-*🏃‍♂️ 𝐔𝐬𝐚:* *${usedPrefix}evadi* 𝐩𝐞𝐫 𝐭𝐞𝐧𝐭𝐚𝐫𝐞 𝐥𝐚 𝐟𝐮𝐠𝐚
 *⚖️ 𝐔𝐬𝐚:* *${usedPrefix}cauzione* 𝐩𝐞𝐫 𝐮𝐬𝐜𝐢𝐫𝐞 𝐬𝐮𝐛𝐢𝐭𝐨`
         ),
         m
@@ -86,7 +85,7 @@ ${body}
     )
   }
 
-  if (command === 'evadi') {
+  if (command === 'evadibla') {
     if (!u.isJailed) {
       return m.reply(
         box(
@@ -177,7 +176,7 @@ ${body}
 
   const jailButtons = [
     {
-      buttonId: `${usedPrefix}evadi`,
+      buttonId: `${usedPrefix}evadibla`,
       buttonText: { displayText: '🏃‍♂️ 𝐓𝐞𝐧𝐭𝐚 𝐞𝐯𝐚𝐬𝐢𝐨𝐧𝐞' },
       type: 1
     },
@@ -198,7 +197,7 @@ ${body}
 
 handler.help = ['crimine', 'evadi', 'cauzione']
 handler.tags = ['economy']
-handler.command = /^(crimine|evadi|cauzione)$/i
+handler.command = /^(crimine|evadibla|cauzione)$/i
 
 export default handler
 
