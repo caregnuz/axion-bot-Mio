@@ -180,7 +180,7 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner, usedP
     case 'antitrava':
       requireAdmin()
       chat.antitrava = isEnable
-      result = box('𝐀𝐍𝐓𝐈 𝐓𝐑𝐀𝐕𝐀', `${isEnable ? '✅' : '❌'} 𝐏𝐫𝐨𝐭𝐞𝐳𝐢𝐨𝐧𝐞 𝐜𝐫𝐚𝐬𝐡 ${isEnable ? '𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐚' : '𝐝𝐢𝐬𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐚'}`)
+      result = box('𝐀𝐍𝐓𝐈 𝐓𝐑𝐀𝐕𝐀', `${isEnable ? '✅' : '❌'} 𝐅𝐢𝐥𝐭𝐫𝐨 𝐭𝐞𝐬𝐭𝐨 𝐭𝐫𝐚𝐯𝐚 ${isEnable ? '𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐨' : '𝐝𝐢𝐬𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐨'}`)
       break
 
     default:
@@ -189,22 +189,26 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner, usedP
 
   const thumbnail = getThumbBuffer(thumbFeature)
 
-  return conn.sendMessage(m.chat, {
-    text: result,
-    contextInfo: {
-      ...(global.rcanal?.contextInfo || {}),
-      ...(thumbnail ? {
-        externalAdReply: {
-          title: '𝚫𝐗𝐈𝐎𝐍 • 𝐒𝐘𝐒𝐓𝐄𝐌',
-          body: `Utenza: ${senderName}`,
-          thumbnail,
-          mediaType: 1,
-          renderLargerThumbnail: false,
-          showAdAttribution: false
-        }
-      } : {})
-    }
-  }, { quoted: m })
+  try {
+    return await conn.sendMessage(m.chat, {
+      text: result,
+      contextInfo: {
+        ...(thumbnail ? {
+          externalAdReply: {
+            title: '𝚫𝐗𝐈𝐎𝐍 • 𝐒𝐘𝐒𝐓𝐄𝐌',
+            body: `Utenza: ${senderName}`,
+            thumbnail,
+            mediaType: 1,
+            renderLargerThumbnail: false,
+            showAdAttribution: false
+          }
+        } : {})
+      }
+    }, { quoted: m })
+  } catch (e) {
+    console.error('Errore invio preview funzione:', e)
+    return m.reply(result)
+  }
 }
 
 handler.help = ['attiva <feature>', 'disattiva <feature>']
