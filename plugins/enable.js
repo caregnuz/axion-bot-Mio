@@ -82,6 +82,10 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner, usedP
 *${usedPrefix}1 <funzione>*
 *${usedPrefix}0 <funzione>*
 
+*⚡ 𝐓𝐮𝐭𝐭𝐨 𝐢𝐧 𝐮𝐧𝐨:*
+*${usedPrefix}1 tutte*
+*${usedPrefix}0 tutte*
+
 *🛡️ 𝐒𝐢𝐜𝐮𝐫𝐞𝐳𝐳𝐚:*
 *antilink, antispam, antibot*
 *antiporno, antigore, antitrava*
@@ -213,6 +217,35 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner, usedP
       requireAdmin()
       chat.antitrava = isEnable
       result = box('𝐀𝐍𝐓𝐈 𝐓𝐑𝐀𝐕𝐀', `${isEnable ? '✅' : '❌'} 𝐅𝐢𝐥𝐭𝐫𝐨 𝐭𝐞𝐬𝐭𝐨 𝐭𝐫𝐚𝐯𝐚 ${isEnable ? '𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐨' : '𝐝𝐢𝐬𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐨'}`)
+      break
+
+    case 'tutte':
+    case 'tutti':
+      requireAdmin()
+
+      chat.antiLink = isEnable
+      chat.antiInsta = isEnable
+      chat.antiTelegram = isEnable
+      chat.antiTiktok = isEnable
+      chat.antiTag = isEnable
+      chat.antigore = isEnable
+      chat.antiporno = isEnable
+      chat.antimedia = isEnable
+      chat.modoadmin = isEnable
+      chat.welcome = isEnable
+      chat.goodbye = isEnable
+      chat.antiBot = isEnable
+      chat.antispam = isEnable
+      chat.antitrava = isEnable
+
+      thumbFeature = 'default'
+
+      result = box(
+        '𝐓𝐔𝐓𝐓𝐄 𝐋𝐄 𝐅𝐔𝐍𝐙𝐈𝐎𝐍𝐈',
+        isEnable
+          ? `✅ 𝐓𝐮𝐭𝐭𝐞 𝐥𝐞 𝐟𝐮𝐧𝐳𝐢𝐨𝐧𝐢 𝐝𝐞𝐥 𝐠𝐫𝐮𝐩𝐩𝐨 𝐬𝐨𝐧𝐨 𝐬𝐭𝐚𝐭𝐞 𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐞`
+          : `❌ 𝐓𝐮𝐭𝐭𝐞 𝐥𝐞 𝐟𝐮𝐧𝐳𝐢𝐨𝐧𝐢 𝐝𝐞𝐥 𝐠𝐫𝐮𝐩𝐩𝐨 𝐬𝐨𝐧𝐨 𝐬𝐭𝐚𝐭𝐞 𝐝𝐢𝐬𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐞`
+      )
       break
 
     default:
