@@ -209,7 +209,7 @@ function getSpeedBonus(seconds) {
 function getSpeedLabel(seconds) {
   if (seconds <= 3) return '*⚡ 𝐅𝐮𝐥𝐦𝐢𝐧𝐞𝐨*'
   if (seconds <= 5) return '*🚀 𝐕𝐞𝐥𝐨𝐜𝐢𝐬𝐬𝐢𝐦𝐨*'
-  if (seconds <= 8) return '*🔥 𝐎𝐭𝐭𝐢𝐦𝐚 𝐯𝐞𝐥𝐨𝐜𝐢𝐭𝐚̀*'
+  if (seconds <= 8) return '*🔥 𝐎𝐭𝐭𝐢𝐦𝐚 𝐯𝐞𝐥𝐨𝐜𝐢𝐭à*'
   if (seconds <= 12) return '*⚡ 𝐁𝐮𝐨𝐧𝐚 𝐯𝐞𝐥𝐨𝐜𝐢𝐭à*'
   return '*🧠 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚 𝐜𝐨𝐫𝐫𝐞𝐭𝐭𝐚*'
 }

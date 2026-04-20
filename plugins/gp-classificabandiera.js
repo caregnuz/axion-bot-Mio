@@ -9,8 +9,41 @@ function getPercent(vittorie, giocate) {
   return Math.round((vittorie / giocate) * 100)
 }
 
-function getJid(conn, participant = {}) {
-  return conn.decodeJid?.(participant.id || participant.jid || '') || participant.id || participant.jid || ''
+function normalizeDigits(str = '') {
+  return String(str).replace(/\D/g, '')
+}
+
+function resolveUserFromParticipants(conn, participant = {}) {
+  const rawCandidates = [
+    participant.id,
+    participant.jid,
+    participant.lid
+  ].filter(Boolean)
+
+  const decodedCandidates = rawCandidates
+    .map(v => conn.decodeJid?.(v) || v)
+    .filter(Boolean)
+
+  const allCandidates = [...new Set([...rawCandidates, ...decodedCandidates])]
+  const users = global.db.data.users || {}
+
+  for (const jid of allCandidates) {
+    if (users[jid]) {
+      return { jid, user: users[jid] }
+    }
+  }
+
+  const numbers = [...new Set(allCandidates.map(v => normalizeDigits(v)).filter(Boolean))]
+
+  for (const num of numbers) {
+    const foundKey = Object.keys(users).find(key => normalizeDigits(key) === num)
+    if (foundKey) {
+      return { jid: foundKey, user: users[foundKey] }
+    }
+  }
+
+  const fallbackJid = decodedCandidates[0] || rawCandidates[0] || ''
+  return { jid: fallbackJid, user: {} }
 }
 
 let handler = async (m, { conn, usedPrefix, command }) => {
@@ -22,8 +55,10 @@ let handler = async (m, { conn, usedPrefix, command }) => {
 
   const classifica = participants
     .map(p => {
-      const jid = getJid(conn, p)
-      const user = global.db.data.users?.[jid] || {}
+      const resolved = resolveUserFromParticipants(conn, p)
+      const jid = resolved.jid
+      const user = resolved.user || {}
+
       return {
         jid,
         vittorie: user.bandieraVittorie || 0,
@@ -66,17 +101,18 @@ ${sottotitolo}
   classifica.forEach((user, i) => {
     const medaglia = medaglie[i] || '🏅'
     const percent = getPercent(user.vittorie, user.giocate)
+    const tag = user.jid.split('@')[0]
 
     if (ordinaPerGiocate) {
       testo += `
 
-*${medaglia} ${i + 1}°* *@${user.jid.split('@')[0]}*
+*${medaglia} ${i + 1}°* *@${tag}*
 *🎮 𝐆𝐢𝐨𝐜𝐚𝐭𝐞:* ${formatNumber(user.giocate)} *(𝐯𝐢𝐭𝐭𝐨𝐫𝐢𝐞: ${formatNumber(user.vittorie)})*
 *📈 𝐖𝐢𝐧𝐫𝐚𝐭𝐞:* ${percent}%`
     } else {
       testo += `
 
-*${medaglia} ${i + 1}°* *@${user.jid.split('@')[0]}*
+*${medaglia} ${i + 1}°* *@${tag}*
 *🏆 𝐕𝐢𝐭𝐭𝐨𝐫𝐢𝐞:* ${formatNumber(user.vittorie)} *(𝐠𝐢𝐨𝐜𝐚𝐭𝐞: ${formatNumber(user.giocate)})*
 *📈 𝐖𝐢𝐧𝐫𝐚𝐭𝐞:* ${percent}%`
     }
