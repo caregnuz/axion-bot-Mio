@@ -12,46 +12,6 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner, usedP
   const chat = chats[m.chat]
   const bot = settings[conn.user.jid]
 
-  const thumbs = {
-    antilink: './media/funzioni/antilink.png',
-    antiinsta: './media/funzioni/antiinsta.png',
-    antitelegram: './media/funzioni/antitelegram.png',
-    antitiktok: './media/funzioni/antitiktok.png',
-    antitag: './media/funzioni/antitag.png',
-    antigore: './media/funzioni/antigore.png',
-    antiporno: './media/funzioni/antiporno.png',
-    antiporn: './media/funzioni/antiporno.png',
-    modoadmin: './media/funzioni/modoadmin.png',
-    soloadmin: './media/funzioni/modoadmin.png',
-    benvenuto: './media/funzioni/benvenuto.png',
-    addio: './media/funzioni/addio.png',
-    antiprivato: './media/funzioni/antiprivato.png',
-    antibot: './media/funzioni/antibot.png',
-    antispam: './media/funzioni/antispam.png',
-    antitrava: './media/funzioni/antitrava.png',
-    default: './media/funzioni/default.png'
-  }
-
-  const getThumbBuffer = feature => {
-    try {
-      const file = thumbs[feature] || thumbs.default
-      return fs.readFileSync(file)
-    } catch {
-      try {
-        return fs.readFileSync(thumbs.default)
-      } catch {
-        return null
-      }
-    }
-  }
-
-  let senderName = 'Utente'
-  try {
-    senderName = await conn.getName(m.sender)
-  } catch {
-    senderName = m.pushName || 'Utente'
-  }
-
   const box = (title, desc) => `╭━━━━━━━⚙️━━━━━━━╮
 *✦ ${title} ✦*
 ╰━━━━━━━⚙️━━━━━━━╯
@@ -84,7 +44,6 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner, usedP
 
   let feature = args[0].toLowerCase()
   let result = ''
-  let thumbFeature = feature
 
   const requireAdmin = () => {
     if (m.isGroup && !(isAdmin || isOwner || isROwner)) throw noAdmin
@@ -135,7 +94,6 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner, usedP
     case 'antiporn':
       requireAdmin()
       chat.antiporno = isEnable
-      thumbFeature = 'antiporno'
       result = box('𝐀𝐍𝐓𝐈 𝐏𝐎𝐑𝐍𝐎', `${isEnable ? '✅' : '❌'} 𝐅𝐢𝐥𝐭𝐫𝐨 𝐍𝐒𝐅𝐖 ${isEnable ? '𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐨' : '𝐝𝐢𝐬𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐨'}`)
       break
 
@@ -143,7 +101,6 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner, usedP
     case 'modoadmin':
       requireAdmin()
       chat.modoadmin = isEnable
-      thumbFeature = 'modoadmin'
       result = box('𝐌𝐎𝐃𝐎 𝐀𝐃𝐌𝐈𝐍', `${isEnable ? '✅' : '❌'} 𝐒𝐨𝐥𝐨 𝐠𝐥𝐢 𝐚𝐝𝐦𝐢𝐧 𝐩𝐨𝐬𝐬𝐨𝐧𝐨 𝐮𝐬𝐚𝐫𝐞 𝐢𝐥 𝐛𝐨𝐭`)
       break
 
@@ -187,30 +144,7 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner, usedP
       throw box('𝐅𝐔𝐍𝐙𝐈𝐎𝐍𝐄 𝐒𝐂𝐎𝐍𝐎𝐒𝐂𝐈𝐔𝐓𝐀', '⚠️ 𝐋𝐚 𝐟𝐮𝐧𝐳𝐢𝐨𝐧𝐞 𝐫𝐢𝐜𝐡𝐢𝐞𝐬𝐭𝐚 𝐧𝐨𝐧 è 𝐯𝐚𝐥𝐢𝐝𝐚')
   }
 
-  const thumbBuffer = getThumbBuffer(thumbFeature)
-
-  try {
-    await conn.sendMessage(m.chat, {
-      text: result,
-      contextInfo: {
-        ...(global.rcanal?.contextInfo || {}),
-        ...(thumbBuffer ? {
-          externalAdReply: {
-            title: '𝚫𝐗𝐈𝐎𝐍 • 𝐒𝐘𝐒𝐓𝐄𝐌',
-            body: `Utenza: ${senderName}`,
-            thumbnail: thumbBuffer,
-            sourceUrl: '',
-            mediaType: 1,
-            renderLargerThumbnail: true,
-            showAdAttribution: false
-          }
-        } : {})
-      }
-    }, { quoted: m })
-  } catch (e) {
-    console.error('Errore invio funzione:', e)
-    await m.reply(result)
-  }
+  return m.reply(result)
 }
 
 handler.help = ['attiva <feature>', 'disattiva <feature>']
