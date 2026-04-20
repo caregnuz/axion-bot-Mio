@@ -279,22 +279,11 @@ let handler = async (m) => {
   return m.reply(
 `🎉 *𝐑𝐢𝐜𝐨𝐦𝐩𝐞𝐧𝐬𝐚 𝐆𝐢𝐨𝐫𝐧𝐚𝐥𝐢𝐞𝐫𝐚 𝐑𝐢𝐭𝐢𝐫𝐚𝐭𝐚! 🥳*
 
-╭━━━〔 💰 𝐃𝐀𝐈𝐋𝐘 〕━━━⬣
+━━━〔 💰 𝐃𝐀𝐈𝐋𝐘 〕━━━⬣
 ┃ *💵 𝐁𝐚𝐬𝐞:* *${formatNumber(base)}€*
 ┃ *🔥 𝐁𝐨𝐧𝐮𝐬 𝐒𝐭𝐫𝐞𝐚𝐤:* *+${formatNumber(bonusStreak)}€*
 ┃ *🏦 𝐓𝐨𝐭𝐚𝐥𝐞:* *${formatNumber(reward)}€*
-╰━━━━━━━━━━━━━━━━━━━━⬣
-
-╭━━━〔 📊 𝐒𝐓𝐀𝐓𝐈𝐒𝐓𝐈𝐂𝐇𝐄 〕━━━⬣
-┃ *📅 𝐒𝐭𝐫𝐞𝐚𝐤 𝐚𝐭𝐭𝐮𝐚𝐥𝐞:* *${formatNumber(user.dailyStreak)}*
-┃ *👑 𝐌𝐢𝐠𝐥𝐢𝐨𝐫 𝐬𝐭𝐫𝐞𝐚𝐤:* *${formatNumber(user.maxDailyStreak)}*
-┃ *💼 𝐒𝐚𝐥𝐝𝐨 𝐚𝐭𝐭𝐮𝐚𝐥𝐞:* *${formatNumber(user.euro)}€*
-╰━━━━━━━━━━━━━━━━━━━━⬣
-
-╭━━━〔 🎯 𝐏𝐑𝐎𝐒𝐒𝐈𝐌𝐎 𝐎𝐁𝐈𝐄𝐓𝐓𝐈𝐕𝐎 〕━━━⬣
-┃ *💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢:* *${formatNumber(traguardo)}*
-┃ *💰 𝐑𝐢𝐜𝐨𝐦𝐩𝐞𝐧𝐬𝐚:* *${formatNumber(premioBase)}€*
-╰━━━━━━━━━━━━━━━━━━━━⬣`)
+╰━━━━━━━━━━━━━━━━━━━━⬣)`
 }
 
 handler.before = async function (m, { conn }) {
