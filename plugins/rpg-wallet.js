@@ -23,12 +23,12 @@ let handler = async (m, { conn }) => {
 *💸 𝐃𝐞𝐧𝐚𝐫𝐨:* ${formatNumber(denaro)}
 *🏦 𝐁𝐚𝐧𝐜𝐚:* ${formatNumber(banca)}
 *━━━━━━━━━━━━━━*
-*🧾 𝐓𝐨𝐭𝐚𝐥𝐞:* ${formatNumber(totale)}`
+*💰 𝐓𝐨𝐭𝐚𝐥𝐞:* ${formatNumber(totale)}`
 
     const buttons = [
         {
             buttonId: '.soldi',
-            buttonText: { displayText: '💰 𝐌𝐞𝐧𝐮 𝐒𝐨𝐥𝐝𝐢' },
+            buttonText: { displayText: '💸 𝐌𝐞𝐧𝐮 𝐄𝐜𝐨𝐧𝐨𝐦𝐢𝐚' },
             type: 1
         }
     ]
