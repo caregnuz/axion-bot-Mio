@@ -35,6 +35,12 @@ handler.before = async (m, { conn, isAdmin, isBotAdmin, isOwner, isROwner }) => 
   const isBlockedMedia = blockedTypes.includes(type) && !isViewOnce
 
   if (!isBlockedMedia) return false
+  
+  try {
+    await conn.sendMessage(m.chat, {
+      delete: m.key
+    })
+  } catch {}
 
   user.warn = Number(user.warn || 0) + 1
   const warn = user.warn
@@ -62,7 +68,7 @@ ${body}
         m.chat,
         box(
           '𝐀𝐍𝐓𝐈 𝐌𝐄𝐃𝐈𝐀',
-          `*❌ 𝐌𝐞𝐝𝐢𝐚 𝐧𝐨𝐫𝐦𝐚𝐥𝐞 𝐧𝐨𝐧 𝐜𝐨𝐧𝐬𝐞𝐧𝐭𝐢𝐭𝐨*
+          `
 
 *📸 𝐈𝐧 𝐪𝐮𝐞𝐬𝐭𝐨 𝐠𝐫𝐮𝐩𝐩𝐨 𝐬𝐨𝐧𝐨 𝐩𝐞𝐫𝐦𝐞𝐬𝐬𝐢 𝐬𝐨𝐥𝐨 𝐢 𝐦𝐞𝐝𝐢𝐚 𝐯𝐢𝐞𝐰 𝐨𝐧𝐜𝐞 / 𝐮𝐧𝐚 𝐯𝐢𝐬𝐮𝐚𝐥𝐢𝐳𝐳𝐚𝐳𝐢𝐨𝐧𝐞*
 
