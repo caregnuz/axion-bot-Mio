@@ -1,7 +1,8 @@
-// by Bonzino 
+// by bonzino
 
 const cooldowns = new Map()
 const helpRequests = new Map()
+const pendingReasons = new Map()
 
 const S = v => String(v || '')
 const bare = j => S(j).split('@')[0].split(':')[0]
@@ -120,7 +121,7 @@ let handler = async (m, { conn, text }) => {
     mentions: [m.sender],
     footer: '𝐒𝐞𝐠𝐧𝐚𝐥𝐚𝐳𝐢𝐨𝐧𝐞 𝐫𝐢𝐜𝐞𝐯𝐮𝐭𝐚',
     buttons: [
-      { buttonId: 'help_risolto', buttonText: { displayText: '✅ Risolto' }, type: 1 }
+      { buttonId: 'help_risolto', buttonText: { displayText: '✅ 𝐑𝐢𝐬𝐨𝐥𝐭𝐨' }, type: 1 }
     ],
     headerType: 1
   }, { quoted: m })
@@ -137,9 +138,6 @@ let handler = async (m, { conn, text }) => {
 
 handler.before = async function (m) {
   const txt = getButtonId(m)
-  if (txt !== 'help_risolto') return
-
-  if (!m.isGroup) return true
 
   let meta
   try {
@@ -151,30 +149,59 @@ handler.before = async function (m) {
   const participants = meta.participants || []
   const isStaff = isStaffJid(m.sender, participants)
 
-  if (!isStaff) {
+  // 👉 CLICK RISOLTO
+  if (txt === 'help_risolto') {
+    if (!isStaff) {
+      await this.sendMessage(m.chat, {
+        text: '*⚠️ 𝐒𝐨𝐥𝐨 𝐥𝐨 𝐬𝐭𝐚𝐟𝐟 𝐩𝐮𝐨̀ 𝐟𝐚𝐫𝐥𝐨*'
+      }, { quoted: m })
+      return true
+    }
+
+    const requestId =
+      m.message?.buttonsResponseMessage?.contextInfo?.stanzaId ||
+      m.quoted?.id ||
+      null
+
+    const req = requestId ? helpRequests.get(requestId) : null
+    if (!req) return true
+
+    pendingReasons.set(m.sender, { requestId, ...req })
+
     await this.sendMessage(m.chat, {
-      text: '*⚠️ 𝐒𝐨𝐥𝐨 𝐥𝐨 𝐬𝐭𝐚𝐟𝐟*'
+      text: '*✏️ 𝐒𝐜𝐫𝐢𝐯𝐢 𝐥𝐚 𝐦𝐨𝐭𝐢𝐯𝐚𝐳𝐢𝐨𝐧𝐞 𝐝𝐞𝐥𝐥𝐚 𝐫𝐢𝐬𝐨𝐥𝐮𝐳𝐢𝐨𝐧𝐞:*'
     }, { quoted: m })
+
     return true
   }
 
-  const requestId =
-    m.message?.buttonsResponseMessage?.contextInfo?.stanzaId ||
-    m.quoted?.id ||
-    null
+  // 👉 RICEZIONE MOTIVO
+  if (pendingReasons.has(m.sender)) {
+    const data = pendingReasons.get(m.sender)
+    pendingReasons.delete(m.sender)
+    helpRequests.delete(data.requestId)
 
-  const req = requestId ? helpRequests.get(requestId) : null
-  if (!req) return true
+    const reason = m.text || '𝐍𝐞𝐬𝐬𝐮𝐧𝐚 𝐦𝐨𝐭𝐢𝐯𝐚𝐳𝐢𝐨𝐧𝐞'
 
-  helpRequests.delete(requestId)
-
-  await this.sendMessage(m.chat, {
-    text: `*╭━━━〔 ✅ 𝐑𝐈𝐒𝐎𝐋𝐓𝐎 〕━━━⬣*
+    await this.sendMessage(m.chat, {
+      text: `*╭━━━〔 ✅ 𝐑𝐈𝐒𝐎𝐋𝐓𝐎 〕━━━⬣*
 ┃ *🛡️ 𝐒𝐭𝐚𝐟𝐟:* @${bare(m.sender)}
-┃ *👤 𝐔𝐭𝐞𝐧𝐭𝐞:* @${bare(req.requester)}
+┃ *👤 𝐔𝐭𝐞𝐧𝐭𝐞:* @${bare(data.requester)}
+┃ *📝 𝐌𝐨𝐭𝐢𝐯𝐨:*
+┃ ${reason}
 *╰━━━━━━━━━━━━━━━━⬣*`,
-    mentions: [m.sender, req.requester]
-  }, { quoted: m })
+      mentions: [m.sender, data.requester]
+    }, { quoted: m })
+
+    await this.sendMessage(data.chat, {
+      text: `*✅ 𝐋𝐚 𝐭𝐮𝐚 𝐫𝐢𝐜𝐡𝐢𝐞𝐬𝐭𝐚 𝐞̀ 𝐬𝐭𝐚𝐭𝐚 𝐫𝐢𝐬𝐨𝐥𝐭𝐚*
+👤 @${bare(data.requester)}
+📝 *𝐌𝐨𝐭𝐢𝐯𝐨:* ${reason}`,
+      mentions: [data.requester]
+    })
+
+    return true
+  }
 
   return true
 }
