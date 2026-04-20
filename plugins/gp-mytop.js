@@ -76,7 +76,7 @@ let handler = async (m, { conn, usedPrefix }) => {
 
 handler.help = ['mytop']
 handler.tags = ['group']
-handler.command = /^(mytop|miatop|mymessages|stats|myrank)$/i
+handler.command = /^(mytop|miatop|mymessages|myrank)$/i
 handler.group = true
 
 export default handler
