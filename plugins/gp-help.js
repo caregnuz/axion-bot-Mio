@@ -1,4 +1,4 @@
-// by bonzino
+// by bonzino 
 
 const cooldowns = new Map()
 const helpRequests = new Map()
@@ -22,12 +22,10 @@ function isRealOwner(jid) {
   try {
     const num = bare(jid)
     if (!Array.isArray(global.owner)) return false
-
     const owners = global.owner
       .map(o => Array.isArray(o) ? o[0] : o)
       .map(v => bare(v))
       .filter(Boolean)
-
     return owners.includes(num)
   } catch {
     return false
@@ -47,33 +45,27 @@ function isStaffJid(jid, participants = []) {
 function getButtonId(m) {
   try {
     if (m.text) return m.text
-
     const msg = m.message || {}
-
     if (msg.buttonsResponseMessage?.selectedButtonId) {
       return msg.buttonsResponseMessage.selectedButtonId
     }
-
     if (msg.templateButtonReplyMessage?.selectedId) {
       return msg.templateButtonReplyMessage.selectedId
     }
-
     const native = msg.interactiveResponseMessage?.nativeFlowResponseMessage?.paramsJson
     if (native) {
       const parsed = JSON.parse(native)
       if (parsed?.id) return parsed.id
     }
-
     if (msg.listResponseMessage?.singleSelectReply?.selectedRowId) {
       return msg.listResponseMessage.singleSelectReply.selectedRowId
     }
   } catch {}
-
   return ''
 }
 
 let handler = async (m, { conn, text }) => {
-  if (!m.isGroup) {
+  if (!m.chat.endsWith('@g.us')) {
     return m.reply('*⚠️ 𝐔𝐬𝐚 𝐪𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨 𝐬𝐨𝐥𝐨 𝐢𝐧 𝐮𝐧 𝐠𝐫𝐮𝐩𝐩𝐨*')
   }
 
@@ -90,7 +82,7 @@ let handler = async (m, { conn, text }) => {
   try {
     meta = await conn.groupMetadata(m.chat)
   } catch {
-    return m.reply('*❌ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐧𝐞𝐥 𝐫𝐞𝐜𝐮𝐩𝐞𝐫𝐨 𝐝𝐞𝐥 𝐠𝐫𝐮𝐩𝐩𝐨*')
+    return m.reply('*❌ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐧𝐞𝐥 𝐠𝐫𝐮𝐩𝐩𝐨*')
   }
 
   cooldowns.set(key, now)
@@ -116,15 +108,20 @@ let handler = async (m, { conn, text }) => {
 ┃ ${motivo}
 *╰━━━━━━━━━━━━━━━━⬣*`
 
-  const sent = await conn.sendMessage(supportGroup, {
-    text: msg,
-    mentions: [m.sender],
-    footer: '𝐒𝐞𝐠𝐧𝐚𝐥𝐚𝐳𝐢𝐨𝐧𝐞 𝐫𝐢𝐜𝐞𝐯𝐮𝐭𝐚',
-    buttons: [
-      { buttonId: 'help_risolto', buttonText: { displayText: '✅ 𝐑𝐢𝐬𝐨𝐥𝐭𝐨' }, type: 1 }
-    ],
-    headerType: 1
-  }, { quoted: m })
+  let sent
+  try {
+    sent = await conn.sendMessage(supportGroup, {
+      text: msg,
+      mentions: [m.sender],
+      footer: '𝐒𝐞𝐠𝐧𝐚𝐥𝐚𝐳𝐢𝐨𝐧𝐞 𝐫𝐢𝐜𝐞𝐯𝐮𝐭𝐚',
+      buttons: [
+        { buttonId: 'help_risolto', buttonText: { displayText: '✅ 𝐑𝐢𝐬𝐨𝐥𝐭𝐨' }, type: 1 }
+      ],
+      headerType: 1
+    }, { quoted: m })
+  } catch {
+    return m.reply('*❌ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐢𝐧𝐯𝐢𝐨 𝐚𝐥 𝐠𝐫𝐮𝐩𝐩𝐨 𝐬𝐭𝐚𝐟𝐟*')
+  }
 
   const requestId = sent?.key?.id || `${m.chat}:${m.sender}:${Date.now()}`
   helpRequests.set(requestId, {
@@ -168,7 +165,7 @@ handler.before = async function (m) {
     pendingReasons.set(m.sender, { requestId, ...req })
 
     await this.sendMessage(m.chat, {
-      text: '*✏️ 𝐒𝐜𝐫𝐢𝐯𝐢 𝐥𝐚 𝐦𝐨𝐭𝐢𝐯𝐚𝐳𝐢𝐨𝐧𝐞 𝐝𝐞𝐥𝐥𝐚 𝐫𝐢𝐬𝐨𝐥𝐮𝐳𝐢𝐨𝐧𝐞:*'
+      text: '*✏️ 𝐒𝐜𝐫𝐢𝐯𝐢 𝐥𝐚 𝐦𝐨𝐭𝐢𝐯𝐚𝐳𝐢𝐨𝐧𝐞:*'
     }, { quoted: m })
 
     return true
@@ -204,7 +201,7 @@ handler.before = async function (m) {
   return true
 }
 
-handler.help = ['help <motivo>']
+handler.help = ['supporto <motivo>']
 handler.tags = ['group']
 handler.command = /^(supporto)$/i
 handler.group = true
