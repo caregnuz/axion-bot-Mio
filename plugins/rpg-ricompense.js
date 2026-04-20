@@ -73,7 +73,7 @@ async function controllaRicompensaMessaggi(m, conn) {
 `🏆 *𝐍𝐮𝐨𝐯𝐨 𝐨𝐛𝐢𝐞𝐭𝐭𝐢𝐯𝐨 𝐫𝐚𝐠𝐠𝐢𝐮𝐧𝐭𝐨!*
 
 ╭━━━━━━━━━━━━━━⬣
-┃ *📝 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢:* *${formatNumber(traguardo)}*
+┃ *💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢:* *${formatNumber(traguardo)}*
 ┃ *💰 𝐑𝐢𝐜𝐨𝐦𝐩𝐞𝐧𝐬𝐚:* *${formatNumber(premioBase)}€*
 ┃ ${evento}: *+${formatNumber(bonus)}€*
 ┃ *🏦 𝐓𝐨𝐭𝐚𝐥𝐞:* *${formatNumber(totale)}€*
