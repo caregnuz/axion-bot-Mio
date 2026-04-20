@@ -438,13 +438,13 @@ ${F}${WM}`, m)
 
   return true
 }
-  }
 
-  await conn.reply(m.chat, `${H}
+await conn.reply(m.chat, `${H}
 ┃ *❌ 𝐒𝐛𝐚𝐠𝐥𝐢𝐚𝐭𝐨*
 ┃ *📝 𝐓𝐞𝐧𝐭𝐚𝐭𝐢𝐯𝐢 𝐫𝐢𝐦𝐚𝐬𝐭𝐢:* ${left}
 ${F}${WM}`, m)
-  return true
+
+return true
 
 handler.help = ['bandiera', 'skipbandiera', 'indiziobandiera']
 handler.tags = ['fun']
