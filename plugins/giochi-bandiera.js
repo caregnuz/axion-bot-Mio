@@ -325,21 +325,28 @@ ${F}${WM}` ,
     tentativi: {},
     lastAnswerAt: {},
     startTime: Date.now(),
-    timeout: setTimeout(async () => {
-      const game = global.bandieraGame?.[m.chat]
-      if (!game) return
+timeout: setTimeout(async () => {
+  const game = global.bandieraGame?.[m.chat]
+  if (!game) return
 
-      await conn.sendMessage(m.chat, {
-        text: `${H}
+  for (const jid of Object.keys(game.tentativi || {})) {
+    const user = global.db.data.users[jid] || (global.db.data.users[jid] = {})
+    ensureUser(user)
+    user.bandieraGiocate = (user.bandieraGiocate || 0) + 1
+    user.bandieraStreak = 0
+  }
+
+  await conn.sendMessage(m.chat, {
+    text: `${H}
 ┃ *⏰ 𝐓𝐄𝐌𝐏𝐎 𝐒𝐂𝐀𝐃𝐔𝐓𝐎*
 ┃
 ┃ *🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚:* ${game.rispostaOriginale}
 ${F}${WM}`,
-        interactiveButtons: playAgainButtons()
-      },  { quoted: sent })
+    interactiveButtons: playAgainButtons()
+  }, { quoted: sent })
 
-      delete global.bandieraGame[m.chat]
-    }, GAME_MS) 
+  delete global.bandieraGame[m.chat]
+}, GAME_MS) 
   }
 }
 
@@ -371,7 +378,13 @@ handler.before = async (m, { conn }) => {
   if (isCorrect) {
     clearTimeout(game.timeout)
 
-    user.bandieraStreak += 1
+    user.bandieraStreak = (user.bandieraStreak || 0) + 1
+user.bandieraVittorie = (user.bandieraVittorie || 0) + 1
+user.bandieraGiocate = (user.bandieraGiocate || 0) + 1
+
+if (!user.bandieraRecord || user.bandieraStreak > user.bandieraRecord) {
+  user.bandieraRecord = user.bandieraStreak
+}
 
     const seconds = Math.floor((Date.now() - game.startTime) / 1000)
     const baseReward = Math.floor(Math.random() * 31) + 20
@@ -413,17 +426,18 @@ ${F}${WM}`,
   const left = MAX_TENTATIVI - game.tentativi[m.sender]
 
   if (left <= 0) {
-    user.bandieraStreak = 0
+  user.bandieraGiocate = (user.bandieraGiocate || 0) + 1
+  user.bandieraStreak = 0
 
-    await conn.reply(m.chat, `${H}
+  await conn.reply(m.chat, `${H}
 ┃ *🚫 𝐇𝐚𝐢 𝐟𝐢𝐧𝐢𝐭𝐨 𝐢 𝐭𝐞𝐧𝐭𝐚𝐭𝐢𝐯𝐢*
 ┃
 ┃ *🏳️ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚:* ${game.rispostaOriginale}
 ┃ *💥 𝐒𝐭𝐫𝐞𝐚𝐤 𝐚𝐳𝐳𝐞𝐫𝐚𝐭𝐚*
 ${F}${WM}`, m)
 
-    delete global.bandieraGame[m.chat]
-    return true
+  return true
+}
   }
 
   await conn.reply(m.chat, `${H}
