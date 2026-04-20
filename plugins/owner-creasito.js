@@ -1,6 +1,5 @@
 import fs from 'fs'
-import axios from 'axios'
-import FormData from 'form-data'
+import { uploadFile } from '../lib/uploadFile.js' // Assicurati che questo path sia corretto per il tuo bot
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
     if (!text) return m.reply(`*⚠️ Formato richiesto:*
@@ -64,35 +63,33 @@ ${usedPrefix + command} Descrizione | Link GitHub`)
     fs.writeFileSync(path, htmlContent)
 
     try {
-        // Caricamento su Catbox (Link che non scade)
-        const fd = new FormData()
-        fd.append('reqtype', 'fileupload')
-        fd.append('fileToUpload', fs.createReadStream(path))
-
-        const response = await axios.post('https://catbox.moe/user/api.php', fd, {
-            headers: fd.getHeaders()
-        })
-
-        const eternalLink = response.data
+        // Utilizziamo la funzione di upload interna del bot (solitamente Telegra.ph)
+        // che è molto più stabile per file HTML
+        const media = fs.readFileSync(path)
+        const eternalLink = await uploadFile(media)
 
         let linkMsg = `🛸 *𝛥𝐗𝐈𝚶𝐍 𝐄𝐓𝐄𝐑𝐍𝐀𝐋 𝐏𝐎𝐑𝐓𝐀𝐋*\n\n`
         linkMsg += `🌐 *Link Sito:* ${eternalLink}\n`
-        linkMsg += `♾️ *Durata:* Permanente (Sito Attivo Sempre)\n`
+        linkMsg += `♾️ *Durata:* Permanente\n`
         linkMsg += `🛡️ *Privilegi:* Solo Owner\n\n`
-        linkMsg += `Ho allegato il file index.html se desideri caricarlo su GitHub Pages.`
+        linkMsg += `Ti ho inviato anche il file fisico qui sotto.`
 
         await conn.sendMessage(m.chat, { text: linkMsg }, { quoted: m })
         
         await conn.sendMessage(m.chat, { 
-            document: fs.readFileSync(path), 
+            document: media, 
             fileName: `index.html`, 
             mimetype: 'text/html'
         }, { quoted: m })
 
     } catch (e) {
         console.error(e)
-        m.reply('❌ Errore nel caricamento online. Ti invio il file manualmente.')
-        await conn.sendMessage(m.chat, { document: fs.readFileSync(path), fileName: `index.html`, mimetype: 'text/html' }, { quoted: m })
+        m.reply('❌ Errore nel caricamento online (Status 412/Upload Failed). Ti invio il file index.html manualmente.')
+        await conn.sendMessage(m.chat, { 
+            document: fs.readFileSync(path), 
+            fileName: `index.html`, 
+            mimetype: 'text/html' 
+        }, { quoted: m })
     }
 
     if (fs.existsSync(path)) fs.unlinkSync(path)
