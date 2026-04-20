@@ -10,15 +10,14 @@ ${body}
 
 > *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
 
-  const getProtectedUsers = () => {
-    const owners = (global.owner || []).map(v => {
+  const getProtectedOwners = () => {
+    return (global.owner || []).map(v => {
       const number = Array.isArray(v) ? v[0] : v
       return String(number).replace(/[^0-9]/g, '') + '@s.whatsapp.net'
     })
-    return [...owners, botNumber]
   }
 
-  const protectedUsers = getProtectedUsers()
+  const protectedOwners = getProtectedOwners()
 
   let mentionedJid = m.mentionedJid?.[0] || m.quoted?.sender
   let reason = ''
@@ -73,14 +72,20 @@ ${body}
     )
   }
 
-  if (
-    mentionedJid === groupOwner ||
-    protectedUsers.includes(mentionedJid)
-  ) {
+  const protectedReason =
+    mentionedJid === botNumber
+      ? '🤖 𝐍𝐨𝐧 𝐩𝐮𝐨𝐢 𝐰𝐚𝐫𝐧𝐚𝐫𝐞 𝐢𝐥 𝐛𝐨𝐭'
+      : protectedOwners.includes(mentionedJid)
+        ? '👑 𝐍𝐨𝐧 𝐩𝐮𝐨𝐢 𝐰𝐚𝐫𝐧𝐚𝐫𝐞 𝐃𝐢𝐨'
+        : mentionedJid === groupOwner
+          ? '`*🛡 𝐍𝐨𝐧 𝐩𝐮𝐨𝐢 𝐰𝐚𝐫𝐧𝐚𝐫𝐞 𝐮𝐧 𝐚𝐝𝐦𝐢𝐧*`
+          : null
+
+  if (protectedReason) {
     throw box(
       '👑',
       '𝐀𝐙𝐈𝐎𝐍𝐄 𝐍𝐄𝐆𝐀𝐓𝐀',
-      `*🚫 𝐐𝐮𝐞𝐬𝐭𝐨 𝐮𝐭𝐞𝐧𝐭𝐞 è 𝐢𝐧𝐭𝐨𝐜𝐜𝐚𝐛𝐢𝐥𝐞.*`
+      `*${protectedReason}*`
     )
   }
 
@@ -110,7 +115,7 @@ ${body}
           '🚨',
           '𝐔𝐓𝐄𝐍𝐓𝐄 𝐄𝐒𝐏𝐔𝐋𝐒𝐎',
           `*👤 𝐔𝐭𝐞𝐧𝐭𝐞:* ${tag}
-*📉 𝐌𝐨𝐭𝐢𝐯𝐨:* ${reasonText}
+*❓️ 𝐌𝐨𝐭𝐢𝐯𝐨:* ${reasonText}
 *📊 𝐖𝐚𝐫𝐧:* 𝟑/𝟑
 
 *🚫 𝐋’𝐮𝐭𝐞𝐧𝐭𝐞 è 𝐬𝐭𝐚𝐭𝐨 𝐫𝐢𝐦𝐨𝐬𝐬𝐨 𝐝𝐚𝐥 𝐠𝐫𝐮𝐩𝐩𝐨*`
@@ -124,7 +129,7 @@ ${body}
         '⚠️',
         '𝐖𝐀𝐑𝐍',
         `*👤 𝐔𝐭𝐞𝐧𝐭𝐞:* ${tag}
-*📉 𝐌𝐨𝐭𝐢𝐯𝐨:* ${reasonText}
+*❓️ 𝐌𝐨𝐭𝐢𝐯𝐨:* ${reasonText}
 *📊 𝐒𝐭𝐚𝐭𝐨:* ${user.warn}/𝟑 𝐰𝐚𝐫𝐧
 
 *⚠️ 𝐀𝐥 𝐭𝐞𝐫𝐳𝐨 𝐰𝐚𝐫𝐧 𝐥’𝐮𝐭𝐞𝐧𝐭𝐞 𝐯𝐞𝐫𝐫à 𝐫𝐢𝐦𝐨𝐬𝐬𝐨 𝐝𝐚𝐥 𝐠𝐫𝐮𝐩𝐩𝐨*`
