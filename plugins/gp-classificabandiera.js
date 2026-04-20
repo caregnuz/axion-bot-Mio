@@ -12,28 +12,29 @@ function getPercent(vittorie, giocate) {
 let handler = async (m, { conn, usedPrefix, command }) => {
   if (!m.isGroup) return m.reply('*⚠️ 𝐒𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢*')
 
-  const chat = global.db.data.chats?.[m.chat] || {}
-  const utentiGruppo = chat.users || {}
-  const ordinaPerGiocate = /^topbandieragiocate$/i.test(command)
+const ordinaPerGiocate = /^topbandieragiocate$/i.test(command)
 
-  const classifica = Object.keys(utentiGruppo)
-    .map(jid => {
-      const user = global.db.data.users?.[jid] || {}
-      return {
-        jid,
-        vittorie: user.bandieraVittorie || 0,
-        giocate: user.bandieraGiocate || 0
-      }
-    })
-    .filter(user => user.vittorie > 0 || user.giocate > 0)
-    .sort((a, b) => {
-      if (ordinaPerGiocate) {
-        return (b.giocate - a.giocate) || (b.vittorie - a.vittorie)
-      }
-      return (b.vittorie - a.vittorie) || (b.giocate - a.giocate)
-    })
-    .slice(0, 10)
+const metadata = await conn.groupMetadata(m.chat)
+const participants = metadata?.participants || []
 
+const classifica = participants
+  .map(p => {
+    const jid = p.id || p.jid
+    const user = global.db.data.users?.[jid] || {}
+    return {
+      jid,
+      vittorie: user.bandieraVittorie || 0,
+      giocate: user.bandieraGiocate || 0
+    }
+  })
+  .filter(user => user.vittorie > 0 || user.giocate > 0)
+  .sort((a, b) => {
+    if (ordinaPerGiocate) {
+      return (b.giocate - a.giocate) || (b.vittorie - a.vittorie)
+    }
+    return (b.vittorie - a.vittorie) || (b.giocate - a.giocate)
+  })
+  .slice(0, 10)
   if (!classifica.length) {
     return m.reply(`╭━━━━━━━🏳️━━━━━━━╮
 *✦ 𝐓𝐎𝐏 𝐁𝐀𝐍𝐃𝐈𝐄𝐑𝐀 ✦*
