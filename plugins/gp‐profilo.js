@@ -17,6 +17,7 @@ let handler = async (m, { conn }) => {
 
   const oggiCount = chat?.classificaGiornaliera?.utenti?.[target]?.conteggio || 0
   const totalMessages = user.messages || 0
+  const totalCommands = user.commandCount || 0
 
   const nome = await conn.getName(target)
   const monete = user.euro || 0
@@ -49,6 +50,7 @@ let handler = async (m, { conn }) => {
 *⬆️ 𝐏𝐫𝐨𝐬𝐬𝐢𝐦𝐨:* ${lvl.isMax ? '*𝐌𝐀𝐗*' : `${lvl.nextName} (${lvl.remaining} msg)`}
 *💸 𝐃𝐞𝐧𝐚𝐫𝐨:* ${monete}
 *🎁 𝐒𝐭𝐫𝐞𝐚𝐤 𝐃𝐚𝐢𝐥𝐲:* ${dailyStreak} 𝐠𝐢𝐨𝐫𝐧𝐢
+*🕹 𝐂𝐨𝐦𝐚𝐧𝐝𝐢 𝐔𝐬𝐚𝐭𝐢:* ${totalCommands}
 *📸 𝐈𝐧𝐬𝐭𝐚𝐠𝐫𝐚𝐦:* ${instagram}
 
 > *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
