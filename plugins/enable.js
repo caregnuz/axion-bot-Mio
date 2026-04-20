@@ -210,13 +210,13 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner, usedP
       contextInfo: {
         ...(global.rcanal?.contextInfo || {}),
         externalAdReply: {
-          title: '𝚫𝐗𝐈𝐎𝐍 • 𝐒𝐘𝐒𝐓𝐄𝐌',
-          body: `Utenza: ${senderName}`,
-          ...(thumbnail ? { thumbnail } : {}),
-          mediaType: 1,
-          renderLargerThumbnail: false,
-          showAdAttribution: false
-        }
+  title: `𝚫𝐗𝐈𝐎𝐍 • ${feature.toUpperCase()}`,
+  body: `Utenza: ${senderName}`,
+  ...(thumbnail ? { thumbnail } : {}),
+  mediaType: 1,
+  renderLargerThumbnail: true,
+  showAdAttribution: false
+}
       }
     }, { quoted: m })
   } catch (e) {
