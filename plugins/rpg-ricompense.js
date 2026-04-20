@@ -283,7 +283,7 @@ let handler = async (m) => {
 ┃ *💵 𝐁𝐚𝐬𝐞:* *${formatNumber(base)}€*
 ┃ *🔥 𝐁𝐨𝐧𝐮𝐬 𝐒𝐭𝐫𝐞𝐚𝐤:* *+${formatNumber(bonusStreak)}€*
 ┃ *🏦 𝐓𝐨𝐭𝐚𝐥𝐞:* *${formatNumber(reward)}€*
-╰━━━━━━━━━━━━━━━━━━━━⬣)`
+╰━━━━━━━━━━━━━━━━━━━━⬣`)
 }
 
 handler.before = async function (m, { conn }) {
