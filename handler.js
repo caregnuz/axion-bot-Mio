@@ -271,49 +271,57 @@ export async function handler(chatUpdate) {
     this.pushMessage(chatUpdate.messages).catch(console.error)
     let m = chatUpdate.messages[chatUpdate.messages.length - 1]
     if (!m) return
-if (m.message?.protocolMessage?.type === 'MESSAGE_EDIT') {
-    const key = m.message.protocolMessage.key;
-    const editedMessage = m.message.protocolMessage.editedMessage;
-    m.key = key;
-    m.message = editedMessage;
-    m.text = editedMessage.conversation || editedMessage.extendedTextMessage?.text || '';
-    m.mtype = Object.keys(editedMessage)[0];
-    console.log(`[EDIT] Messaggio ${key.id} modificato in ${key.remoteJid}`);
-}
-m = smsg(this, m, global.store)
-if (!m || !m.key || !m.chat || !m.sender) return
 
-if (m.isGroup && (m.messageStubType === 29 || m.messageStubType === 30)) {
-    try {
-        const action = m.messageStubType === 29 ? 'promote' : 'demote'
-        const sender = this.decodeJid(m.sender || m.key?.participant || m.key?.remoteJid)
-        const users = (m.messageStubParameters || []).map(u => this.decodeJid(u)).filter(Boolean)
-        console.log('STUB AUTO ROLE', {
-    stub: m.messageStubType,
-    action,
-    sender,
-    users,
-    fromMe: m.fromMe,
-    chat: m.chat
-})
-
-        if (sender && users.length && global.sendRoleChangeMessage) {
-            if (!global.isRecentRoleAction?.(m.chat, action, users)) {
-                await global.sendRoleChangeMessage(
-                    this,
-                    m.chat,
-                    sender,
-                    users,
-                    action,
-                    m
-                )
-            }
-        }
-    } catch (e) {
-        console.error('[ERRORE] Errore gestione automatica promote/demote da messageStub:', e)
+    if (m.message?.protocolMessage?.type === 'MESSAGE_EDIT') {
+        const key = m.message.protocolMessage.key;
+        const editedMessage = m.message.protocolMessage.editedMessage;
+        m.key = key;
+        m.message = editedMessage;
+        m.text = editedMessage.conversation || editedMessage.extendedTextMessage?.text || '';
+        m.mtype = Object.keys(editedMessage)[0];
+        console.log(`[EDIT] Messaggio ${key.id} modificato in ${key.remoteJid}`);
     }
-}
 
+    const rawMsg = m
+    const rawChat = this.decodeJid(rawMsg?.key?.remoteJid || '')
+    const rawSender = this.decodeJid(rawMsg?.key?.participant || rawMsg?.key?.remoteJid || '')
+    const rawStubType = rawMsg?.messageStubType
+    const rawStubUsers = (rawMsg?.messageStubParameters || []).map(u => this.decodeJid(u)).filter(Boolean)
+
+    if (
+        rawChat?.endsWith('@g.us') &&
+        (rawStubType === 29 || rawStubType === 30)
+    ) {
+        try {
+            const action = rawStubType === 29 ? 'promote' : 'demote'
+
+            console.log('RAW STUB AUTO ROLE', {
+                stub: rawStubType,
+                action,
+                sender: rawSender,
+                users: rawStubUsers,
+                chat: rawChat
+            })
+
+            if (rawSender && rawStubUsers.length && global.sendRoleChangeMessage) {
+                if (!global.isRecentRoleAction?.(rawChat, action, rawStubUsers)) {
+                    await global.sendRoleChangeMessage(
+                        this,
+                        rawChat,
+                        rawSender,
+                        rawStubUsers,
+                        action
+                    )
+                }
+            }
+        } catch (e) {
+            console.error('[ERRORE] Errore gestione automatica promote/demote da rawStub:', e)
+        }
+    }
+
+    m = smsg(this, m, global.store)
+    if (!m || !m.key || !m.chat || !m.sender) return
+    
 if (m.fromMe) return
 if (m.key.participant && m.key.participant.includes(':') && m.key.participant.split(':')[1]?.includes('@')) return(m.key) {
         m.key.remoteJid = this.decodeJid(m.key.remoteJid)
