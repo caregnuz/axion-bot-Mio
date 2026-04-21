@@ -49,7 +49,7 @@ handler.before = async (m, { conn, isAdmin, isBotAdmin, isOwner, isROwner }) => 
   const mention = `@${m.sender.split('@')[0]}`
 
   const box = (title, body) => `╭━━━━━━━⚠️━━━━━━━╮
-*✦ ${title} ✦*
+✦ ${title} ✦
 ╰━━━━━━━⚠️━━━━━━━╯
 
 ${body}
