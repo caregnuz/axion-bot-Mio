@@ -24,7 +24,7 @@ function getCooldownKey(chat, sender) {
   return `${chat}:${sender}`
 }
 
-function canWarn(chat, sender, ms = 4000) {
+function canWarn(chat, sender, ms = 10000) {
   const key = getCooldownKey(chat, sender)
   const now = Date.now()
   const last = adminWarnCooldown.get(key) || 0
@@ -71,9 +71,11 @@ handler.before = async function (m, { isAdmin, isBotAdmin, isOwner, isROwner }) 
     await this.sendMessage(m.chat, {
       text: box(
         '𝐌𝐎𝐃𝐎 𝐀𝐃𝐌𝐈𝐍',
-        `❌ @${m.sender.split('@')[0]} 𝐧𝐨𝐧 𝐩𝐮𝐨̀ 𝐮𝐬𝐚𝐫𝐞 𝐪𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨
+        `❌ *@${m.sender.split('@')[0]} 𝐧𝐨𝐧 𝐩𝐮𝐨̀ 𝐮𝐬𝐚𝐫𝐞 𝐪𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨*
 
-✅ 𝐈𝐧 𝐪𝐮𝐞𝐬𝐭𝐨 𝐠𝐫𝐮𝐩𝐩𝐨 𝐬𝐨𝐥𝐨 𝐠𝐥𝐢 𝐚𝐝𝐦𝐢𝐧 𝐩𝐨𝐬𝐬𝐨𝐧𝐨 𝐮𝐬𝐚𝐫𝐞 𝐢 𝐜𝐨𝐦𝐚𝐧𝐝𝐢`
+*✅ 𝐈𝐧 𝐪𝐮𝐞𝐬𝐭𝐨 𝐠𝐫𝐮𝐩𝐩𝐨 𝐬𝐨𝐥𝐨 𝐠𝐥𝐢 𝐚𝐝𝐦𝐢𝐧 𝐩𝐨𝐬𝐬𝐨𝐧𝐨 𝐮𝐬𝐚𝐫𝐞 𝐢 𝐜𝐨𝐦𝐚𝐧𝐝𝐢*
+
+*⏳ 𝐑𝐢𝐩𝐫𝐨𝐯𝐚 𝐩𝐢𝐮̀ 𝐭𝐚𝐫𝐝𝐢.*`
       ),
       mentions: [m.sender]
     }, { quoted: m })

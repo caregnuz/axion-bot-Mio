@@ -1,45 +1,48 @@
-let handler = async (m, { conn, command, usedPrefix }) => {
-    let staff = `
-⋆｡˚✦『 𝐒𝐓𝐀𝐅𝐅 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 』✦˚｡⋆
+let handler = async (m, { conn }) => {
+    let staff = `*⋆｡˚✦『 𝐒𝐓𝐀𝐅𝐅 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 』✦˚｡⋆*
 
-╭───────────────╮
-│ 🤖 Bot: ${global.nomebot}
-│ 🆚 Versione: ${global.versione}
-╰───────────────╯
+*╭───────────────╮*
+*│ 🤖 𝐁𝐨𝐭:* ${global.nomebot}
+*│ 🆚 𝐕𝐞𝐫𝐬𝐢𝐨𝐧𝐞:* ${global.versione}
+*╰───────────────╯*
 
-╭─── 👑 *_CREATORE_* ───╮
-│ ✦ Nome: Deadly
-│ ✦ Ruolo: Creatore / Dev
-│ ✦ Contatto: @212778494602
-╰────────────────────╯
+*╭─── 👑 𝐂𝐑𝐄𝐀𝐓𝐎𝐑𝐄 ───╮*
+*│ ✦ 𝐍𝐨𝐦𝐞:* Deadly
+*│ ✦ 𝐑𝐮𝐨𝐥𝐨:* Creatore / Dev
+*│ ✦ 𝐂𝐨𝐧𝐭𝐚𝐭𝐭𝐨:* @212778494602
+*╰────────────────────╯*
 
-╭─── 🛡️ *_STAFF_* ───╮
-│ ✦ Luxifer
-│   ├ Ruolo: *Staffer*
-│   └ Contatto: @212781816909
-│
-│ ✦ Bonzino
-│   ├ Ruolo: *Staffer*
-│   └ Contatto: @639350468907
-╰────────────────────╯
+*╭─── 🛡️ 𝐒𝐓𝐀𝐅𝐅 ───╮*
+*│ ✦ 𝐋𝐮𝐱𝐢𝐟𝐞𝐫*
+*│   ├ 𝐑𝐮𝐨𝐥𝐨:* Staffer
+*│   └ 𝐂𝐨𝐧𝐭𝐚𝐭𝐭𝐨:* @212781816909
+*│*
+*│ ✦ 𝐁𝐨𝐧𝐳𝐢𝐧𝐨*
+*│   ├ 𝐑𝐮𝐨𝐥𝐨:* Staffer
+*│   └ 𝐂𝐨𝐧𝐭𝐚𝐭𝐭𝐨:* @639350468907
+*╰────────────────────╯*
 
-╭─── 📌 INFO UTILI ───╮
-│ ✦ GitHub: github.com/axion-bot
-│ ✦ Supporto: @+393509594333
-╰────────────────────╯
+*╭─── 📌 𝐈𝐍𝐅𝐎 𝐔𝐓𝐈𝐋𝐈 ───╮*
+*│ ✦ 𝐆𝐢𝐭𝐇𝐮𝐛:* github.com/axion-bot
+*│ ✦ 𝐒𝐮𝐩𝐩𝐨𝐫𝐭𝐨:* @393509594333
+*╰────────────────────╯*
 
-⋆｡˚✦ 𝛥𝐗𝐈𝚶𝐍 𝐁𝐎𝐓 ✦˚｡⋆`;
+> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
 
     await conn.reply(
-        m.chat, 
-        staff.trim(), 
-        m, 
-        { 
+        m.chat,
+        staff.trim(),
+        m,
+        {
             contextInfo: {
-                mentionedJid: ['212778494602@s.whatsapp.net', '212781816909@s.whatsapp.net', '639350468907@s.whatsapp.net']
+                mentionedJid: [
+                    '212778494602@s.whatsapp.net',
+                    '212781816909@s.whatsapp.net',
+                    '639350468907@s.whatsapp.net'
+                ]
             }
         }
-    );
+    )
 
     await conn.sendMessage(m.chat, {
         contacts: {
@@ -70,13 +73,13 @@ END:VCARD`
                 }
             ]
         }
-    }, { quoted: m });
+    }, { quoted: m })
 
-    m.react('👑');
-};
+    m.react('👑')
+}
 
-handler.help = ['staff'];
-handler.tags = ['main'];
-handler.command = ['staff', 'moderatori', 'collaboratori'];
+handler.help = ['staff']
+handler.tags = ['main']
+handler.command = ['staff', 'moderatori', 'collaboratori']
 
-export default handler;
+export default handler

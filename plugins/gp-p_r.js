@@ -128,9 +128,6 @@ var handler = async (m, { conn, text, command }) => {
 
 *⛔️ 𝐍𝐨𝐧 𝐩𝐮𝐨𝐢 𝐫𝐞𝐭𝐫𝐨𝐜𝐞𝐝𝐞𝐫𝐞 𝐮𝐧 𝐨𝐰𝐧𝐞𝐫 𝐝𝐞𝐥 𝐛𝐨𝐭.*
 
-*👥 𝐔𝐭𝐞𝐧𝐭𝐢:*
-${tagList}
-
 > *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
 
         return conn.sendMessage(m.chat, {
