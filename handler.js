@@ -207,8 +207,7 @@ setInterval(() => {
 }, 180000)
 
 export async function participantsUpdate({ id, participants, action, author }) {
-    if (global.db.data.chats[id]?.rileva === false) return
-
+  
     try {
         let metadata = global.groupCache.get(id) || await fetchMetadata(this, id)
         if (!metadata) return
