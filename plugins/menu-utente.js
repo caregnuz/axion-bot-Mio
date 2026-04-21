@@ -38,6 +38,18 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 🎰 ${usedPrefix}slot
 ╰━━━━━━━━━━━━━━━━⬣
 
+╭━━━〔 🐾 𝐀𝐍𝐈𝐌𝐀𝐋𝐄 〕━⬣
+┃ 🐾 ${usedPrefix}animale
+┃ 🛒 ${usedPrefix}shopanimali
+┃ 🥫 ${usedPrefix}nutri
+┃ 🦴 ${usedPrefix}gioca
+┃ 🤲 ${usedPrefix}coccola
+┃ 🪪 ${usedPrefix}profiloanimale
+┃ 🏷 ${usedPrefix}nomeanimale <nome>
+┃ 💸 ${usedPrefix}vendianimale
+┃ 🚫 ${usedPrefix}abbandona
+╰━━━━━━━━━━━━━━━━⬣
+
 ╭━━━〔 🎲 𝐅𝐔𝐍 〕━⬣
 ┃ 🔮 ${usedPrefix}random <reply/tag>
 ┃ 🔥 ${usedPrefix}flame <reply/tag>
@@ -82,11 +94,19 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ╰━━━━━━━━━━━━━━━━⬣
 `.trim()
 
-  await conn.sendMessage(message.chat, {
+await conn.sendMessage(message.chat, {
     text: menuBody,
-    mentions: [userId]
+    mentions: [userId],
+    footer: '> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*',
+    buttons: [
+      {
+        buttonId: `${usedPrefix}menu`,
+        buttonText: { displayText: '⬅️ Menu Principale' },
+        type: 1
+      }
+    ],
+    headerType: 1
   }, { quoted: message })
-}
 
 function clockString(ms) {
   const d = Math.floor(ms / 86400000)

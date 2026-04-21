@@ -50,13 +50,20 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ╰━━━━━━━━━━━━━━━━⬣
 `.trim();
 
-    await conn.sendMessage(message.chat, {
-        text: menuBody,
-        mentions: [userId]
-    }, { quoted: message });
-};
+ await conn.sendMessage(message.chat, {
+    text: menuBody,
+    mentions: [userId],
+    footer: '> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*',
+    buttons: [
+      {
+        buttonId: `${usedPrefix}menu`,
+        buttonText: { displayText: '⬅️ Menu Principale' },
+        type: 1
+      }
+    ],
+    headerType: 1
+  }, { quoted: message })
 
-// Funzione tempo uptime
 function clockString(ms) {
     const d = Math.floor(ms / 86400000);
     const h = Math.floor(ms / 3600000) % 24;
