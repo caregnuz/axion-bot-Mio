@@ -89,7 +89,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 📌 𝐈𝐍𝐅𝐎 〕━⬣
-┃ ᴠᴇʀsɪᴏɴᴇ: 1.0
+┃ ᴠᴇʀsɪᴏɴᴇ: ${global.versione}
 ┃ sᴛᴀᴛᴜs: ᴏɴʟɪɴᴇ ⚡
 ╰━━━━━━━━━━━━━━━━⬣
 `.trim()
