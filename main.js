@@ -19,6 +19,7 @@ import pino from 'pino';
 import { makeWASocket, protoType, serialize } from './lib/simple.js';
 import { Low, JSONFile } from 'lowdb';
 import NodeCache from 'node-cache';
+const state = JSON.parse(fs.readFileSync(RESTART_FILE, 'utf-8'));
 
 const DisconnectReason = {
     connectionClosed: 428,
@@ -384,6 +385,39 @@ if (!opts['test']) {
     }, 30 * 1000);
 }
 if (opts['server']) (await import('./server.js')).default(global.conn, PORT);
+
+async function notifyRestartComplete(conn) {
+    try {
+        if (!existsSync(RESTART_FILE)) return;
+
+        const state = JSON.parse(fs.readFileSync(RESTART_FILE));
+        const elapsed = ((Date.now() - state.startedAt) / 1000).toFixed(1);
+        const errors = state.errors || 0;
+
+        await conn.sendMessage(state.chat, {
+            text:
+`╭━━━━━━━⚡━━━━━━━╮
+*✦ 𝐁𝐎𝐓 𝐑𝐈𝐀𝐕𝐕𝐈𝐀𝐓𝐎 ✦*
+╰━━━━━━━⚡━━━━━━━╯
+
+*✅ 𝐈𝐥 𝐫𝐢𝐚𝐯𝐯𝐢𝐨 è 𝐬𝐭𝐚𝐭𝐨 𝐜𝐨𝐦𝐩𝐥𝐞𝐭𝐚𝐭𝐨 𝐜𝐨𝐧 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐨.*
+*🚀 𝐓𝐮𝐭𝐭𝐢 𝐢 𝐬𝐢𝐬𝐭𝐞𝐦𝐢 𝐬𝐨𝐧𝐨 𝐨𝐫𝐚 𝐨𝐧𝐥𝐢𝐧𝐞.*
+*⏱️ 𝐓𝐞𝐦𝐩𝐨 𝐝𝐢 𝐫𝐢𝐚𝐯𝐯𝐢𝐨:* ${elapsed}𝐬
+*🧾 𝐄𝐫𝐫𝐨𝐫𝐢 𝐫𝐢𝐥𝐞𝐯𝐚𝐭𝐢:* ${errors}
+
+> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`,
+            mentions: [state.sender]
+        });
+
+        unlinkSync(RESTART_FILE);
+    } catch (e) {
+        console.error('[RESTART COMPLETE ERROR]', e);
+        try {
+            if (existsSync(RESTART_FILE)) unlinkSync(RESTART_FILE);
+        } catch {}
+    }
+}
+
 async function connectionUpdate(update) {
     const { connection, lastDisconnect, isNewLogin, qr } = update;
     global.stopped = connection;
@@ -399,9 +433,10 @@ async function connectionUpdate(update) {
         global.qrGenerated = true;
     }
     if (connection === 'open') {
-        global.qrGenerated = false;
-        global.connectionMessagesPrinted = {};
-        if (!global.isLogoPrinted) {
+    global.qrGenerated = false;
+    global.connectionMessagesPrinted = {};
+    await notifyRestartComplete(conn);
+    if (!global.isLogoPrinted) {
             const finchevedotuttoviolaviola = [
     '#00BFFF', '#00CED1', '#20B2AA', '#2ECC71', '#2ECC71', '#20B2AA', '#00CED1', '#00BFFF',
     '#00BFFF', '#00CED1', '#20B2AA', '#2ECC71', '#2ECC71', '#20B2AA'

@@ -54,10 +54,12 @@ let handler = async (m, { conn, command, args }) => {
       `*1️⃣ 𝐒𝐮𝐩𝐞𝐫𝐦𝐚𝐫𝐤𝐞𝐭*
 *2️⃣ 𝐓𝐞𝐜𝐡 𝐒𝐭𝐨𝐫𝐞*
 *3️⃣ 𝐆𝐚𝐦𝐞 𝐒𝐡𝐨𝐩*
+*4️⃣ 𝐒𝐡𝐨𝐩 𝐀𝐧𝐢𝐦𝐚𝐥𝐢*
 
 *📝 𝐒𝐜𝐫𝐢𝐯𝐢 𝐢𝐥 𝐧𝐮𝐦𝐞𝐫𝐨 𝐝𝐞𝐥 𝐧𝐞𝐠𝐨𝐳𝐢𝐨*
 
-*🎒 𝐔𝐬𝐚 .𝐳𝐚𝐢𝐧𝐨 𝐩𝐞𝐫 𝐯𝐞𝐝𝐞𝐫𝐞 𝐢 𝐭𝐮𝐨𝐢 𝐨𝐠𝐠𝐞𝐭𝐭𝐢*`
+*🎒 𝐔𝐬𝐚 .zaino 𝐩𝐞𝐫 𝐯𝐞𝐝𝐞𝐫𝐞 𝐢 𝐭𝐮𝐨𝐢 𝐨𝐠𝐠𝐞𝐭𝐭𝐢*
+*🐾 𝐔𝐬𝐚 .animale 𝐩𝐞𝐫 𝐯𝐞𝐝𝐞𝐫𝐞 𝐢𝐥 𝐭𝐮𝐨 𝐚𝐧𝐢𝐦𝐚𝐥𝐞*`
     )
 
     global.shopSession[user] = { step: 'shop' }
@@ -131,7 +133,25 @@ handler.before = async (m, { conn }) => {
   const session = global.shopSession[user]
   const u = global.db.data.users[user] || (global.db.data.users[user] = { euro: 0, bank: 0, inventory: [] })
 
-  if (session.step === 'shop' && /^[1-3]$/.test(input)) {
+  if (session.step === 'shop' && /^[1-4]$/.test(input)) {
+    if (input === '4') {
+      delete global.shopSession[user]
+
+      const fakeMessage = {
+        ...m,
+        text: '.shopanimali',
+        body: '.shopanimali',
+        message: {
+          conversation: '.shopanimali'
+        }
+      }
+
+      return conn.ev.emit('messages.upsert', {
+        messages: [fakeMessage],
+        type: 'notify'
+      })
+    }
+
     const shop = shops[input]
 
     session.step = 'items'
