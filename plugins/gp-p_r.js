@@ -38,7 +38,9 @@ var handler = async (m, { conn, text, command }) => {
 const participantMap = new Map(
   (metadata.participants || []).map(p => [
     normalizeJid(p.id),
-    p.admin === 'admin' || p.admin === 'superadmin'
+    p.admin === true ||
+    p.admin === 'admin' ||
+    p.admin === 'superadmin'
   ])
 )
 
