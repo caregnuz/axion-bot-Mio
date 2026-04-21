@@ -1,6 +1,3 @@
-Il fix giusto è smettere di fidarsi del catch come se volesse dire “già retrocesso” e controllare lo stato prima e dopo. groupParticipantsUpdate(...) lancia su errore, ma non tutti i casi equivalgono a “già retrocesso”; inoltre in based gli eventi gruppo espongono JID normalizzati, quindi conviene normalizzare sempre gli id. 
-
-Ti conviene sostituire tutto il blocco centrale del comando con questa versione.
 
 // by 𝕯𝖊ⱥ𝖉𝖑𝐲 × Bonzino
 
