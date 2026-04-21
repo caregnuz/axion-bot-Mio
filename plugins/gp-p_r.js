@@ -78,13 +78,13 @@ ${actionText}
   contextInfo: {
     ...(global.rcanal?.contextInfo || {}),
     externalAdReply: {
-      title: 'Gestione permessi gruppo',
-      body: ' ',
-      ...(thumbnailBuffer ? { thumbnail: thumbnailBuffer } : {}),
-      mediaType: 1,
-      renderLargerThumbnail: false,
-      showAdAttribution: false
-    }
+  title: 'Gestione permessi gruppo',
+  body: ' ',
+  ...(thumbnailBuffer ? { thumbnail: thumbnailBuffer } : {}),
+  mediaType: 1,
+  renderLargerThumbnail: true,
+  showAdAttribution: false
+}
   }
 }, quoted ? { quoted } : {})
 }

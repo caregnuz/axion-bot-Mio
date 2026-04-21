@@ -199,7 +199,7 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner, usedP
           body: `Utenza: ${senderName}`,
           ...(thumbnail ? { thumbnail } : {}),
           mediaType: 1,
-          renderLargerThumbnail: false,
+          renderLargerThumbnail: true,
           showAdAttribution: false
         }
       }
