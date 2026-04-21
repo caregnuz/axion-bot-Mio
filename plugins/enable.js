@@ -209,3 +209,8 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner, usedP
     return m.reply(result)
   }
 }
+handler.help = ['attiva <feature>', 'disattiva <feature>']
+handler.tags = ['group']
+handler.command = ['attiva', 'disattiva', 'enable', 'disable', '1', '0']
+
+export default handler
