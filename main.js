@@ -567,11 +567,14 @@ global.reloadHandler = async function (restatConn) {
         conn.ev.off('messages.upsert', conn.handler);
         conn.ev.off('connection.update', conn.connectionUpdate);
         conn.ev.off('creds.update', conn.credsUpdate);
+        if (conn.participantsUpdate) conn.ev.off('group-participants.update', conn.participantsUpdate)
         if (conn.callUpdate) conn.ev.off('call', conn.callUpdate);
+        
     }
-    conn.handler = handler.handler.bind(global.conn);
-    conn.connectionUpdate = connectionUpdate.bind(global.conn);
-    conn.credsUpdate = saveCreds;
+    conn.handler = handler.handler.bind(global.conn)
+conn.connectionUpdate = connectionUpdate.bind(global.conn)
+conn.credsUpdate = saveCreds
+conn.participantsUpdate = handler.participantsUpdate?.bind(global.conn)
     conn.callUpdate = async (calls) => {
         try {
             global.processedCalls = global.processedCalls || new Map();
@@ -602,6 +605,7 @@ global.reloadHandler = async function (restatConn) {
     conn.ev.on('connection.update', conn.connectionUpdate);
     conn.ev.on('creds.update', conn.credsUpdate);
     conn.ev.on('call', conn.callUpdate);
+    conn.ev.on('group-participants.update', conn.participantsUpdate)
     isInit = false;
     return true;
 };

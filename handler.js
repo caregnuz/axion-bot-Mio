@@ -206,7 +206,7 @@ setInterval(() => {
 
 }, 180000)
 
-export async function participantsUpdate({ id, participants, action }) {
+export async function participantsUpdate({ id, participants, action, author }) {
     if (global.db.data.chats[id]?.rileva === false) return
 
     try {
@@ -223,25 +223,42 @@ export async function participantsUpdate({ id, participants, action }) {
             }
             
             switch (action) {
-    case 'add':
-        if (!global.db.data.chats[id]) global.db.data.chats[id] = {}
-        if (!global.db.data.chats[id].users) global.db.data.chats[id].users = {}
+                case 'add':
+                    if (!global.db.data.chats[id]) global.db.data.chats[id] = {}
+                    if (!global.db.data.chats[id].users) global.db.data.chats[id].users = {}
 
-        if (!global.db.data.chats[id].users[normalizedUser]) {
-            global.db.data.chats[id].users[normalizedUser] = {}
-        }
+                    if (!global.db.data.chats[id].users[normalizedUser]) {
+                        global.db.data.chats[id].users[normalizedUser] = {}
+                    }
 
-        if (!global.db.data.chats[id].users[normalizedUser].joinedAt) {
-            global.db.data.chats[id].users[normalizedUser].joinedAt = Date.now()
-        }
-        break
-    case 'remove':
-        break
-    case 'promote':
-        break
-    case 'demote':
-        break
-}
+                    if (!global.db.data.chats[id].users[normalizedUser].joinedAt) {
+                        global.db.data.chats[id].users[normalizedUser].joinedAt = Date.now()
+                    }
+                    break
+
+                case 'remove':
+                    break
+
+                case 'promote':
+                case 'demote': {
+                    const sender = author
+                        ? this.decodeJid(author)
+                        : (this.user?.jid ? this.decodeJid(this.user.jid) : null)
+
+                    if (!sender) break
+                    if (!global.sendRoleChangeMessage) break
+                    if (global.isRecentRoleAction?.(id, action, [normalizedUser])) break
+
+                    await global.sendRoleChangeMessage(
+                        this,
+                        id,
+                        sender,
+                        [normalizedUser],
+                        action
+                    )
+                    break
+                }
+            }
         }
     } catch (e) {
         console.error(`[ERRORE] Errore in participantsUpdate per ${id}:`, e)
