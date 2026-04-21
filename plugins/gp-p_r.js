@@ -72,21 +72,21 @@ ${actionText}
 
 > *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
 
-  await conn.sendMessage(chatId, {
-    text: msg,
-    mentions: [sender, ...users],
-    contextInfo: {
-      ...(global.rcanal?.contextInfo || {}),
-      externalAdReply: {
-        title: 'Gestione permessi gruppo',
-        body: ' ',
-        thumbnail: thumbnailBuffer,
-        mediaType: 1,
-        renderLargerThumbnail: false,
-        showAdAttribution: false
-      }
+ await conn.sendMessage(chatId, {
+  text: msg,
+  mentions: [sender, ...users],
+  contextInfo: {
+    ...(global.rcanal?.contextInfo || {}),
+    externalAdReply: {
+      title: 'Gestione permessi gruppo',
+      body: ' ',
+      ...(thumbnailBuffer ? { thumbnail: thumbnailBuffer } : {}),
+      mediaType: 1,
+      renderLargerThumbnail: false,
+      showAdAttribution: false
     }
-  }, quoted ? { quoted } : {})
+  }
+}, quoted ? { quoted } : {})
 }
 
 var handler = async (m, { conn, text, command }) => {
