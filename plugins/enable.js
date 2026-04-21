@@ -181,7 +181,7 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner, isROwner, usedP
 
 > *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
 
-  const thumbnail = null
+  const thumbnail = await getThumbBuffer(thumbFeature)
 
   try {
     await conn.sendMessage(m.chat, {
