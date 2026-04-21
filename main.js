@@ -391,11 +391,24 @@ async function notifyRestartComplete(conn) {
         if (!existsSync(RESTART_FILE)) return;
 
         const restartState = JSON.parse(fs.readFileSync(RESTART_FILE, 'utf-8'));
-const elapsed = ((Date.now() - restartState.startedAt) / 1000).toFixed(1);
-const errors = restartState.errors || 0;
 
-await conn.sendMessage(restartState.chat, {
-    text:
+        if (
+            restartState.type !== 'manual_restart' ||
+            !restartState.startedAt ||
+            !restartState.chat ||
+            !restartState.sender
+        ) {
+            try {
+                unlinkSync(RESTART_FILE)
+            } catch {}
+            return
+        }
+
+        const elapsed = ((Date.now() - restartState.startedAt) / 1000).toFixed(1);
+        const errors = restartState.errors || 0;
+
+        await conn.sendMessage(restartState.chat, {
+            text:
 `╭━━━━━━━⚡━━━━━━━╮
 *✦ 𝐁𝐎𝐓 𝐑𝐈𝐀𝐕𝐕𝐈𝐀𝐓𝐎 ✦*
 ╰━━━━━━━⚡━━━━━━━╯
@@ -406,10 +419,12 @@ await conn.sendMessage(restartState.chat, {
 *🧾 𝐄𝐫𝐫𝐨𝐫𝐢 𝐫𝐢𝐥𝐞𝐯𝐚𝐭𝐢:* ${errors}
 
 > *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`,
-    mentions: [restartState.sender]
-});
+            mentions: [restartState.sender]
+        });
 
-unlinkSync(RESTART_FILE);
+        try {
+            unlinkSync(RESTART_FILE)
+        } catch {}
     } catch (e) {
         console.error('[RESTART COMPLETE ERROR]', e);
         try {

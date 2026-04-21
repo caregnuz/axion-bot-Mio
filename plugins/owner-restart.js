@@ -86,12 +86,13 @@ let handler = async (m, { conn, isOwner }) => {
       await editMessage(conn, m.chat, key, frame, [m.sender])
     }
 
-    const payload = {
-      chat: m.chat,
-      sender: m.sender,
-      startedAt: Date.now(),
-      errors
-    }
+const payload = {
+  type: 'manual_restart',
+  chat: m.chat,
+  sender: m.sender,
+  startedAt: Date.now(),
+  errors
+}
 
     fs.writeFileSync(RESTART_FILE, JSON.stringify(payload, null, 2))
 
