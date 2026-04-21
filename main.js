@@ -19,6 +19,7 @@ import pino from 'pino';
 import { makeWASocket, protoType, serialize } from './lib/simple.js';
 import { Low, JSONFile } from 'lowdb';
 import NodeCache from 'node-cache';
+const RESTART_FILE = './tmp/restart-state.json';
 
 const DisconnectReason = {
     connectionClosed: 428,
