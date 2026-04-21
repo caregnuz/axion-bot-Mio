@@ -280,35 +280,42 @@ if (m.message?.protocolMessage?.type === 'MESSAGE_EDIT') {
     m.mtype = Object.keys(editedMessage)[0];
     console.log(`[EDIT] Messaggio ${key.id} modificato in ${key.remoteJid}`);
 }
-    m = smsg(this, m, global.store)
-    if (!m || !m.key || !m.chat || !m.sender) return
-    if (m.fromMe) return
-    if (m.key.participant && m.key.participant.includes(':') && m.key.participant.split(':')[1]?.includes('@')) return
-    
-    if (m.isGroup && (m.messageStubType === 29 || m.messageStubType === 30)) {
-        try {
-            const action = m.messageStubType === 29 ? 'promote' : 'demote'
-            const sender = this.decodeJid(m.sender || m.key?.participant || m.key?.remoteJid)
-            const users = (m.messageStubParameters || []).map(u => this.decodeJid(u)).filter(Boolean)
+m = smsg(this, m, global.store)
+if (!m || !m.key || !m.chat || !m.sender) return
 
-            if (sender && users.length && global.sendRoleChangeMessage) {
-                if (!global.isRecentRoleAction?.(m.chat, action, users)) {
-                    await global.sendRoleChangeMessage(
-                        this,
-                        m.chat,
-                        sender,
-                        users,
-                        action,
-                        m
-                    )
-                }
+if (m.isGroup && (m.messageStubType === 29 || m.messageStubType === 30)) {
+    try {
+        const action = m.messageStubType === 29 ? 'promote' : 'demote'
+        const sender = this.decodeJid(m.sender || m.key?.participant || m.key?.remoteJid)
+        const users = (m.messageStubParameters || []).map(u => this.decodeJid(u)).filter(Boolean)
+        console.log('STUB AUTO ROLE', {
+    stub: m.messageStubType,
+    action,
+    sender,
+    users,
+    fromMe: m.fromMe,
+    chat: m.chat
+})
+
+        if (sender && users.length && global.sendRoleChangeMessage) {
+            if (!global.isRecentRoleAction?.(m.chat, action, users)) {
+                await global.sendRoleChangeMessage(
+                    this,
+                    m.chat,
+                    sender,
+                    users,
+                    action,
+                    m
+                )
             }
-        } catch (e) {
-            console.error('[ERRORE] Errore gestione automatica promote/demote da messageStub:', e)
         }
+    } catch (e) {
+        console.error('[ERRORE] Errore gestione automatica promote/demote da messageStub:', e)
     }
+}
 
-    if (m.key) {
+if (m.fromMe) return
+if (m.key.participant && m.key.participant.includes(':') && m.key.participant.split(':')[1]?.includes('@')) return(m.key) {
         m.key.remoteJid = this.decodeJid(m.key.remoteJid)
         if (m.key.participant) m.key.participant = this.decodeJid(m.key.participant)
     }
