@@ -1,4 +1,4 @@
-// plugin restart.js by Bonzino
+//Plugin Restart by Bonzino
 
 import fs from 'fs'
 import path from 'path'
@@ -26,8 +26,30 @@ async function editMessage(conn, chatId, key, text, mentions = []) {
   )
 }
 
+function buildRestartCommand() {
+  const nodeExec = process.argv[0]
+  const scriptArgs = process.argv.slice(1)
+
+  const quotedNode = `"${nodeExec.replace(/"/g, '\\"')}"`
+  const quotedArgs = scriptArgs.map(arg => `"${String(arg).replace(/"/g, '\\"')}"`).join(' ')
+
+  if (process.platform === 'win32') {
+    return {
+      cmd: 'cmd',
+      args: ['/c', `timeout /t 3 /nobreak >nul && ${quotedNode} ${quotedArgs}`]
+    }
+  }
+
+  return {
+    cmd: 'sh',
+    args: ['-c', `sleep 3; exec ${quotedNode} ${quotedArgs}`]
+  }
+}
+
 let handler = async (m, { conn, isOwner }) => {
-  if (!isOwner) return m.reply('*𝐒𝐨𝐥𝐨 𝐢𝐥 𝐩𝐫𝐨𝐩𝐫𝐢𝐞𝐭𝐚𝐫𝐢𝐨 può 𝐮𝐬𝐚𝐫𝐞 𝐪𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨.*')
+  if (!isOwner) {
+    return m.reply('*𝐒𝐨𝐥𝐨 𝐢𝐥 𝐩𝐫𝐨𝐩𝐫𝐢𝐞𝐭𝐚𝐫𝐢𝐨 può 𝐮𝐬𝐚𝐫𝐞 𝐪𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨.*')
+  }
 
   let errors = 0
 
@@ -85,10 +107,12 @@ let handler = async (m, { conn, isOwner }) => {
       return
     }
 
-    const child = spawn(process.argv[0], process.argv.slice(1), {
+    const restart = buildRestartCommand()
+
+    const child = spawn(restart.cmd, restart.args, {
       cwd: process.cwd(),
       detached: true,
-      stdio: 'inherit'
+      stdio: 'ignore'
     })
 
     child.unref()
@@ -96,7 +120,6 @@ let handler = async (m, { conn, isOwner }) => {
     setTimeout(() => {
       process.exit(0)
     }, 500)
-
   } catch (e) {
     errors++
 

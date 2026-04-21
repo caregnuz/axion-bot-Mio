@@ -4,7 +4,7 @@ import fs from 'fs'
 import path from 'path'
 
 const CLEANUP_INTERVAL_HOURS = 6
-const DELAY_TRA_GRUPPI_MS = 3000
+const DELAY_TRA_GRUPPI_MS = 5000
 const MIN_FILE_AGE_MS = 30 * 60 * 1000
 
 const TEMP_DIRS = ['temp', 'tmp']
@@ -108,10 +108,10 @@ async function announceCleanup(conn, summary) {
       await conn.sendMessage(chatId, {
         text:
 `╭━━━〔 *🧹 𝐀𝐔𝐓𝐎𝐂𝐋𝐄𝐀𝐍* 〕━━━⬣
-┃ *𝐒𝐨𝐧𝐨 𝐬𝐭𝐚𝐭𝐢 𝐞𝐥𝐢𝐦𝐢𝐧𝐚𝐭𝐢 ${summary.tempRemoved} 𝐟𝐢𝐥𝐞 𝐭𝐞𝐦𝐩𝐨𝐫𝐚𝐧𝐞𝐢 𝐜𝐨𝐧 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐨✅️*
+┃ *𝐒𝐨𝐧𝐨 𝐬𝐭𝐚𝐭𝐢 𝐞𝐥𝐢𝐦𝐢𝐧𝐚𝐭𝐢 ${summary.tempRemoved} 𝐟𝐢𝐥𝐞 𝐭𝐞𝐦𝐩𝐨𝐫𝐚𝐧𝐞𝐢 𝐜𝐨𝐧 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐨 ✅️*
 ╰━━━━━━━━━━━━━━━━━━━━⬣
 
-<  *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
+> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
 
       })
     } catch (e) {
@@ -147,10 +147,7 @@ handler.before = async function (m, { conn }) {
 
   state.started = true
 
-  // Primo avvio immediato
-  executeCleanup(conn)
-
-  // Ripetizione ogni X ore
+  // Pulizia solo ogni 12 ore, non immediata all'avvio
   state.interval = setInterval(() => {
     executeCleanup(conn)
   }, CLEANUP_INTERVAL_HOURS * 60 * 60 * 1000)
