@@ -41,9 +41,7 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
   const actionLabel = isAdd ? '𝐀𝐆𝐆𝐈𝐔𝐍𝐓𝐎' : '𝐑𝐈𝐌𝐎𝐒𝐒𝐎'
   const actionVerb = isAdd ? 'aggiunto' : 'rimosso'
 
-  const log = (...a) => console.log('[ADD-KICK]', ...a)
-
-  // ========= PARSER FIX =========
+  const log = (...a) => console.log('[OWNER-ADD_KICKUSER]', ...a)
 
   const normalized = input
     .replace(/\r/g, '')
@@ -68,15 +66,53 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
     return match ? match[0] : ''
   }
 
+  const normalizeJid = jid => {
+    if (!jid) return ''
+    try {
+      if (typeof conn.decodeJid === 'function') jid = conn.decodeJid(jid)
+    } catch {}
+    return String(jid || '').trim().toLowerCase()
+  }
+
+  const jidPhone = jid => {
+    const decoded = normalizeJid(jid)
+    return decoded.split('@')[0].split(':')[0].replace(/\D/g, '')
+  }
+
+  const participantIds = p => {
+    return [
+      p?.id,
+      p?.jid,
+      p?.lid,
+      p?.participant
+    ].filter(Boolean)
+  }
+
+  const summarizeParticipant = p => ({
+    id: p?.id || null,
+    jid: p?.jid || null,
+    lid: p?.lid || null,
+    participant: p?.participant || null,
+    admin: p?.admin || null
+  })
+
   const groupId = extractGroupId(normalized)
   const inviteCode = extractInvite(normalized)
   const number = extractNumber(normalized)
+  const userJid = number ? `${number}@s.whatsapp.net` : ''
+  const cleanUser = jidPhone(userJid)
 
-  log('INPUT:', input)
-  log('NORMALIZED:', normalized)
-  log('GROUP ID:', groupId)
-  log('INVITE:', inviteCode)
-  log('NUMBER:', number)
+  log('========================================')
+  log('COMMAND:', command)
+  log('RAW INPUT:', input)
+  log('NORMALIZED INPUT:', normalized)
+  log('GROUP ID EXTRACTED:', groupId)
+  log('INVITE EXTRACTED:', inviteCode)
+  log('NUMBER EXTRACTED:', number)
+  log('USER JID:', userJid)
+  log('USER PHONE:', cleanUser)
+  log('CURRENT CHAT:', m.chat)
+  log('========================================')
 
   if (!number) {
     return conn.reply(
@@ -98,23 +134,50 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
     )
   }
 
-  const userJid = number + '@s.whatsapp.net'
-
   const withTimeout = (p, ms = 30000) =>
     Promise.race([
       p,
-      new Promise((_, r) => setTimeout(() => r(new Error('timeout')), ms))
+      new Promise((_, r) => setTimeout(() => r(new Error(`timeout_${ms}`)), ms))
     ])
 
   const sleep = ms => new Promise(r => setTimeout(r, ms))
+
+  const getGroupMetadataSafe = async jid => {
+    let lastError = null
+    for (let i = 0; i < 3; i++) {
+      try {
+        log(`METADATA TRY ${i + 1}:`, jid)
+        const meta = await withTimeout(conn.groupMetadata(jid), 20000)
+        log(`METADATA OK ${i + 1}:`, {
+          id: meta?.id,
+          subject: meta?.subject,
+          participants: Array.isArray(meta?.participants) ? meta.participants.length : 0
+        })
+        return meta
+      } catch (e) {
+        lastError = e
+        log(`METADATA FAIL ${i + 1}:`, e)
+        await sleep(1500)
+      }
+    }
+    throw lastError || new Error('metadata_failed')
+  }
 
   let target = null
 
   if (groupId) {
     target = groupId
+    log('TARGET FROM GROUP ID:', target)
   } else {
     try {
+      log('RESOLVING INVITE CODE:', inviteCode)
       const info = await withTimeout(conn.groupGetInviteInfo(inviteCode), 20000)
+      log('INVITE INFO:', {
+        id: info?.id,
+        subject: info?.subject,
+        owner: info?.owner || null,
+        size: info?.size || null
+      })
       target = info?.id
     } catch (e) {
       log('INVITE ERROR:', e)
@@ -131,10 +194,10 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
     )
   }
 
-  // 🚫 BLOCCO SICUREZZA
-  const hasExplicitTarget = Boolean(groupId || inviteCode)
+  log('FINAL TARGET:', target)
 
-if (target === m.chat && !hasExplicitTarget) {
+  if (target === m.chat) {
+    log('BLOCKED: TARGET IS CURRENT CHAT')
     return conn.reply(
       m.chat,
       `*╭━━━━━━━⚠️━━━━━━━╮*
@@ -147,12 +210,76 @@ if (target === m.chat && !hasExplicitTarget) {
   }
 
   try {
-    const meta = await withTimeout(conn.groupMetadata(target), 20000)
-    const participants = meta.participants || []
+    const meta = await getGroupMetadataSafe(target)
+    const participants = Array.isArray(meta?.participants) ? meta.participants : []
 
-    const exists = participants.some(p =>
-      conn.decodeJid(p.id) === userJid
-    )
+    const botJid = normalizeJid(conn.user?.jid || conn.user?.id || '')
+    const botPhone = jidPhone(botJid)
+
+    log('BOT JID:', botJid)
+    log('BOT PHONE:', botPhone)
+    log('PARTICIPANTS COUNT:', participants.length)
+
+    const botParticipant = participants.find(p => {
+      const ids = participantIds(p)
+      const phones = ids.map(id => jidPhone(id)).filter(Boolean)
+      return phones.includes(botPhone)
+    })
+
+    const isBotAdmin = !!botParticipant && ['admin', 'superadmin'].includes(botParticipant.admin)
+
+    log('BOT PARTICIPANT:', botParticipant ? summarizeParticipant(botParticipant) : null)
+    log('BOT IS ADMIN:', isBotAdmin)
+
+    if (!isBotAdmin) {
+      return conn.reply(
+        m.chat,
+        `*╭━━━━━━━⛔━━━━━━━╮*
+*✦ 𝐁𝐎𝐓 𝐍𝐎𝐍 𝐀𝐃𝐌𝐈𝐍 ✦*
+*╰━━━━━━━⛔━━━━━━━╯*`,
+        m
+      )
+    }
+
+    let match = null
+
+    for (const p of participants) {
+      const ids = participantIds(p)
+      const normalizedIds = ids.map(id => normalizeJid(id)).filter(Boolean)
+      const phones = ids.map(id => jidPhone(id)).filter(Boolean)
+
+      const idExact = normalizedIds.includes(normalizeJid(userJid))
+      const phoneExact = phones.includes(cleanUser)
+
+      if (idExact || phoneExact) {
+        match = p
+        log('MATCH FOUND:')
+        log('RAW IDS:', ids)
+        log('NORMALIZED IDS:', normalizedIds)
+        log('PHONES:', phones)
+        log('MATCH MODE:', idExact ? 'jid_exact' : 'phone_exact')
+        break
+      }
+    }
+
+    const exists = !!match
+
+    if (!exists) {
+      const sample = participants.slice(0, 15).map(p => {
+        const ids = participantIds(p)
+        return {
+          ids,
+          normalizedIds: ids.map(id => normalizeJid(id)).filter(Boolean),
+          phones: ids.map(id => jidPhone(id)).filter(Boolean),
+          admin: p?.admin || null
+        }
+      })
+
+      log('NO MATCH FOUND FOR USER:', cleanUser)
+      log('PARTICIPANT SAMPLE:', JSON.stringify(sample, null, 2))
+    } else {
+      log('MATCHED PARTICIPANT:', summarizeParticipant(match))
+    }
 
     log('EXISTS:', exists)
 
@@ -166,21 +293,45 @@ if (target === m.chat && !hasExplicitTarget) {
       )
     }
 
+    if (action === 'add' && exists) {
+      return conn.reply(
+        m.chat,
+        `*╭━━━━━━━ℹ️━━━━━━━╮*
+*✦ 𝐔𝐓𝐄𝐍𝐓𝐄 𝐆𝐈𝐀̀ 𝐏𝐑𝐄𝐒𝐄𝐍𝐓𝐄 ✦*
+*╰━━━━━━━ℹ️━━━━━━━╯*`,
+        m
+      )
+    }
+
     let ok = false
+    let lastResult = null
+    let lastError = null
 
     for (let i = 0; i < 3; i++) {
       try {
-        log('TRY UPDATE', i + 1)
-        await withTimeout(conn.groupParticipantsUpdate(target, [userJid], action), 30000)
+        log(`UPDATE TRY ${i + 1}:`, {
+          target,
+          action,
+          userJid
+        })
+
+        lastResult = await withTimeout(
+          conn.groupParticipantsUpdate(target, [userJid], action),
+          30000
+        )
+
+        log(`UPDATE RESULT ${i + 1}:`, JSON.stringify(lastResult, null, 2))
         ok = true
         break
       } catch (e) {
-        log('RETRY ERROR:', e)
+        lastError = e
+        log(`UPDATE ERROR ${i + 1}:`, e)
         await sleep(2000)
       }
     }
 
     if (!ok) {
+      log('FINAL UPDATE ERROR:', lastError)
       return conn.reply(
         m.chat,
         `*╭━━━━━━━⚠️━━━━━━━╮*
@@ -192,19 +343,25 @@ if (target === m.chat && !hasExplicitTarget) {
       )
     }
 
+    log('SUCCESS:', {
+      action,
+      number,
+      target,
+      result: lastResult
+    })
+
     return conn.reply(
       m.chat,
       `*╭━━━━━━━✅━━━━━━━╮*
 *✦ 𝐔𝐓𝐄𝐍𝐓𝐄 ${actionLabel} ✦*
 *╰━━━━━━━✅━━━━━━━╯*
 
-*@${number} 𝐞̀ 𝐬𝐭𝐚𝐭𝐨 ${actionVerb}.`,
+*@${number} 𝐞̀ 𝐬𝐭𝐚𝐭𝐨 ${actionVerb}.*`,
       m,
       { mentions: [userJid] }
     )
-
   } catch (e) {
-    log('FATAL:', e)
+    log('FATAL ERROR:', e)
 
     return conn.reply(
       m.chat,
