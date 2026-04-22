@@ -176,35 +176,37 @@ let handler = async (m, { conn, text, usedPrefix, command, isAdmin, isOwner, isR
     const senderJid = conn.decodeJid(m.sender)
     const botJid = conn.decodeJid(conn.user?.jid || '')
 
-    const senderIsAdmin = participants.some(p => {
-  const ids = [
-    conn.decodeJid(p.id),
-    p.jid ? conn.decodeJid(p.jid) : null,
-    p.lid ? conn.decodeJid(p.lid) : null
-  ].filter(Boolean)
+    const normalize = jid => String(conn.decodeJid(jid || '') || '').split(':')[0]
+const senderJid = normalize(m.sender)
+const botJid = normalize(conn.user?.jid || '')
 
-  return ids.includes(senderJid) && (
-    p.admin === 'admin' ||
-    p.admin === 'superadmin' ||
-    p.admin === true ||
-    p.isAdmin === true
-  )
+const senderParticipant = participants.find(p => {
+  const pid = normalize(p.id)
+  return pid === senderJid
 })
 
-const botIsAdmin = participants.some(p => {
-  const ids = [
-    conn.decodeJid(p.id),
-    p.jid ? conn.decodeJid(p.jid) : null,
-    p.lid ? conn.decodeJid(p.lid) : null
-  ].filter(Boolean)
-
-  return ids.includes(botJid) && (
-    p.admin === 'admin' ||
-    p.admin === 'superadmin' ||
-    p.admin === true ||
-    p.isAdmin === true
-  )
+const botParticipant = participants.find(p => {
+  const pid = normalize(p.id)
+  return pid === botJid
 })
+
+const senderIsAdmin = senderParticipant
+  ? (
+      senderParticipant.admin === 'admin' ||
+      senderParticipant.admin === 'superadmin' ||
+      senderParticipant.admin === true ||
+      senderParticipant.isAdmin === true
+    )
+  : false
+
+const botIsAdmin = botParticipant
+  ? (
+      botParticipant.admin === 'admin' ||
+      botParticipant.admin === 'superadmin' ||
+      botParticipant.admin === true ||
+      botParticipant.isAdmin === true
+    )
+  : false
 
     if (!botIsAdmin) {
       return conn.reply(
