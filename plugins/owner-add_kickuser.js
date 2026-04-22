@@ -47,12 +47,21 @@ let handler = async (m, { conn, text, usedPrefix, command, isAdmin, isOwner, isR
   const actionLabel = isAdd ? '𝐀𝐆𝐆𝐈𝐔𝐍𝐓𝐎' : '𝐑𝐈𝐌𝐎𝐒𝐒𝐎'
   const actionVerb = isAdd ? 'aggiunto' : 'rimosso'
 
-  const parts = input.split('|').map(v => v.trim()).filter(Boolean)
+  const normalizedInput = String(input || '')
+    .replace(/\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/https:\/\/chat\.whatsapp\.com\s+\/?/gi, 'https://chat.whatsapp.com/')
+
+  const parts = normalizedInput.split('|').map(v => v.trim()).filter(Boolean)
   const firstPart = parts[0] || ''
   const secondPart = parts[1] || ''
 
   const getInviteCode = link => {
-    const clean = String(link || '').replace(/\s+/g, '')
+    const clean = String(link || '')
+      .replace(/\n/g, '')
+      .replace(/\s+/g, '')
+      .replace(/https:\/\/chat\.whatsapp\.com\/+/gi, 'https://chat.whatsapp.com/')
+
     const match = clean.match(/chat\.whatsapp\.com\/([A-Za-z0-9]+)/i)
     return match ? match[1] : null
   }
@@ -69,16 +78,18 @@ let handler = async (m, { conn, text, usedPrefix, command, isAdmin, isOwner, isR
     rawNumber = firstPart
     rawTarget = secondPart
   } else {
-    const inviteCode = getInviteCode(input)
-    const groupId = getGroupId(input)
+    const inviteCode = getInviteCode(normalizedInput)
+    const groupId = getGroupId(normalizedInput)
 
     if (inviteCode || groupId) {
-      const cleanedInput = input.replace(/\s+/g, ' ')
-      const numberMatch = cleanedInput.match(/\b\d{6,15}\b/)
-      rawNumber = numberMatch ? numberMatch[0] : ''
-      rawTarget = groupId || input
+      rawNumber = normalizedInput
+        .replace(/https:\/\/chat\.whatsapp\.com\/([A-Za-z0-9]+)/gi, '')
+        .replace(/(\d{10,}@g\.us)/gi, '')
+        .replace(/[^\d]/g, '')
+
+      rawTarget = groupId || normalizedInput
     } else {
-      rawNumber = input
+      rawNumber = normalizedInput
       rawTarget = ''
     }
   }
