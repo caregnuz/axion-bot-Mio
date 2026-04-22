@@ -44,6 +44,8 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
   const actionLabel = isAdd ? '𝐀𝐆𝐆𝐈𝐔𝐍𝐓𝐎' : '𝐑𝐈𝐌𝐎𝐒𝐒𝐎'
   const actionVerb = isAdd ? 'aggiunto' : 'rimosso'
 
+  const log = (...args) => console.log('[OWNER-ADD-KICKUSER]', ...args)
+
   const normalizedInput = String(input || '')
     .replace(/\r/g, '\n')
     .replace(/\n+/g, ' ')
@@ -124,24 +126,37 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
 
   const userJid = `${cleanNumber}@s.whatsapp.net`
 
-  const withTimeout = (promise, ms = 7000) =>
+  const withTimeout = (promise, ms = 15000) =>
     Promise.race([
       promise,
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+      new Promise((_, reject) => setTimeout(() => reject(new Error(`timeout:${ms}`)), ms))
     ])
+
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   const groupIdFound = getGroupId(explicitTargetText)
   const inviteCodeFound = getInviteCode(explicitTargetText)
 
   let targetGroup = null
 
+  log('INPUT:', input)
+  log('NORMALIZED INPUT:', normalizedInput)
+  log('RAW NUMBER:', rawNumber)
+  log('CLEAN NUMBER:', cleanNumber)
+  log('EXPLICIT TARGET TEXT:', explicitTargetText)
+  log('GROUP ID FOUND:', groupIdFound)
+  log('INVITE CODE FOUND:', inviteCodeFound)
+
   if (groupIdFound) {
     targetGroup = groupIdFound
   } else if (inviteCodeFound) {
     try {
-      const info = await withTimeout(conn.groupGetInviteInfo(inviteCodeFound), 7000)
+      log('TRY groupGetInviteInfo START')
+      const info = await withTimeout(conn.groupGetInviteInfo(inviteCodeFound), 15000)
+      log('TRY groupGetInviteInfo OK:', info)
       targetGroup = info?.id || null
-    } catch {
+    } catch (e) {
+      log('TRY groupGetInviteInfo ERROR:', e)
       targetGroup = null
     }
   }
@@ -168,7 +183,7 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
 *✦ 𝐆𝐑𝐔𝐏𝐏𝐎 𝐄𝐑𝐑𝐀𝐓𝐎 ✦*
 *╰━━━━━━━⚠️━━━━━━━╯*
 
-*𝐐𝐮𝐞𝐬𝐭𝐨 𝐩𝐥𝐮𝐠𝐢𝐧 𝐞̀ 𝐩𝐞𝐧𝐬𝐚𝐭𝐨 𝐬𝐨𝐥𝐨 𝐩𝐞𝐫 𝐠𝐞𝐬𝐭𝐢𝐫𝐞 𝐮𝐭𝐞𝐧𝐭𝐢 𝐢𝐧 𝐮𝐧 𝐚𝐥𝐭𝐫𝐨 𝐠𝐫𝐮𝐩𝐩𝐨.*
+*𝐐𝐮𝐞𝐬𝐭𝐨 𝐩𝐥𝐮𝐠𝐢𝐧 è 𝐩𝐞𝐧𝐬𝐚𝐭𝐨 𝐬𝐨𝐥𝐨 𝐩𝐞𝐫 𝐠𝐞𝐬𝐭𝐢𝐫𝐞 𝐮𝐭𝐞𝐧𝐭𝐢 𝐢𝐧 𝐮𝐧 𝐚𝐥𝐭𝐫𝐨 𝐠𝐫𝐮𝐩𝐩𝐨.*
 *𝐏𝐞𝐫 𝐬𝐢𝐜𝐮𝐫𝐞𝐳𝐳𝐚 𝐧𝐨𝐧 𝐡𝐨 𝐭𝐨𝐜𝐜𝐚𝐭𝐨 𝐪𝐮𝐞𝐬𝐭𝐨 𝐠𝐫𝐮𝐩𝐩𝐨.*
 
 > *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`,
@@ -176,8 +191,19 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
     )
   }
 
+  log('TARGET GROUP:', targetGroup)
+  log('USER JID:', userJid)
+  log('ACTION:', action)
+
   try {
-    const metadata = await withTimeout(conn.groupMetadata(targetGroup), 7000)
+    log('TRY groupMetadata START')
+    const metadata = await withTimeout(conn.groupMetadata(targetGroup), 15000)
+    log('TRY groupMetadata OK:', {
+      id: metadata?.id,
+      subject: metadata?.subject,
+      participants: metadata?.participants?.length
+    })
+
     const participants = metadata?.participants || []
 
     const normalize = jid => String(conn.decodeJid(jid || '') || '').split(':')[0]
@@ -193,7 +219,10 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
         )
       : false
 
-    if (!(isOwner || isROwner) && !senderIsAdmin) {
+    log('SENDER JID:', senderJid)
+    log('SENDER IS ADMIN IN TARGET:', senderIsAdmin)
+
+    if (!senderIsAdmin && !(isOwner || isROwner)) {
       return conn.reply(
         m.chat,
         `*╭━━━━━━━⛔━━━━━━━╮*
@@ -216,6 +245,8 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
 
       return ids.includes(userJid)
     })
+
+    log('ALREADY IN GROUP:', alreadyInGroup)
 
     if (action === 'add' && alreadyInGroup) {
       return conn.reply(
@@ -247,11 +278,56 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
       )
     }
 
-    await withTimeout(conn.groupParticipantsUpdate(targetGroup, [userJid], action), 7000)
+    let updateError = null
+    let updateResult = null
 
-    return conn.reply(
-      m.chat,
-      `*╭━━━━━━━✅━━━━━━━╮*
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        log(`TRY groupParticipantsUpdate START attempt ${attempt}`)
+        updateResult = await withTimeout(
+          conn.groupParticipantsUpdate(targetGroup, [userJid], action),
+          20000
+        )
+        log(`TRY groupParticipantsUpdate OK attempt ${attempt}:`, updateResult)
+        updateError = null
+        break
+      } catch (e) {
+        updateError = e
+        log(`TRY groupParticipantsUpdate ERROR attempt ${attempt}:`, e)
+        if (attempt < 3) await sleep(2500)
+      }
+    }
+
+    log('VERIFY metadata AFTER update START')
+    let verifyMetadata = null
+    try {
+      verifyMetadata = await withTimeout(conn.groupMetadata(targetGroup), 15000)
+      log('VERIFY metadata AFTER update OK')
+    } catch (e) {
+      log('VERIFY metadata AFTER update ERROR:', e)
+    }
+
+    let finalPresence = null
+    if (verifyMetadata?.participants) {
+      finalPresence = verifyMetadata.participants.some(p => {
+        const ids = [
+          conn.decodeJid(p.id),
+          p.jid ? conn.decodeJid(p.jid) : null,
+          p.lid ? conn.decodeJid(p.lid) : null
+        ].filter(Boolean)
+
+        return ids.includes(userJid)
+      })
+    }
+
+    log('FINAL PRESENCE:', finalPresence)
+    log('UPDATE RESULT:', updateResult)
+    log('UPDATE ERROR FINAL:', updateError)
+
+    if (action === 'add' && finalPresence === true) {
+      return conn.reply(
+        m.chat,
+        `*╭━━━━━━━✅━━━━━━━╮*
 *✦ 𝐔𝐓𝐄𝐍𝐓𝐄 ${actionLabel} ✦*
 *╰━━━━━━━✅━━━━━━━╯*
 
@@ -259,24 +335,74 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
 *🎯 𝐆𝐫𝐮𝐩𝐩𝐨:* \`${targetGroup}\`
 
 > *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`,
-      m,
-      { mentions: [userJid] }
-    )
-  } catch (e) {
-    console.log('ERRORE GROUP ACTION:', e)
+        m,
+        { mentions: [userJid] }
+      )
+    }
 
-    const err = String(e?.message || e || '').toLowerCase()
+    if (action === 'remove' && finalPresence === false) {
+      return conn.reply(
+        m.chat,
+        `*╭━━━━━━━✅━━━━━━━╮*
+*✦ 𝐔𝐓𝐄𝐍𝐓𝐄 ${actionLabel} ✦*
+*╰━━━━━━━✅━━━━━━━╯*
 
+*@${cleanNumber} 𝐞̀ 𝐬𝐭𝐚𝐭𝐨 ${actionVerb} 𝐜𝐨𝐧 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐨.*
+*🎯 𝐆𝐫𝐮𝐩𝐩𝐨:* \`${targetGroup}\`
+
+> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`,
+        m,
+        { mentions: [userJid] }
+      )
+    }
+
+    if (!updateError) {
+      return conn.reply(
+        m.chat,
+        `*╭━━━━━━━⚠️━━━━━━━╮*
+*✦ 𝐑𝐈𝐒𝐔𝐋𝐓𝐀𝐓𝐎 𝐍𝐎𝐍 𝐂𝐎𝐍𝐅𝐄𝐑𝐌𝐀𝐓𝐎 ✦*
+*╰━━━━━━━⚠️━━━━━━━╯*
+
+*𝐋𝐚 𝐫𝐢𝐜𝐡𝐢𝐞𝐬𝐭𝐚 è 𝐬𝐭𝐚𝐭𝐚 𝐢𝐧𝐯𝐢𝐚𝐭𝐚, 𝐦𝐚 𝐖𝐡𝐚𝐭𝐬𝐀𝐩𝐩 𝐧𝐨𝐧 𝐡𝐚 𝐜𝐨𝐧𝐟𝐞𝐫𝐦𝐚𝐭𝐨 𝐬𝐮𝐛𝐢𝐭𝐨 𝐥𝐨 𝐬𝐭𝐚𝐭𝐨 𝐟𝐢𝐧𝐚𝐥𝐞.*
+*🎯 𝐆𝐫𝐮𝐩𝐩𝐨:* \`${targetGroup}\`
+
+> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`,
+        m
+      )
+    }
+
+    const err = String(updateError?.message || updateError || '').toLowerCase()
     let msg = `*𝐍𝐨𝐧 𝐬𝐨𝐧𝐨 𝐫𝐢𝐮𝐬𝐜𝐢𝐭𝐨 𝐚 𝐦𝐨𝐝𝐢𝐟𝐢𝐜𝐚𝐫𝐞 𝐥'𝐮𝐭𝐞𝐧𝐭𝐞.*`
 
     if (err.includes('timeout')) {
-      msg = `*❌ 𝐋'𝐨𝐩𝐞𝐫𝐚𝐳𝐢𝐨𝐧𝐞 𝐡𝐚 𝐢𝐦𝐩𝐢𝐞𝐠𝐚𝐭𝐨 𝐭𝐫𝐨𝐩𝐩𝐨 𝐭𝐞𝐦𝐩𝐨 𝐞 𝐞̀ 𝐬𝐭𝐚𝐭𝐚 𝐛𝐥𝐨𝐜𝐜𝐚𝐭𝐚.*`
+      msg = `*❌ 𝐖𝐡𝐚𝐭𝐬𝐀𝐩𝐩 𝐧𝐨𝐧 𝐡𝐚 𝐫𝐢𝐬𝐩𝐨𝐬𝐭𝐨 𝐢𝐧 𝐭𝐞𝐦𝐩𝐨 𝐮𝐭𝐢𝐥𝐞.*`
     } else if (err.includes('403') || err.includes('admin') || err.includes('not-authorized')) {
       msg = `*❌ 𝐈𝐥 𝐛𝐨𝐭 𝐧𝐨𝐧 𝐡𝐚 𝐢 𝐩𝐞𝐫𝐦𝐞𝐬𝐬𝐢 𝐧𝐞𝐜𝐞𝐬𝐬𝐚𝐫𝐢 𝐧𝐞𝐥 𝐠𝐫𝐮𝐩𝐩𝐨 𝐝𝐢 𝐝𝐞𝐬𝐭𝐢𝐧𝐚𝐳𝐢𝐨𝐧𝐞.*`
     } else if (err.includes('privacy') || err.includes('invite')) {
       msg = `*❌ 𝐋'𝐮𝐭𝐞𝐧𝐭𝐞 𝐩𝐨𝐭𝐫𝐞𝐛𝐛𝐞 𝐚𝐯𝐞𝐫𝐞 𝐩𝐫𝐢𝐯𝐚𝐜𝐲 𝐜𝐡𝐢𝐮𝐬𝐚 𝐨 𝐫𝐢𝐜𝐡𝐢𝐞𝐝𝐞𝐫𝐞 𝐢𝐧𝐯𝐢𝐭𝐨 𝐭𝐫𝐚𝐦𝐢𝐭𝐞 𝐥𝐢𝐧𝐤.*`
-    } else if (err.includes('not a participant') || err.includes('participant')) {
+    } else if (err.includes('participant')) {
       msg = `*❌ 𝐋'𝐮𝐭𝐞𝐧𝐭𝐞 𝐧𝐨𝐧 𝐫𝐢𝐬𝐮𝐥𝐭𝐚 𝐠𝐞𝐬𝐭𝐢𝐛𝐢𝐥𝐞 𝐢𝐧 𝐪𝐮𝐞𝐥 𝐠𝐫𝐮𝐩𝐩𝐨.*`
+    }
+
+    return conn.reply(
+      m.chat,
+      `*╭━━━━━━━⚠️━━━━━━━╮*
+*✦ 𝐄𝐑𝐑𝐎𝐑𝐄 𝐆𝐄𝐒𝐓𝐈𝐎𝐍𝐄 ✦*
+*╰━━━━━━━⚠️━━━━━━━╯*
+
+${msg}
+
+> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`,
+      m
+    )
+  } catch (e) {
+    log('ERRORE BLOCCO PRINCIPALE:', e)
+
+    const err = String(e?.message || e || '').toLowerCase()
+    let msg = `*𝐍𝐨𝐧 𝐬𝐨𝐧𝐨 𝐫𝐢𝐮𝐬𝐜𝐢𝐭𝐨 𝐚 𝐦𝐨𝐝𝐢𝐟𝐢𝐜𝐚𝐫𝐞 𝐥'𝐮𝐭𝐞𝐧𝐭𝐞.*`
+
+    if (err.includes('timeout')) {
+      msg = `*❌ 𝐋'𝐨𝐩𝐞𝐫𝐚𝐳𝐢𝐨𝐧𝐞 𝐡𝐚 𝐢𝐦𝐩𝐢𝐞𝐠𝐚𝐭𝐨 𝐭𝐫𝐨𝐩𝐩𝐨 𝐭𝐞𝐦𝐩𝐨 𝐞 𝐞̀ 𝐬𝐭𝐚𝐭𝐚 𝐛𝐥𝐨𝐜𝐜𝐚𝐭𝐚.*`
     }
 
     return conn.reply(
