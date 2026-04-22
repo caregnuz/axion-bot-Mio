@@ -1,5 +1,3 @@
-
-
 let handler = async (m, { conn, text, usedPrefix, command, isAdmin, isOwner, isROwner }) => {
   const input = String(text || '').trim()
 
@@ -61,6 +59,7 @@ let handler = async (m, { conn, text, usedPrefix, command, isAdmin, isOwner, isR
     const clean = String(str || '')
       .replace(/\s+/g, '')
       .replace(/https:\/\/chat\.whatsapp\.com\/+/gi, 'https://chat.whatsapp.com/')
+
     const match = clean.match(/chat\.whatsapp\.com\/([A-Za-z0-9]+)/i)
     return match ? match[1] : null
   }
@@ -69,6 +68,7 @@ let handler = async (m, { conn, text, usedPrefix, command, isAdmin, isOwner, isR
     const clean = String(str || '')
       .replace(/\s+/g, '')
       .replace(/\s*@\s*g\.us/gi, '@g.us')
+
     const match = clean.match(/(\d{10,}@g\.us)/i)
     return match ? match[1] : null
   }
@@ -173,38 +173,30 @@ let handler = async (m, { conn, text, usedPrefix, command, isAdmin, isOwner, isR
     const metadata = await conn.groupMetadata(targetGroup)
     const participants = metadata?.participants || []
 
-    const senderJid = conn.decodeJid(m.sender)
-    const botJid = conn.decodeJid(conn.user?.jid || '')
-
     const normalize = jid => String(conn.decodeJid(jid || '') || '').split(':')[0]
+    const senderJid = normalize(m.sender)
+    const botJid = normalize(conn.user?.jid || '')
 
-const senderParticipant = participants.find(p => {
-  const pid = normalize(p.id)
-  return pid === senderJid
-})
+    const senderParticipant = participants.find(p => normalize(p.id) === senderJid)
+    const botParticipant = participants.find(p => normalize(p.id) === botJid)
 
-const botParticipant = participants.find(p => {
-  const pid = normalize(p.id)
-  return pid === botJid
-})
+    const senderIsAdmin = senderParticipant
+      ? (
+          senderParticipant.admin === 'admin' ||
+          senderParticipant.admin === 'superadmin' ||
+          senderParticipant.admin === true ||
+          senderParticipant.isAdmin === true
+        )
+      : false
 
-const senderIsAdmin = senderParticipant
-  ? (
-      senderParticipant.admin === 'admin' ||
-      senderParticipant.admin === 'superadmin' ||
-      senderParticipant.admin === true ||
-      senderParticipant.isAdmin === true
-    )
-  : false
-
-const botIsAdmin = botParticipant
-  ? (
-      botParticipant.admin === 'admin' ||
-      botParticipant.admin === 'superadmin' ||
-      botParticipant.admin === true ||
-      botParticipant.isAdmin === true
-    )
-  : false
+    const botIsAdmin = botParticipant
+      ? (
+          botParticipant.admin === 'admin' ||
+          botParticipant.admin === 'superadmin' ||
+          botParticipant.admin === true ||
+          botParticipant.isAdmin === true
+        )
+      : false
 
     if (!botIsAdmin) {
       return conn.reply(
@@ -248,15 +240,7 @@ const botIsAdmin = botParticipant
       )
     }
 
-    const alreadyInGroup = participants.some(p => {
-      const ids = [
-        conn.decodeJid(p.id),
-        p.jid ? conn.decodeJid(p.jid) : null,
-        p.lid ? conn.decodeJid(p.lid) : null
-      ].filter(Boolean)
-
-      return ids.includes(userJid)
-    })
+    const alreadyInGroup = participants.some(p => normalize(p.id) === userJid)
 
     if (action === 'add' && alreadyInGroup) {
       return conn.reply(
