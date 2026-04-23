@@ -1,26 +1,18 @@
-// kick-add user by bonzino
-
 let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) => {
   const input = String(text || '').trim()
 
-  if (!input) {
-    return conn.reply(
-      m.chat,
-      `*╭━━━━━━━👥━━━━━━━╮*
-*✦ 𝐆𝐄𝐒𝐓𝐈𝐎𝐍𝐄 𝐔𝐓𝐄𝐍𝐓𝐈 ✦*
-*╰━━━━━━━👥━━━━━━━╯*
+  const publicAddCommands = ['adduser']
+  const publicRemoveCommands = ['kickuser']
+  const internalConfirmCommands = ['_adduser_confirm', '_kickuser_confirm']
+  const internalEditCommands = ['_adduser_edit', '_kickuser_edit']
 
-*📌 𝐀𝐠𝐠𝐢𝐮𝐧𝐠𝐢:*
-*${usedPrefix}adduser 393xxxxxxxxx 1203630xxxxxxxxx@g.us*
-
-*📌 𝐑𝐢𝐦𝐮𝐨𝐯𝐢:*
-*${usedPrefix}kickuser 393xxxxxxxxx 1203630xxxxxxxxx@g.us*
-
-*📌 𝐒𝐮𝐩𝐩𝐨𝐫𝐭𝐚 𝐚𝐧𝐜𝐡𝐞:*
-*${usedPrefix}kickuser 393xxx | link*`,
-      m
-    )
-  }
+  const isAdd = publicAddCommands.includes(command) || internalConfirmCommands.includes(command) || internalEditCommands.includes(command)
+  const action = isAdd ? 'add' : 'remove'
+  const actionLabel = isAdd ? '𝐀𝐆𝐆𝐈𝐔𝐍𝐓𝐎' : '𝐑𝐈𝐌𝐎𝐒𝐒𝐎'
+  const actionText = isAdd ? 'aggiunto' : 'rimosso'
+  const baseCommand = isAdd ? 'adduser' : 'kickuser'
+  const isConfirm = internalConfirmCommands.includes(command)
+  const isEdit = internalEditCommands.includes(command)
 
   if (!(isOwner || isROwner)) {
     return conn.reply(
@@ -33,13 +25,6 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
       m
     )
   }
-
-  const isAdd = ['adduser', 'addnum', 'addutente'].includes(command)
-  const action = isAdd ? 'add' : 'remove'
-  const actionLabel = isAdd ? '𝐀𝐆𝐆𝐈𝐔𝐍𝐓𝐎' : '𝐑𝐈𝐌𝐎𝐒𝐒𝐎'
-  const actionText = isAdd ? 'aggiunto' : 'rimosso'
-
-  const log = (...a) => console.log('[ADD-KICK]', ...a)
 
   const normalized = input
     .replace(/\r/g, '')
@@ -81,15 +66,28 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
     p?.participant
   ].filter(Boolean)
 
+  if (!input) {
+    return conn.reply(
+      m.chat,
+      `*╭━━━━━━━👥━━━━━━━╮*
+*✦ 𝐆𝐄𝐒𝐓𝐈𝐎𝐍𝐄 𝐔𝐓𝐄𝐍𝐓𝐈 ✦*
+*╰━━━━━━━👥━━━━━━━╯*
+
+*📌 𝐀𝐠𝐠𝐢𝐮𝐧𝐠𝐢:*
+*${usedPrefix}adduser 393xxxxxxxxx 1203630xxxxxxxxx@g.us*
+
+*📌 𝐑𝐢𝐦𝐮𝐨𝐯𝐢:*
+*${usedPrefix}kickuser 393xxxxxxxxx 1203630xxxxxxxxx@g.us*
+
+*📌 𝐒𝐮𝐩𝐩𝐨𝐫𝐭𝐚 𝐚𝐧𝐜𝐡𝐞:*
+*${usedPrefix}kickuser 393xxx | link*`,
+      m
+    )
+  }
+
   const groupId = extractGroupId(normalized)
   const inviteCode = extractInvite(normalized)
   const number = extractNumber(normalized)
-
-  log('INPUT:', input)
-  log('NORMALIZED:', normalized)
-  log('GROUP ID:', groupId)
-  log('INVITE:', inviteCode)
-  log('NUMBER:', number)
 
   if (!number) {
     return conn.reply(
@@ -130,14 +128,7 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
     try {
       const info = await withTimeout(conn.groupGetInviteInfo(inviteCode), 20000)
       target = info?.id
-      log('INVITE INFO:', {
-        id: info?.id,
-        subject: info?.subject,
-        size: info?.size || null
-      })
-    } catch (e) {
-      log('INVITE ERROR:', e)
-    }
+    } catch {}
   }
 
   if (!target) {
@@ -150,31 +141,36 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
     )
   }
 
+  if (isEdit) {
+    return conn.reply(
+      m.chat,
+      `*╭━━━━━━━✏️━━━━━━━╮*
+*✦ 𝐌𝐎𝐃𝐈𝐅𝐈𝐂𝐀 𝐃𝐀𝐓𝐈 ✦*
+*╰━━━━━━━✏️━━━━━━━╯*
+
+*𝐂𝐨𝐦𝐚𝐧𝐝𝐨 𝐝𝐚 𝐦𝐨𝐝𝐢𝐟𝐢𝐜𝐚𝐫𝐞:*
+*${usedPrefix}${baseCommand} ${number} ${target}*`,
+      m,
+      { mentions: [userJid] }
+    )
+  }
+
   const getMetaSafe = async jid => {
-    let meta = null
     let lastError = null
 
     for (let i = 0; i < 2; i++) {
       try {
-        log('METADATA TRY:', i + 1, jid)
-        meta = await withTimeout(conn.groupMetadata(jid), 20000)
-        log('METADATA RAW:', {
-          id: meta?.id,
-          subject: meta?.subject,
-          participants: Array.isArray(meta?.participants) ? meta.participants.length : 0
-        })
+        const meta = await withTimeout(conn.groupMetadata(jid), 20000)
         if (meta?.id && Array.isArray(meta?.participants) && meta.participants.length > 0) {
           return meta
         }
       } catch (e) {
         lastError = e
-        log('METADATA ERROR:', i + 1, e)
         await sleep(1200)
       }
     }
 
     try {
-      log('FALLBACK: groupFetchAllParticipating')
       const all = await withTimeout(conn.groupFetchAllParticipating(), 25000)
       const direct = all?.[jid]
 
@@ -183,25 +179,13 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
           ? direct.participants
           : Object.values(direct.participants || {})
 
-        const fallbackMeta = {
+        return {
           id: direct.id || jid,
           subject: direct.subject || '',
           participants
         }
-
-        log('FALLBACK OK:', {
-          id: fallbackMeta.id,
-          subject: fallbackMeta.subject,
-          participants: fallbackMeta.participants.length
-        })
-
-        return fallbackMeta
       }
-
-      log('FALLBACK MISS:', jid)
-    } catch (e) {
-      log('FALLBACK ERROR:', e)
-    }
+    } catch {}
 
     throw lastError || new Error('metadata_unavailable')
   }
@@ -220,13 +204,6 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
     })
 
     const isBotAdmin = !!botParticipant && ['admin', 'superadmin'].includes(botParticipant.admin)
-
-    log('TARGET:', target)
-    log('TARGET SUBJECT:', meta?.subject)
-    log('BOT JID:', botJid)
-    log('BOT PHONE:', botPhone)
-    log('BOT ADMIN:', isBotAdmin)
-    log('PARTICIPANTS COUNT:', participants.length)
 
     if (!participants.length) {
       return conn.reply(
@@ -271,41 +248,42 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
 
       if (normalizedIds.includes(normalizeJid(userJid)) || phones.includes(cleanUser)) {
         match = p
-        log('MATCH FOUND:', {
-          ids,
-          normalizedIds,
-          phones
-        })
         break
       }
     }
 
     const exists = !!match
 
-    log('USER JID:', userJid)
-    log('USER PHONE:', cleanUser)
-    log('EXISTS:', exists)
-    log('MATCHED:', match ? {
-      id: match?.id || null,
-      jid: match?.jid || null,
-      lid: match?.lid || null,
-      participant: match?.participant || null,
-      admin: match?.admin || null
-    } : null)
-
-    await conn.reply(
-      m.chat,
-      `*╭━━━━━━━📍━━━━━━━╮*
-*✦ 𝐓𝐀𝐑𝐆𝐄𝐓 ✦*
+    if (!isConfirm) {
+      return conn.sendMessage(
+        m.chat,
+        {
+          text: `*╭━━━━━━━📍━━━━━━━╮*
+*✦ 𝐂𝐎𝐍𝐅𝐄𝐑𝐌𝐀 𝐀𝐙𝐈𝐎𝐍𝐄 ✦*
 *╰━━━━━━━📍━━━━━━━╯*
 
-*𝐆𝐫𝐮𝐩𝐩𝐨:* *${meta?.subject || '-'}*
-*𝐈𝐃:* *${target}*
+*𝐀𝐳𝐢𝐨𝐧𝐞:* *${action}*
 *𝐔𝐭𝐞𝐧𝐭𝐞:* *@${number}*
-*𝐀𝐳𝐢𝐨𝐧𝐞:* *${action}*`,
-      m,
-      { mentions: [userJid] }
-    )
+*𝐆𝐫𝐮𝐩𝐩𝐨:* *${meta?.subject || '-'}*
+*𝐈𝐃:* *${target}*`,
+          mentions: [userJid],
+          buttons: [
+            {
+              buttonId: `${usedPrefix}${isAdd ? '_adduser_confirm' : '_kickuser_confirm'} ${number} ${target}`,
+              buttonText: { displayText: '✅ Conferma' },
+              type: 1
+            },
+            {
+              buttonId: `${usedPrefix}${isAdd ? '_adduser_edit' : '_kickuser_edit'} ${number} ${target}`,
+              buttonText: { displayText: '✏️ Modifica dati' },
+              type: 1
+            }
+          ],
+          headerType: 1
+        },
+        { quoted: m }
+      )
+    }
 
     if (action === 'remove' && !exists) {
       return conn.reply(
@@ -328,17 +306,13 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
     }
 
     let ok = false
-    let lastResult = null
 
     for (let i = 0; i < 3; i++) {
       try {
-        log('TRY UPDATE:', i + 1, { target, userJid, action })
-        lastResult = await withTimeout(conn.groupParticipantsUpdate(target, [userJid], action), 30000)
-        log('UPDATE RESULT:', JSON.stringify(lastResult, null, 2))
+        await withTimeout(conn.groupParticipantsUpdate(target, [userJid], action), 30000)
         ok = true
         break
-      } catch (e) {
-        log('UPDATE ERROR:', i + 1, e)
+      } catch {
         await sleep(2000)
       }
     }
@@ -366,9 +340,7 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
       m,
       { mentions: [userJid] }
     )
-  } catch (e) {
-    log('FATAL:', e)
-
+  } catch {
     return conn.reply(
       m.chat,
       `*╭━━━━━━━⚠️━━━━━━━╮*
@@ -383,7 +355,14 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
 
 handler.help = ['adduser', 'kickuser']
 handler.tags = ['group']
-handler.command = ['adduser', 'addnum', 'addutente', 'kickuser', 'deluser', 'removeuser']
+handler.command = [
+  'adduser',
+  'kickuser',
+  '_adduser_confirm',
+  '_kickuser_confirm',
+  '_adduser_edit',
+  '_kickuser_edit'
+]
 handler.group = false
 handler.rowner = true
 
