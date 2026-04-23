@@ -173,12 +173,14 @@ let handler = async (m, { conn, command }) => {
         const { usedFallback } = await webpToPng(inputPath, outputPath)
         const pngBuffer = await fs.readFile(outputPath)
 
-        await react(usedFallback ? '⚠️' : '✅')
+        const isRealFallback = usedFallback && isAnimated
+
+        await react(isRealFallback ? '⚠️' : '✅')
 
         await conn.sendMessage(m.chat, {
           image: pngBuffer,
-          caption: usedFallback
-            ? '*𝐜𝐨𝐧𝐯𝐞𝐫𝐬𝐢𝐨𝐧𝐞 𝐜𝐨𝐦𝐩𝐥𝐞𝐭𝐚𝐭𝐚 ✅*\n
+          caption: isRealFallback
+            ? '*𝐜𝐨𝐧𝐯𝐞𝐫𝐬𝐢𝐨𝐧𝐞 𝐜𝐨𝐦𝐩𝐥𝐞𝐭𝐚𝐭𝐚 ✅*\n*ℹ️ 𝐄̀ 𝐬𝐭𝐚𝐭𝐨 𝐞𝐬𝐭𝐫𝐚𝐭𝐭𝐨 𝐢𝐥 𝐩𝐫𝐢𝐦𝐨 𝐟𝐫𝐚𝐦𝐞 𝐝𝐞𝐥𝐥𝐨 𝐬𝐭𝐢𝐜𝐤𝐞𝐫 𝐚𝐧𝐢𝐦𝐚𝐭𝐨.*'
             : '*𝐜𝐨𝐧𝐯𝐞𝐫𝐬𝐢𝐨𝐧𝐞 𝐜𝐨𝐦𝐩𝐥𝐞𝐭𝐚𝐭𝐚 ✅*',
           contextInfo: {
             ...(global.rcanal?.contextInfo || {})
