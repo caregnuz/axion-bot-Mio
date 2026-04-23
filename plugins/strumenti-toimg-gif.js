@@ -67,19 +67,30 @@ async function getMagickOrConvert() {
   throw new Error('ImageMagick non trovato')
 }
 
-// statico -> png
 async function webpToPng(input, output) {
   const dwebp = await getDwebp()
-  await run(dwebp, [input, '-o', output])
+
+  try {
+    await run(dwebp, [input, '-o', output])
+    return { usedFallback: false }
+  } catch (e) {
+    const msg = String(e?.message || e || '')
+    if (!/animated webp|unsupported_feature|animated/i.test(msg)) {
+      throw e
+    }
+  }
+
+  const magick = await getMagickOrConvert()
+  await run(magick, [`${input}[0]`, output])
+
+  return { usedFallback: true }
 }
 
-// animato -> gif con ImageMagick
 async function webpToGif(input, output) {
   const bin = await getMagickOrConvert()
   await run(bin, [input, output])
 }
 
-// gif -> mp4 per preview in chat
 async function gifToMp4(input, output) {
   const ffmpeg = await getFfmpeg()
 
@@ -118,19 +129,34 @@ let handler = async (m, { conn, command }) => {
   let outputPath
   let gifPath
 
+  const react = async emoji => {
+    try {
+      await conn.sendMessage(m.chat, {
+        react: {
+          text: emoji,
+          key: m.key
+        }
+      })
+    } catch {}
+  }
+
   try {
     const q = m.quoted ? m.quoted : null
     const { mime, isAnimated } = getQuotedStickerInfo(q)
 
     if (!q || !/webp/i.test(mime)) {
+      await react('⚠️')
       return conn.sendMessage(m.chat, {
         text: '*⚠️ 𝐑𝐢𝐬𝐩𝐨𝐧𝐝𝐢 𝐚 𝐮𝐧𝐨 𝐬𝐭𝐢𝐜𝐤𝐞𝐫.*'
       }, { quoted: m })
     }
 
+    await react('⏳')
+
     const media = await q.download()
 
     if (!media) {
+      await react('❌')
       return conn.sendMessage(m.chat, {
         text: '*⚠️ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐧𝐞𝐥𝐥𝐚 𝐥𝐞𝐭𝐭𝐮𝐫𝐚 𝐝𝐞𝐥𝐥𝐨 𝐬𝐭𝐢𝐜𝐤𝐞𝐫.*'
       }, { quoted: m })
@@ -141,30 +167,39 @@ let handler = async (m, { conn, command }) => {
     await fs.writeFile(inputPath, media)
 
     if (/^(toimg|img)$/i.test(command)) {
-      if (isAnimated) {
-        return conn.sendMessage(m.chat, {
-          text: '*⚠️ 𝐐𝐮𝐞𝐬𝐭𝐨 è 𝐮𝐧𝐨 𝐬𝐭𝐢𝐜𝐤𝐞𝐫 𝐚𝐧𝐢𝐦𝐚𝐭𝐨. 𝐔𝐬𝐚 `.togif` 𝐨 `.gif`.*'
-        }, { quoted: m })
-      }
-
       outputPath = join(tmpdir(), `${base}.png`)
-      await webpToPng(inputPath, outputPath)
 
-      const pngBuffer = await fs.readFile(outputPath)
+      try {
+        const { usedFallback } = await webpToPng(inputPath, outputPath)
+        const pngBuffer = await fs.readFile(outputPath)
 
-      await conn.sendMessage(m.chat, {
-        image: pngBuffer,
-        caption: '*𝐜𝐨𝐧𝐯𝐞𝐫𝐬𝐢𝐨𝐧𝐞 𝐜𝐨𝐦𝐩𝐥𝐞𝐭𝐚𝐭𝐚 ✅*',
-        contextInfo: {
-          ...(global.rcanal?.contextInfo || {})
+        await react(usedFallback ? '⚠️' : '✅')
+
+        await conn.sendMessage(m.chat, {
+          image: pngBuffer,
+          caption: usedFallback
+            ? '*𝐜𝐨𝐧𝐯𝐞𝐫𝐬𝐢𝐨𝐧𝐞 𝐜𝐨𝐦𝐩𝐥𝐞𝐭𝐚𝐭𝐚 ✅*\n*ℹ️ 𝐄̀ 𝐬𝐭𝐚𝐭𝐨 𝐞𝐬𝐭𝐫𝐚𝐭𝐭𝐨 𝐢𝐥 𝐩𝐫𝐢𝐦𝐨 𝐟𝐫𝐚𝐦𝐞 𝐝𝐞𝐥𝐥𝐨 𝐬𝐭𝐢𝐜𝐤𝐞𝐫 𝐚𝐧𝐢𝐦𝐚𝐭𝐨.*'
+            : '*𝐜𝐨𝐧𝐯𝐞𝐫𝐬𝐢𝐨𝐧𝐞 𝐜𝐨𝐦𝐩𝐥𝐞𝐭𝐚𝐭𝐚 ✅*',
+          contextInfo: {
+            ...(global.rcanal?.contextInfo || {})
+          }
+        }, { quoted: m })
+
+        return
+      } catch (e) {
+        if (isAnimated) {
+          await react('⚠️')
+          return conn.sendMessage(m.chat, {
+            text: '*⚠️ 𝐐𝐮𝐞𝐬𝐭𝐨 è 𝐮𝐧𝐨 𝐬𝐭𝐢𝐜𝐤𝐞𝐫 𝐚𝐧𝐢𝐦𝐚𝐭𝐨. 𝐔𝐬𝐚 `.togif` 𝐨 `.gif`.*'
+          }, { quoted: m })
         }
-      }, { quoted: m })
-
-      return
+        throw e
+      }
     }
 
     if (/^(togif|gif)$/i.test(command)) {
       if (!isAnimated) {
+        await react('⚠️')
         return conn.sendMessage(m.chat, {
           text: '*⚠️ 𝐐𝐮𝐞𝐬𝐭𝐨 𝐧𝐨𝐧 è 𝐮𝐧𝐨 𝐬𝐭𝐢𝐜𝐤𝐞𝐫 𝐚𝐧𝐢𝐦𝐚𝐭𝐨. 𝐔𝐬𝐚 `.toimg` 𝐨 `.img`.*'
         }, { quoted: m })
@@ -177,6 +212,8 @@ let handler = async (m, { conn, command }) => {
       await gifToMp4(gifPath, outputPath)
 
       const mp4Buffer = await fs.readFile(outputPath)
+
+      await react('✅')
 
       await conn.sendMessage(m.chat, {
         video: mp4Buffer,
@@ -200,6 +237,8 @@ let handler = async (m, { conn, command }) => {
         : ''
 
     const err = rawErr.split('\n').slice(-10).join('\n').slice(0, 1000)
+
+    await react('❌')
 
     await conn.sendMessage(m.chat, {
       text: `*⚠️ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐝𝐮𝐫𝐚𝐧𝐭𝐞 𝐥𝐚 𝐜𝐨𝐧𝐯𝐞𝐫𝐬𝐢𝐨𝐧𝐞.*\n\n\`\`\`${err || 'Errore sconosciuto'}\`\`\`${extraHint}`
