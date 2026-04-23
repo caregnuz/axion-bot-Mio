@@ -20,49 +20,23 @@ const handler = async (m, { conn, args }) => {
   const targetNumber = target.split('@')[0]
 
   const getDisplayName = async () => {
-    if (m.quoted?.sender && m.quoted?.sender === target) {
-      return (
-        m.quoted?.pushName ||
-        m.quoted?.name ||
-        `@${targetNumber}`
-      )
-    }
+    try {
+      const name = await conn.getName(target)
+      if (name && name !== target) return name
+    } catch {}
 
-    if (m.mentionedJid?.[0] && m.mentionedJid[0] === target) {
-      const contact =
-        conn.contacts?.[target] ||
-        conn.contacts?.[target.split('@')[0] + '@s.whatsapp.net']
-
-      return (
-        contact?.name ||
-        contact?.notify ||
-        contact?.vname ||
-        `@${targetNumber}`
-      )
+    if (m.quoted?.sender === target) {
+      return m.quoted.pushName || m.quoted.name || `@${targetNumber}`
     }
 
     if (target === m.sender) {
-      return (
-        m.pushName ||
-        conn.contacts?.[target]?.name ||
-        conn.contacts?.[target]?.notify ||
-        `@${targetNumber}`
-      )
+      return m.pushName || `@${targetNumber}`
     }
 
-    const contact =
-      conn.contacts?.[target] ||
-      conn.contacts?.[target.split('@')[0] + '@s.whatsapp.net']
-
-    return (
-      contact?.name ||
-      contact?.notify ||
-      contact?.vname ||
-      `@${targetNumber}`
-    )
+    return `@${targetNumber}`
   }
 
-  const nome = await getDisplayName()
+  const nome = (await getDisplayName())?.slice(0, 22)
 
   const random = (min, max) =>
     Math.floor(Math.random() * (max - min + 1)) + min
@@ -97,6 +71,11 @@ const handler = async (m, { conn, args }) => {
 
   const avatar = await loadImage(avatarUrl)
 
+  let ofLogo = null
+  try {
+    ofLogo = await loadImage('./media/onlyfans-logo.png')
+  } catch {}
+
   const canvas = createCanvas(900, 1200)
   const ctx = canvas.getContext('2d')
 
@@ -114,20 +93,24 @@ const handler = async (m, { conn, args }) => {
     ctx.closePath()
   }
 
-  const drawOnlyFansLogo = (x, y) => {
-    ctx.textAlign = 'left'
-    ctx.font = 'bold 58px Sans'
-    ctx.fillStyle = '#ffffff'
-    ctx.fillText('OnlyFans', x, y)
+  const removeWhiteBg = (x, y, w, h) => {
+    const imgData = ctx.getImageData(x, y, w, h)
+    const data = imgData.data
 
-    roundRect(x - 82, y - 46, 64, 64, 18)
-    ctx.fillStyle = '#ffffff'
-    ctx.fill()
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i]
+      const g = data[i + 1]
+      const b = data[i + 2]
+      const a = data[i + 3]
 
-    ctx.fillStyle = '#00aff0'
-    ctx.font = 'bold 34px Sans'
-    ctx.textAlign = 'center'
-    ctx.fillText('OF', x - 50, y - 2)
+      if (a === 0) continue
+
+      if (r > 240 && g > 240 && b > 240) {
+        data[i + 3] = 0
+      }
+    }
+
+    ctx.putImageData(imgData, x, y)
   }
 
   const bg = ctx.createLinearGradient(0, 0, 0, canvas.height)
@@ -147,7 +130,20 @@ const handler = async (m, { conn, args }) => {
   ctx.fillStyle = topOverlay
   ctx.fillRect(0, 0, canvas.width, 150)
 
-  drawOnlyFansLogo(280, 95)
+  if (ofLogo) {
+    const logoW = 520
+    const logoH = 120
+    const logoX = (canvas.width - logoW) / 2
+    const logoY = 18
+
+    ctx.drawImage(ofLogo, logoX, logoY, logoW, logoH)
+    removeWhiteBg(logoX, logoY, logoW, logoH)
+  } else {
+    ctx.textAlign = 'center'
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 54px Sans'
+    ctx.fillText('OnlyFans', 450, 92)
+  }
 
   ctx.fillStyle = '#11141b'
   roundRect(75, 165, 750, 885, 34)
