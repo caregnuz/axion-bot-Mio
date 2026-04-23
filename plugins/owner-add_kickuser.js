@@ -33,7 +33,7 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
   const actionLabel = isAdd ? '𝐀𝐆𝐆𝐈𝐔𝐍𝐓𝐎' : '𝐑𝐈𝐌𝐎𝐒𝐒𝐎'
   const actionText = isAdd ? 'aggiunto' : 'rimosso'
   const baseCommand = isAdd ? 'adduser' : 'kickuser'
-  const footer = `\n\n*— axion bot*`
+  const footer = `\n\n> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
 
   const react = async emoji => {
     try {
@@ -273,7 +273,7 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
       )
     }
 
-    let exists = participants.some(p =>
+    const exists = participants.some(p =>
       participantIds(p).some(id => jidPhone(id) === cleanUser)
     )
 
@@ -286,10 +286,10 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
 *✦ 𝐂𝐎𝐍𝐅𝐄𝐑𝐌𝐀 𝐀𝐙𝐈𝐎𝐍𝐄 ✦*
 *╰━━━━━━━📍━━━━━━━╯*
 
-*𝐀𝐳𝐢𝐨𝐧𝐞:* *${action}*
-*𝐔𝐭𝐞𝐧𝐭𝐞:* *@${number}*
-*𝐆𝐫𝐮𝐩𝐩𝐨:* *${meta?.subject || '-'}*
-*𝐈𝐃:* *${target}*${footer}`,
+*❓️𝐀𝐳𝐢𝐨𝐧𝐞:* *${action}*
+*👤𝐔𝐭𝐞𝐧𝐭𝐞:* *@${number}*
+*🏷𝐆𝐫𝐮𝐩𝐩𝐨:* *${meta?.subject || '-'}*
+*🆔️:* *${target}*${footer}`,
           mentions: [userJid],
           buttons: [
             {
@@ -363,8 +363,8 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
 *✦ 𝐔𝐓𝐄𝐍𝐓𝐄 ${actionLabel} ✦*
 *╰━━━━━━━✅━━━━━━━╯*
 
-*@${number} 𝐞̀ 𝐬𝐭𝐚𝐭𝐨 ${actionText}.*
-*𝐆𝐫𝐮𝐩𝐩𝐨:* *${meta?.subject || '-'}*${footer}`,
+*👤@${number} 𝐞̀ 𝐬𝐭𝐚𝐭𝐨 ${actionText}.*
+*🏷𝐆𝐫𝐮𝐩𝐩𝐨:* *${meta?.subject || '-'}*${footer}`,
       m,
       { mentions: [userJid] }
     )
