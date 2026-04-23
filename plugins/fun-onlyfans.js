@@ -18,7 +18,8 @@ const handler = async (m, { conn, args }) => {
   if (!target) target = m.sender
 
   const targetNumber = target.split('@')[0]
-  const nome = args.join(' ').trim() || `@${targetNumber}`
+  const typedName = args.join(' ').trim()
+  const nome = typedName || `+${targetNumber}`
 
   const random = (min, max) =>
     Math.floor(Math.random() * (max - min + 1)) + min
@@ -34,12 +35,12 @@ const handler = async (m, { conn, args }) => {
   const onlineNow = random(120, 7800)
 
   const bioList = [
-    '🔥 Contenuti esclusivi ogni giorno',
-    '💋 Solo per veri fan',
-    '😈 Accesso VIP senza limiti',
-    '💎 Premium content',
-    '🌙 Notte calda garantita',
-    '🖤 DM aperti per richieste speciali'
+    'Solo per veri fan',
+    'Contenuti esclusivi ogni giorno',
+    'Accesso VIP senza limiti',
+    'Premium content',
+    'Nuovi contenuti ogni settimana',
+    'DM aperti per richieste speciali'
   ]
 
   const bio = bioList[Math.floor(Math.random() * bioList.length)]
@@ -52,11 +53,6 @@ const handler = async (m, { conn, args }) => {
   }
 
   const avatar = await loadImage(avatarUrl)
-
-  let ofLogo = null
-  try {
-    ofLogo = await loadImage('https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/OnlyFans_logo.svg/512px-OnlyFans_logo.svg.png')
-  } catch {}
 
   const canvas = createCanvas(900, 1200)
   const ctx = canvas.getContext('2d')
@@ -82,6 +78,25 @@ const handler = async (m, { conn, args }) => {
     ctx.fillText(text, canvas.width / 2, y)
   }
 
+  const drawOnlyFansLogo = (x, y) => {
+    // wordmark semplice e stabile
+    ctx.textAlign = 'left'
+    ctx.font = 'bold 58px Sans'
+    ctx.fillStyle = '#ffffff'
+    ctx.fillText('OnlyFans', x, y)
+
+    // piccolo badge OF
+    roundRect(x - 82, y - 46, 64, 64, 18)
+    ctx.fillStyle = '#ffffff'
+    ctx.fill()
+
+    ctx.fillStyle = '#00aff0'
+    ctx.font = 'bold 34px Sans'
+    ctx.textAlign = 'center'
+    ctx.fillText('OF', x - 50, y - 2)
+  }
+
+  // BACKGROUND
   const bg = ctx.createLinearGradient(0, 0, 0, canvas.height)
   bg.addColorStop(0, '#0d0f14')
   bg.addColorStop(1, '#171a22')
@@ -96,16 +111,12 @@ const handler = async (m, { conn, args }) => {
 
   // overlay header
   const topOverlay = ctx.createLinearGradient(0, 0, canvas.width, 0)
-  topOverlay.addColorStop(0, 'rgba(0,175,240,0.88)')
-  topOverlay.addColorStop(1, 'rgba(0,123,181,0.92)')
+  topOverlay.addColorStop(0, 'rgba(0,175,240,0.90)')
+  topOverlay.addColorStop(1, 'rgba(0,123,181,0.95)')
   ctx.fillStyle = topOverlay
   ctx.fillRect(0, 0, canvas.width, 150)
 
-  if (ofLogo) {
-    ctx.drawImage(ofLogo, 305, 38, 290, 78)
-  } else {
-    drawCenteredText('OnlyFans', 92, 'bold 54px Sans', '#ffffff')
-  }
+  drawOnlyFansLogo(280, 95)
 
   // card centrale
   ctx.fillStyle = '#11141b'
@@ -142,17 +153,19 @@ const handler = async (m, { conn, args }) => {
   ctx.lineWidth = 6
   ctx.stroke()
 
-  // status online
-  ctx.fillStyle = '#1ed760'
+  // online dot
+  ctx.fillStyle = '#30d158'
   ctx.beginPath()
   ctx.arc(560, 405, 14, 0, Math.PI * 2)
   ctx.fill()
 
+  // nome
   ctx.fillStyle = '#ffffff'
   ctx.font = 'bold 40px Sans'
   ctx.textAlign = 'center'
   ctx.fillText(nome, 450, 505)
 
+  // badge verificato
   if (verified) {
     ctx.fillStyle = '#00aff0'
     ctx.beginPath()
@@ -212,7 +225,7 @@ const handler = async (m, { conn, args }) => {
 
   ctx.fillStyle = '#ffffff'
   ctx.font = 'bold 30px Sans'
-  ctx.fillText(`💰 ${prezzo}€ / mese`, 450, 932)
+  ctx.fillText(`${prezzo}€ / mese`, 450, 932)
 
   // subscribe button
   const btnGrad = ctx.createLinearGradient(205, 985, 695, 985)
@@ -226,11 +239,11 @@ const handler = async (m, { conn, args }) => {
   ctx.font = 'bold 30px Sans'
   ctx.fillText('ABBONATI ORA', 450, 1042)
 
-  // watermark
-  ctx.globalAlpha = 0.68
+  // watermark AXION
+  ctx.globalAlpha = 0.7
   ctx.fillStyle = '#ffffff'
-  ctx.font = 'bold 24px Sans'
-  ctx.fillText('𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓', 450, 1152)
+  ctx.font = 'bold 22px Sans'
+  ctx.fillText('AXION BOT', 450, 1152)
   ctx.globalAlpha = 1
 
   const buffer = canvas.toBuffer('image/png')
