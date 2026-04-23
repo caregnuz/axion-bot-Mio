@@ -18,8 +18,51 @@ const handler = async (m, { conn, args }) => {
   if (!target) target = m.sender
 
   const targetNumber = target.split('@')[0]
-  const typedName = args.join(' ').trim()
-  const nome = typedName || `+${targetNumber}`
+
+  const getDisplayName = async () => {
+    if (m.quoted?.sender && m.quoted?.sender === target) {
+      return (
+        m.quoted?.pushName ||
+        m.quoted?.name ||
+        `@${targetNumber}`
+      )
+    }
+
+    if (m.mentionedJid?.[0] && m.mentionedJid[0] === target) {
+      const contact =
+        conn.contacts?.[target] ||
+        conn.contacts?.[target.split('@')[0] + '@s.whatsapp.net']
+
+      return (
+        contact?.name ||
+        contact?.notify ||
+        contact?.vname ||
+        `@${targetNumber}`
+      )
+    }
+
+    if (target === m.sender) {
+      return (
+        m.pushName ||
+        conn.contacts?.[target]?.name ||
+        conn.contacts?.[target]?.notify ||
+        `@${targetNumber}`
+      )
+    }
+
+    const contact =
+      conn.contacts?.[target] ||
+      conn.contacts?.[target.split('@')[0] + '@s.whatsapp.net']
+
+    return (
+      contact?.name ||
+      contact?.notify ||
+      contact?.vname ||
+      `@${targetNumber}`
+    )
+  }
+
+  const nome = await getDisplayName()
 
   const random = (min, max) =>
     Math.floor(Math.random() * (max - min + 1)) + min
@@ -71,21 +114,12 @@ const handler = async (m, { conn, args }) => {
     ctx.closePath()
   }
 
-  const drawCenteredText = (text, y, font, color = '#fff') => {
-    ctx.font = font
-    ctx.fillStyle = color
-    ctx.textAlign = 'center'
-    ctx.fillText(text, canvas.width / 2, y)
-  }
-
   const drawOnlyFansLogo = (x, y) => {
-    // wordmark semplice e stabile
     ctx.textAlign = 'left'
     ctx.font = 'bold 58px Sans'
     ctx.fillStyle = '#ffffff'
     ctx.fillText('OnlyFans', x, y)
 
-    // piccolo badge OF
     roundRect(x - 82, y - 46, 64, 64, 18)
     ctx.fillStyle = '#ffffff'
     ctx.fill()
@@ -96,20 +130,17 @@ const handler = async (m, { conn, args }) => {
     ctx.fillText('OF', x - 50, y - 2)
   }
 
-  // BACKGROUND
   const bg = ctx.createLinearGradient(0, 0, 0, canvas.height)
   bg.addColorStop(0, '#0d0f14')
   bg.addColorStop(1, '#171a22')
   ctx.fillStyle = bg
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-  // cover blurata
   ctx.save()
   ctx.filter = 'blur(18px) brightness(0.45)'
   ctx.drawImage(avatar, 0, 0, canvas.width, 330)
   ctx.restore()
 
-  // overlay header
   const topOverlay = ctx.createLinearGradient(0, 0, canvas.width, 0)
   topOverlay.addColorStop(0, 'rgba(0,175,240,0.90)')
   topOverlay.addColorStop(1, 'rgba(0,123,181,0.95)')
@@ -118,7 +149,6 @@ const handler = async (m, { conn, args }) => {
 
   drawOnlyFansLogo(280, 95)
 
-  // card centrale
   ctx.fillStyle = '#11141b'
   roundRect(75, 165, 750, 885, 34)
   ctx.fill()
@@ -128,13 +158,11 @@ const handler = async (m, { conn, args }) => {
   roundRect(75, 165, 750, 885, 34)
   ctx.stroke()
 
-  // avatar shadow
   ctx.beginPath()
   ctx.arc(450, 325, 150, 0, Math.PI * 2)
   ctx.fillStyle = 'rgba(0,0,0,0.35)'
   ctx.fill()
 
-  // avatar
   ctx.save()
   ctx.beginPath()
   ctx.arc(450, 315, 135, 0, Math.PI * 2)
@@ -143,7 +171,6 @@ const handler = async (m, { conn, args }) => {
   ctx.drawImage(avatar, 315, 180, 270, 270)
   ctx.restore()
 
-  // bordo avatar
   const borderGrad = ctx.createLinearGradient(315, 180, 585, 450)
   borderGrad.addColorStop(0, '#34c7ff')
   borderGrad.addColorStop(1, '#008fd6')
@@ -153,19 +180,16 @@ const handler = async (m, { conn, args }) => {
   ctx.lineWidth = 6
   ctx.stroke()
 
-  // online dot
   ctx.fillStyle = '#30d158'
   ctx.beginPath()
   ctx.arc(560, 405, 14, 0, Math.PI * 2)
   ctx.fill()
 
-  // nome
   ctx.fillStyle = '#ffffff'
   ctx.font = 'bold 40px Sans'
   ctx.textAlign = 'center'
   ctx.fillText(nome, 450, 505)
 
-  // badge verificato
   if (verified) {
     ctx.fillStyle = '#00aff0'
     ctx.beginPath()
@@ -185,7 +209,6 @@ const handler = async (m, { conn, args }) => {
   ctx.fillStyle = '#d5d7dd'
   ctx.fillText(`${formatNum(onlineNow)} online ora`, 450, 585)
 
-  // bio box
   ctx.fillStyle = '#171b24'
   roundRect(145, 620, 610, 82, 22)
   ctx.fill()
@@ -194,7 +217,6 @@ const handler = async (m, { conn, args }) => {
   ctx.fillStyle = '#e6e7eb'
   ctx.fillText(bio, 450, 670)
 
-  // stats boxes
   const statBoxes = [
     { x: 125, label: 'Followers', value: formatNum(followers) },
     { x: 355, label: 'Post', value: formatNum(post) },
@@ -215,7 +237,6 @@ const handler = async (m, { conn, args }) => {
     ctx.fillText(box.label, box.x + 95, 830)
   }
 
-  // price pill
   const priceGrad = ctx.createLinearGradient(255, 885, 645, 885)
   priceGrad.addColorStop(0, '#00aff0')
   priceGrad.addColorStop(1, '#008fd6')
@@ -227,7 +248,6 @@ const handler = async (m, { conn, args }) => {
   ctx.font = 'bold 30px Sans'
   ctx.fillText(`${prezzo}€ / mese`, 450, 932)
 
-  // subscribe button
   const btnGrad = ctx.createLinearGradient(205, 985, 695, 985)
   btnGrad.addColorStop(0, '#ffffff')
   btnGrad.addColorStop(1, '#e9eef2')
@@ -239,7 +259,6 @@ const handler = async (m, { conn, args }) => {
   ctx.font = 'bold 30px Sans'
   ctx.fillText('ABBONATI ORA', 450, 1042)
 
-  // watermark AXION
   ctx.globalAlpha = 0.7
   ctx.fillStyle = '#ffffff'
   ctx.font = 'bold 22px Sans'
@@ -250,7 +269,7 @@ const handler = async (m, { conn, args }) => {
 
   await conn.sendMessage(m.chat, {
     image: buffer,
-    caption: `🔞 *Profilo onlyfans di* @${targetNumber}`,
+    caption: `🔞 *Profilo onlyfans di* ${nome}`,
     mentions: [target]
   }, { quoted: m })
 }
