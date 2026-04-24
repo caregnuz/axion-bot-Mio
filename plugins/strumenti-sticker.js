@@ -16,10 +16,9 @@ async function react(m, emoji) {
 function run(cmd, args = []) {
   return new Promise((resolve, reject) => {
     const p = spawn(cmd, args)
-
     let stderr = ''
-    p.stderr.on('data', d => stderr += d.toString())
 
+    p.stderr.on('data', d => stderr += d.toString())
     p.on('error', reject)
 
     p.on('close', code => {
@@ -51,7 +50,7 @@ async function compressAnimatedSticker(inputBuffer) {
           '-i', input,
           '-t', String(opt.t),
           '-vf',
-          `fps=${opt.fps},scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:-1:-1:color=0x00000000`,
+          `fps=${opt.fps},scale=512:512:force_original_aspect_ratio=increase,crop=512:512`,
           '-loop', '0',
           '-an',
           '-vcodec', 'libwebp',
@@ -110,7 +109,7 @@ let handler = async (m, { conn, text }) => {
       }
     }
 
-    let media = await q.download()
+    const media = await q.download()
 
     if (!media) {
       await react(m, '❌')
@@ -118,6 +117,14 @@ let handler = async (m, { conn, text }) => {
         text: '*⚠️ 𝐈𝐦𝐩𝐨𝐬𝐬𝐢𝐛𝐢𝐥𝐞 𝐬𝐜𝐚𝐫𝐢𝐜𝐚𝐫𝐞 𝐢𝐥 𝐦𝐞𝐝𝐢𝐚.*'
       }, { quoted: m })
     }
+
+    let waitMsg = null
+
+    try {
+      waitMsg = await conn.sendMessage(m.chat, {
+        text: '*🛠️ 𝐄𝐝𝐢𝐭𝐢𝐧𝐠 𝐬𝐭𝐢𝐜𝐤𝐞𝐫...*\n\n*⏳ 𝐒𝐭𝐨 𝐞𝐥𝐚𝐛𝐨𝐫𝐚𝐧𝐝𝐨 𝐢𝐥 𝐦𝐞𝐝𝐢𝐚, 𝐚𝐭𝐭𝐞𝐧𝐝𝐢 𝐪𝐮𝐚𝐥𝐜𝐡𝐞 𝐬𝐞𝐜𝐨𝐧𝐝𝐨.*'
+      }, { quoted: m })
+    } catch {}
 
     let stiker = await sticker(media, false, packname, author)
 
@@ -131,18 +138,20 @@ let handler = async (m, { conn, text }) => {
     if (Buffer.isBuffer(stiker) && stiker.length > MAX_STICKER_SIZE) {
       await react(m, '🗜️')
 
+      await conn.sendMessage(m.chat, {
+        text: '*🗜️ 𝐒𝐭𝐢𝐜𝐤𝐞𝐫 𝐭𝐫𝐨𝐩𝐩𝐨 𝐩𝐞𝐬𝐚𝐧𝐭𝐞...*\n\n*𝐋𝐨 𝐬𝐭𝐨 𝐜𝐨𝐦𝐩𝐫𝐢𝐦𝐞𝐧𝐝𝐨 𝐞 𝐭𝐚𝐠𝐥𝐢𝐚𝐧𝐝𝐨 𝐬𝐞𝐧𝐳𝐚 𝐛𝐨𝐫𝐝𝐢 𝐧𝐞𝐫𝐢.*'
+      }, { quoted: m })
+
       const compressed = await compressAnimatedSticker(media)
 
-      if (compressed && compressed.length <= MAX_STICKER_SIZE) {
-        stiker = compressed
-      } else if (compressed) {
-        stiker = compressed
-      } else {
+      if (!compressed) {
         await react(m, '❌')
         return conn.sendMessage(m.chat, {
           text: '*⚠️ 𝐍𝐨𝐧 𝐬𝐨𝐧𝐨 𝐫𝐢𝐮𝐬𝐜𝐢𝐭𝐨 𝐚 𝐜𝐨𝐦𝐩𝐫𝐢𝐦𝐞𝐫𝐞 𝐥𝐨 𝐬𝐭𝐢𝐜𝐤𝐞𝐫.*'
         }, { quoted: m })
       }
+
+      stiker = compressed
     }
 
     await conn.sendMessage(m.chat, {
