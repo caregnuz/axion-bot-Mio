@@ -87,14 +87,9 @@ try {
       }, { quoted: m })
     }
 
-    await conn.sendFile(
-      m.chat,
-      stiker,
-      'sticker.webp',
-      '',
-      m,
-      true
-    )
+  await conn.sendMessage(m.chat, {
+  sticker: stiker
+}, { quoted: m })
 
     await react(m, '✅')
 
