@@ -34,7 +34,12 @@ let handler = async (m, { conn, text }) => {
       }, { quoted: m })
     }
 
-    const nomeUtente = await conn.getName(m.sender).catch(() => 'Utente')
+    let nomeUtente
+try {
+  nomeUtente = await conn.getName(m.sender)
+} catch {
+  nomeUtente = 'Utente'
+}
 
     let packname = nomeUtente
     let author = '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
