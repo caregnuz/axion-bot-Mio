@@ -126,9 +126,16 @@ let handler = async (m, { conn, text }) => {
       }, { quoted: m })
     }
 
+    if (/video|webp/.test(mime)) {
+      compressMsg = await conn.sendMessage(m.chat, {
+        text: '*𝐒𝐭𝐢𝐜𝐤𝐞𝐫 𝐭𝐫𝐨𝐩𝐩𝐨 𝐩𝐞𝐬𝐚𝐧𝐭𝐞, 𝐜𝐨𝐦𝐩𝐫𝐞𝐬𝐬𝐢𝐨𝐧𝐞 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨...*'
+      }, { quoted: m }).catch(() => null)
+    }
+
     let stiker = await sticker(media, false, packname, author)
 
     if (!stiker) {
+      await deleteMessage(conn, m.chat, compressMsg?.key)
       await react(m, '❌')
       return conn.sendMessage(m.chat, {
         text: '*⚠️ 𝐂𝐫𝐞𝐚𝐳𝐢𝐨𝐧𝐞 𝐬𝐭𝐢𝐜𝐤𝐞𝐫 𝐧𝐨𝐧 𝐫𝐢𝐮𝐬𝐜𝐢𝐭𝐚.*'
@@ -137,10 +144,6 @@ let handler = async (m, { conn, text }) => {
 
     if (Buffer.isBuffer(stiker) && stiker.length > MAX_STICKER_SIZE) {
       await react(m, '⚙️')
-
-      compressMsg = await conn.sendMessage(m.chat, {
-        text: 'text: *𝐒𝐭𝐢𝐜𝐤𝐞𝐫 𝐭𝐫𝐨𝐩𝐩𝐨 𝐩𝐞𝐬𝐚𝐧𝐭𝐞, 𝐜𝐨𝐦𝐩𝐫𝐞𝐬𝐬𝐢𝐨𝐧𝐞 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨...*'
-      }, { quoted: m }).catch(() => null)
 
       const compressed = await compressAnimatedSticker(media)
 
@@ -154,8 +157,6 @@ let handler = async (m, { conn, text }) => {
 
       stiker = compressed
     }
-
-    await deleteMessage(conn, m.chat, compressMsg?.key)
 
     await conn.sendMessage(m.chat, {
       sticker: stiker
