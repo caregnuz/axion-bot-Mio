@@ -289,9 +289,25 @@ const handler = async (m, { conn, command, text }) => {
 
     await m.react('✅')
   } catch (e) {
-    console.error(e)
+    console.error('[METRO ERROR]', e)
+
     await m.react('❌')
-    await conn.reply(m.chat, `${global.errore || '*⚠️ 𝐄𝐫𝐫𝐨𝐫𝐞.*'}`, m)
+
+    const err = String(e?.stack || e?.message || e || 'Errore sconosciuto')
+      .split('\n')
+      .slice(0, 6)
+      .join('\n')
+      .slice(0, 1000)
+
+    await conn.reply(
+      m.chat,
+      `*╭━━━━━━━⚠️━━━━━━━╮*
+*✦ 𝐄𝐑𝐑𝐎𝐑𝐄 ✦*
+*╰━━━━━━━⚠️━━━━━━━╯*
+
+\`\`\`${err}\`\`\``,
+      m
+    )
   }
 }
 
