@@ -13,6 +13,12 @@ async function react(m, emoji) {
   try { await m.react(emoji) } catch {}
 }
 
+async function deleteMessage(conn, chat, key) {
+  try {
+    if (key) await conn.sendMessage(chat, { delete: key })
+  } catch {}
+}
+
 function run(cmd, args = []) {
   return new Promise((resolve, reject) => {
     const p = spawn(cmd, args)
@@ -76,6 +82,8 @@ async function compressAnimatedSticker(inputBuffer) {
 }
 
 let handler = async (m, { conn, text }) => {
+  let compressMsg = null
+
   try {
     await react(m, '⏳')
 
@@ -118,14 +126,6 @@ let handler = async (m, { conn, text }) => {
       }, { quoted: m })
     }
 
-    let waitMsg = null
-
-    try {
-      waitMsg = await conn.sendMessage(m.chat, {
-        text: '*🛠️ 𝐄𝐝𝐢𝐭𝐢𝐧𝐠 𝐬𝐭𝐢𝐜𝐤𝐞𝐫...*\n\n*⏳ 𝐒𝐭𝐨 𝐞𝐥𝐚𝐛𝐨𝐫𝐚𝐧𝐝𝐨 𝐢𝐥 𝐦𝐞𝐝𝐢𝐚, 𝐚𝐭𝐭𝐞𝐧𝐝𝐢 𝐪𝐮𝐚𝐥𝐜𝐡𝐞 𝐬𝐞𝐜𝐨𝐧𝐝𝐨.*'
-      }, { quoted: m })
-    } catch {}
-
     let stiker = await sticker(media, false, packname, author)
 
     if (!stiker) {
@@ -136,15 +136,16 @@ let handler = async (m, { conn, text }) => {
     }
 
     if (Buffer.isBuffer(stiker) && stiker.length > MAX_STICKER_SIZE) {
-      await react(m, '🗜️')
+      await react(m, '⚙️')
 
-      await conn.sendMessage(m.chat, {
-        text: '*🗜️ 𝐒𝐭𝐢𝐜𝐤𝐞𝐫 𝐭𝐫𝐨𝐩𝐩𝐨 𝐩𝐞𝐬𝐚𝐧𝐭𝐞...*\n\n*𝐋𝐨 𝐬𝐭𝐨 𝐜𝐨𝐦𝐩𝐫𝐢𝐦𝐞𝐧𝐝𝐨 𝐞 𝐭𝐚𝐠𝐥𝐢𝐚𝐧𝐝𝐨 𝐬𝐞𝐧𝐳𝐚 𝐛𝐨𝐫𝐝𝐢 𝐧𝐞𝐫𝐢.*'
-      }, { quoted: m })
+      compressMsg = await conn.sendMessage(m.chat, {
+        text: 'text: *𝐒𝐭𝐢𝐜𝐤𝐞𝐫 𝐭𝐫𝐨𝐩𝐩𝐨 𝐩𝐞𝐬𝐚𝐧𝐭𝐞, 𝐜𝐨𝐦𝐩𝐫𝐞𝐬𝐬𝐢𝐨𝐧𝐞 𝐢𝐧 𝐜𝐨𝐫𝐬𝐨...*'
+      }, { quoted: m }).catch(() => null)
 
       const compressed = await compressAnimatedSticker(media)
 
       if (!compressed) {
+        await deleteMessage(conn, m.chat, compressMsg?.key)
         await react(m, '❌')
         return conn.sendMessage(m.chat, {
           text: '*⚠️ 𝐍𝐨𝐧 𝐬𝐨𝐧𝐨 𝐫𝐢𝐮𝐬𝐜𝐢𝐭𝐨 𝐚 𝐜𝐨𝐦𝐩𝐫𝐢𝐦𝐞𝐫𝐞 𝐥𝐨 𝐬𝐭𝐢𝐜𝐤𝐞𝐫.*'
@@ -154,6 +155,8 @@ let handler = async (m, { conn, text }) => {
       stiker = compressed
     }
 
+    await deleteMessage(conn, m.chat, compressMsg?.key)
+
     await conn.sendMessage(m.chat, {
       sticker: stiker
     }, { quoted: m })
@@ -162,6 +165,8 @@ let handler = async (m, { conn, text }) => {
 
   } catch (e) {
     console.error('Errore sticker.js:', e)
+
+    await deleteMessage(conn, m.chat, compressMsg?.key)
     await react(m, '❌')
 
     await conn.sendMessage(m.chat, {
