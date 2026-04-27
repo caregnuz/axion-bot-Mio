@@ -44,19 +44,15 @@ let handler = async (m, { conn, text }) => {
     if (isImageRequest) {
         try {
             await m.react('🎨')
-            const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(text)}?width=1080&height=1080&seed=${Math.floor(Math.random() * 99999)}`
+            // Endpoint ottimizzato per API
+            const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(text)}?model=flux&nologo=true`
             
-            // Scarica l'immagine con Headers browser-like
-            const response = await fetch(imgUrl, {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                }
-            })
+            const response = await fetch(imgUrl)
+            if (!response.ok) throw new Error('Server non raggiungibile')
             
-            if (!response.ok) throw new Error('Impossibile scaricare l\'immagine')
-            
-            const arrayBuffer = await response.arrayBuffer()
-            const buffer = Buffer.from(arrayBuffer)
+            const buffer = await response.buffer()
+
+            if (buffer.length < 500) throw new Error('File corrotto o troppo piccolo')
 
             await conn.sendMessage(m.chat, { 
                 image: buffer, 
@@ -67,7 +63,9 @@ let handler = async (m, { conn, text }) => {
             return
         } catch (e) {
             await m.react('❌')
-            return m.reply(`[ERROR_IMG]: ${e.message}`)
+            // Se fallisce il buffer, proviamo a mandare l'URL diretto come fallback
+            const fallbackUrl = `https://pollinations.ai/p/${encodeURIComponent(text)}`
+            return m.reply(`[ERRORE FILE]: Prova a cliccare qui: ${fallbackUrl}`)
         }
     }
 
