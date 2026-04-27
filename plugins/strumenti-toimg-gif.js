@@ -219,7 +219,7 @@ let handler = async (m, { conn, command }) => {
 
       await conn.sendMessage(m.chat, {
         video: mp4Buffer,
-        gifPlayback: true,
+        gifPlayback: false,
         caption: '*𝐜𝐨𝐧𝐯𝐞𝐫𝐬𝐢𝐨𝐧𝐞 𝐜𝐨𝐦𝐩𝐥𝐞𝐭𝐚𝐭𝐚 ✅*',
         contextInfo: {
           ...(global.rcanal?.contextInfo || {})
