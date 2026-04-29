@@ -60,22 +60,28 @@ async function askAI(prompt) {
 async function getWikiImage(lang, name) {
   try {
     const title = encodeURIComponent(name)
+
     const { data } = await axios.get(
       `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${title}`,
       {
         timeout: 15000,
         headers: {
-          'User-Agent': 'AxionBot/1.0 (contact: axionbot@example.com)'
+          'User-Agent': 'AxionBot/1.0 (axionbot@example.com)'
         }
       }
     )
 
     return data?.originalimage?.source || data?.thumbnail?.source || null
-  } catch {
+
+  } catch (e) {
+    console.error(
+      'Errore immagine Wikipedia:',
+      e?.response?.status || e?.message || e
+    )
+
     return null
   }
 }
-
 async function getCharacterImage(name) {
   return await getWikiImage('it', name) || await getWikiImage('en', name)
 }
