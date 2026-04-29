@@ -11,7 +11,7 @@ const pendingMode = new Map()
 
 const FOOTER = '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
 const GAME_TIME = 30
-const TICK_TIME = 1
+const TICK_TIME = 5
 const REWARD_MIN = 50
 const REWARD_MAX = 149
 const REWARD_EXP = 500
