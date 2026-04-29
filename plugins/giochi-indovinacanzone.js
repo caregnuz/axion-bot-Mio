@@ -616,22 +616,15 @@ await conn.sendMessage(m.chat, {
           buildStartMessage(track, 0, modeLabel)
         )
 
-        await conn.sendMessage(m.chat, {
-          text: buildEndMessage(track),
-          footer: FOOTER,
-          buttons: replayButtons(),
-          headerType: 1,
-          contextInfo: {
-  externalAdReply: {
-    title: track.title,
-    body: `${track.artist} • ${track.genre || 'N/D'} • ${track.source || 'Music'}`,
-    mediaType: 1,
-    renderLargerThumbnail: true,
-    showAdAttribution: false,
-    thumbnailUrl: track.artwork,
-    sourceUrl: track.url || 'https://music.apple.com'
-  }
-}
+await conn.sendMessage(m.chat, {
+  image: { url: game.track.artwork },
+  caption: buildWinMessage(game.track, reward, exp, m.sender),
+  mentions: [m.sender],
+  footer: FOOTER,
+  buttons: replayButtons(),
+  headerType: 4  
+}, { quoted: m }).catch(() => {})
+
         }).catch(() => {})
       } catch (e) {
         console.error('Errore countdown:', e?.message || e)
