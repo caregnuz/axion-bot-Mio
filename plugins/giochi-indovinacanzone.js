@@ -477,77 +477,14 @@ ${S(e?.message || e).slice(0, 1000)}
 \`\`\``),
       m
     )
-  } finally {
+} finally {
     try { if (audioPath) fs.unlinkSync(audioPath) } catch {}
     try { if (voicePath) fs.unlinkSync(voicePath) } catch {}
-  }
-}/
-
-    const game = {
-      track,
-      timeLeft: GAME_TIME,
-      messageKey: gameMsg?.key,
-      interval: null,
-      modeLabel
-    }
-
-    activeGames.set(chat, game)
-
-    game.interval = setInterval(async () => {
-      try {
-        game.timeLeft -= TICK_TIME
-
-        if (game.timeLeft > 0) {
-          await editGameMessage(
-            conn,
-            chat,
-            game.messageKey,
-            buildStartMessage(track, game.timeLeft, modeLabel)
-          )
-          return
-        }
-
-        clearInterval(game.interval)
-        activeGames.delete(chat)
-
-        await editGameMessage(
-          conn,
-          chat,
-          game.messageKey,
-          buildStartMessage(track, 0, modeLabel)
-        )
-
-        await conn.sendMessage(m.chat, {
-          text: buildEndMessage(track),
-          footer: FOOTER,
-          buttons: replayButtons(),
-          headerType: 1,
-          contextInfo: finalContext(track)
-        }).catch(() => {})
-      } catch (e) {
-        console.error('Errore countdown:', e?.message || e)
-      }
-    }, TICK_TIME * 1000)
-
-  } catch (e) {
-    console.error('Errore indovina canzone:', e?.message || e)
-    activeGames.delete(chat)
-    await react(conn, m, '❌')
-
-    return conn.reply(
-      m.chat,
-      withFooter(`*╭━━━━━━━⚠️━━━━━━━╮*
-*✦ 𝐄𝐑𝐑𝐎𝐑𝐄 ✦*
-*╰━━━━━━━⚠️━━━━━━━╯*
-
-*❌ 𝐍𝐞𝐬𝐬𝐮𝐧𝐚 𝐜𝐚𝐧𝐳𝐨𝐧𝐞 𝐭𝐫𝐨𝐯𝐚𝐭𝐚.*
-*🔎 𝐑𝐢𝐜𝐞𝐫𝐜𝐚:* *${options.value || 'casuale'}*`),
-      m
-    )
   }
 }
 
 let handler = async (m, { conn, text, command }) => {
+
   const chat = m.chat
   const input = S(text).trim()
 
