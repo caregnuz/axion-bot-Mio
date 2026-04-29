@@ -40,10 +40,7 @@ async function askAI(prompt) {
           role: 'system',
           content: 'Sei Akinator in italiano. Fai una sola domanda breve alla volta. Le risposte possibili sono sì, no, forse, non so. Quando sei abbastanza sicuro rispondi ESATTAMENTE con: INDOVINATO: Nome Personaggio'
         },
-        {
-          role: 'user',
-          content: prompt
-        }
+        { role: 'user', content: prompt }
       ],
       temperature: 0.7,
       max_tokens: 300
@@ -60,18 +57,21 @@ async function askAI(prompt) {
   return S(data?.choices?.[0]?.message?.content || '').trim()
 }
 
-async function getCharacterImage(name) {
+async function getWikiImage(lang, name) {
   try {
     const title = encodeURIComponent(name)
     const { data } = await axios.get(
-      `https://it.wikipedia.org/api/rest_v1/page/summary/${title}`,
+      `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${title}`,
       { timeout: 15000 }
     )
-
-    return data?.thumbnail?.source || data?.originalimage?.source || null
+    return data?.originalimage?.source || data?.thumbnail?.source || null
   } catch {
     return null
   }
+}
+
+async function getCharacterImage(name) {
+  return await getWikiImage('it', name) || await getWikiImage('en', name)
 }
 
 function resetTimeout(id, m, conn) {
@@ -111,12 +111,35 @@ function buttonsMessage(text, usedPrefix) {
   }
 }
 
+function finalButtonsMessage(text, usedPrefix, image = null) {
+  const msg = {
+    footer: FOOTER,
+    buttons: [
+      { buttonId: `${usedPrefix}aki giocaancora`, buttonText: { displayText: '🔁 Gioca ancora' }, type: 1 }
+    ],
+    headerType: image ? 4 : 1
+  }
+
+  if (image) {
+    msg.image = { url: image }
+    msg.caption = text
+  } else {
+    msg.text = text
+  }
+
+  return msg
+}
+
 function cleanAnswer(text, usedPrefix = '.') {
   return S(text)
     .replace(new RegExp(`^\\${usedPrefix}(akinator|aki)\\s*`, 'i'), '')
     .trim()
     .toLowerCase()
     .replace(/^sì$/, 'si')
+}
+
+function isAnswer(text) {
+  return /^(si|no|forse|non so)$/i.test(text)
 }
 
 async function handleAnswer(m, conn, usedPrefix = '.') {
@@ -157,7 +180,7 @@ async function handleAnswer(m, conn, usedPrefix = '.') {
       return true
     }
 
-    if (!/^(si|no|forse|non so)$/i.test(cleanText)) return true
+    if (!isAnswer(cleanText)) return true
 
     await react(m, '🧠')
 
@@ -196,14 +219,11 @@ Risposta utente: ${cleanText}`
 
 > ${FOOTER}`
 
-      if (image) {
-        await conn.sendMessage(m.chat, {
-          image: { url: image },
-          caption
-        }, { quoted: m })
-      } else {
-        await conn.sendMessage(m.chat, { text: caption }, { quoted: m })
-      }
+      await conn.sendMessage(
+        m.chat,
+        finalButtonsMessage(caption, usedPrefix, image),
+        { quoted: m }
+      )
 
       return true
     }
@@ -224,6 +244,7 @@ Risposta utente: ${cleanText}`
     )
 
     return true
+
   } catch (e) {
     console.error('Errore akinator:', e?.response?.data || e?.message || e)
     clearSession(id)
@@ -242,9 +263,7 @@ Risposta utente: ${cleanText}`
 
     return true
   } finally {
-    if (msgId) {
-      setTimeout(() => processing.delete(msgId), 3000)
-    }
+    if (msgId) setTimeout(() => processing.delete(msgId), 3000)
   }
 }
 
@@ -259,15 +278,12 @@ let handler = async (m, { conn, usedPrefix }) => {
   const rawText = buttonAnswer || S(m.text).trim()
   const cleanText = cleanAnswer(rawText, usedPrefix)
 
-  if (/^(stop|annulla|fine|exit)$/i.test(cleanText)) {
-    if (sessions.has(id)) {
-      return handleAnswer(m, conn, usedPrefix)
-    }
-    return
-  }
-
   if (sessions.has(id)) {
     return handleAnswer(m, conn, usedPrefix)
+  }
+
+  if (isAnswer(cleanText) || /^(stop|annulla|fine|exit)$/i.test(cleanText)) {
+    return
   }
 
   try {
