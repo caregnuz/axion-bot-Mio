@@ -19,8 +19,115 @@ const CACHE_PATH = path.join(process.cwd(), 'media/database/indovinacanzone_cach
 const CACHE_MAX_AGE = 24 * 60 * 60 * 1000
 
 const GENRES = [
-  'rap', 'trap', 'pop', 'house', 'techno', 'rave', 'jazz', 'rock',
-  'indie', 'dance', 'reggaeton', 'classica', 'metal', 'latin', 'rnb'
+  // RAP / TRAP ITALIA
+  'rap italiano',
+  'trap italiana',
+  'drill italiana',
+  'hip hop italiano',
+  'urban italiano',
+
+  // RAP / TRAP USA / GLOBAL
+  'rap usa',
+  'trap usa',
+  'drill usa',
+  'uk drill',
+  'hip hop',
+  'trap',
+  'rap',
+  'boom bap',
+  'gangsta rap',
+  'melodic rap',
+
+  // POP
+  'pop',
+  'pop italiano',
+  'dance pop',
+  'electropop',
+  'indie pop',
+  'synth pop',
+  'kpop',
+  'jpop',
+
+  // ROCK / METAL
+  'rock',
+  'rock italiano',
+  'alternative rock',
+  'indie rock',
+  'punk rock',
+  'hard rock',
+  'classic rock',
+  'metal',
+  'heavy metal',
+  'metalcore',
+  'nu metal',
+  'death metal',
+
+  // ELETTRONICA
+  'house',
+  'deep house',
+  'tech house',
+  'techno',
+  'hard techno',
+  'minimal techno',
+  'rave',
+  'edm',
+  'electronic',
+  'dance',
+  'trance',
+  'dubstep',
+  'drum and bass',
+  'dnb',
+  'future bass',
+  'hardstyle',
+
+  // LATIN / REGGAETON
+  'latin',
+  'reggaeton',
+  'latin trap',
+  'bachata',
+  'salsa',
+  'dancehall''
+  'dembow'
+
+  // R&B / SOUL
+  'rnb',
+  'r&b',
+  'soul',
+  'neo soul',
+  'funk',
+
+  // JAZZ / BLUES
+  'jazz',
+  'smooth jazz',
+  'blues',
+  'swing',
+
+  // CLASSICA
+  'classica',
+  'orchestra',
+  'piano',
+  'instrumental',
+  'soundtrack',
+
+  // REGGAE
+  'reggae',
+  'dub',
+  'ska',
+
+  // INDIE / ALTERNATIVE
+  'indie',
+  'alternative',
+  'lofi',
+  'bedroom pop',
+
+  // AFRO / WORLD
+  'afrobeats',
+  'world music',
+
+  // COUNTRY / FOLK
+  'country',
+  'folk',
+  'acoustic'
 ]
 
 const S = v => String(v || '')
@@ -352,8 +459,8 @@ function buildWinMessage(track, reward, exp, user) {
 *📡 𝐅𝐨𝐧𝐭𝐞:* *${track.source || 'N/D'}*
 
 *🎁 𝐑𝐢𝐜𝐨𝐦𝐩𝐞𝐧𝐬𝐚:*
-*➤ ${reward} 𝐞𝐮𝐫𝐨*
-*➤ ${exp} 𝐞𝐱𝐩*`
+*💶 +${reward} euro*
+*✨ +${exp}`
 }
 
 async function editGameMessage(conn, chat, key, text) {
@@ -467,7 +574,17 @@ await conn.sendMessage(m.chat, {
           footer: FOOTER,
           buttons: replayButtons(),
           headerType: 1,
-          contextInfo: finalContext(track)
+          contextInfo: {
+  externalAdReply: {
+    title: track.title,
+    body: `${track.artist} • ${track.genre || 'N/D'} • ${track.source || 'Music'}`,
+    mediaType: 1,
+    renderLargerThumbnail: true,
+    showAdAttribution: false,
+    thumbnailUrl: track.artwork,
+    sourceUrl: track.url || 'https://music.apple.com'
+  }
+}
         }).catch(() => {})
       } catch (e) {
         console.error('Errore countdown:', e?.message || e)
@@ -650,7 +767,17 @@ handler.before = async (m, { conn }) => {
       footer: FOOTER,
       buttons: replayButtons(),
       headerType: 1,
-      contextInfo: finalContext(game.track)
+      contextInfo: {
+  externalAdReply: {
+    title: game.track.title,
+    body: `${game.track.artist} • ${game.track.genre || 'N/D'} • ${game.track.source || 'Music'}`,
+    mediaType: 1,
+    renderLargerThumbnail: true,
+    showAdAttribution: false,
+    thumbnailUrl: game.track.artwork,
+    sourceUrl: game.track.url || 'https://music.apple.com'
+  }
+}
     }, { quoted: m }).catch(() => {})
 
   } else if (similarityScore >= 0.3) {
