@@ -617,12 +617,12 @@ await conn.sendMessage(m.chat, {
     )
 
     await conn.sendMessage(m.chat, {
-      image: { url: track.artwork },
-      caption: buildEndMessage(track),
-      footer: FOOTER,
-      buttons: replayButtons(),
-      headerType: 4
-    }, { quoted: m }).catch(() => {})
+  text: buildEndMessage(track),
+  footer: FOOTER,
+  buttons: replayButtons(),
+  headerType: 1,
+  contextInfo: finalContext(track)
+}, { quoted: m }).catch(() => {})
 
   } catch (e) {
     console.error('Errore countdown:', e?.message || e)
@@ -815,12 +815,12 @@ if ((user.icStreak || 0) > (user.icRecord || 0)) {
     await react(conn, m, '✅')
 
 await conn.sendMessage(m.chat, {
-  image: { url: game.track.artwork },
-  caption: buildWinMessage(game.track, reward, exp, m.sender),
+  text: buildWinMessage(game.track, reward, exp, m.sender),
   mentions: [m.sender],
   footer: FOOTER,
   buttons: replayButtons(),
-  headerType: 4
+  headerType: 1,
+  contextInfo: finalContext(game.track)
 }, { quoted: m }).catch(() => {})
 
   } else if (similarityScore >= 0.3) {
