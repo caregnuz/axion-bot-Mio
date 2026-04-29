@@ -471,7 +471,7 @@ function finalContext(track) {
       title: track.title,
       body: `${track.artist} • ${track.genre || 'N/D'} • ${track.source || 'Music'}`,
       thumbnailUrl: track.artwork,
-      sourceUrl: track.url || 'https://music.apple.com',
+      sourceUrl: track.url || `${track.artwork}?t=${Date.now()}`,
       mediaType: 1,
       renderLargerThumbnail: true
     }
@@ -616,12 +616,16 @@ await conn.sendMessage(m.chat, {
       buildStartMessage(track, 0, modeLabel)
     )
 
-    await conn.sendMessage(m.chat, {
+await conn.sendMessage(m.chat, {
   text: buildEndMessage(track),
+  contextInfo: finalContext(track)
+}, { quoted: m })
+
+await conn.sendMessage(m.chat, {
   footer: FOOTER,
   buttons: replayButtons(),
   headerType: 1,
-  contextInfo: finalContext(track)
+  text: ' '
 }, { quoted: m }).catch(() => {})
 
   } catch (e) {
@@ -817,10 +821,14 @@ if ((user.icStreak || 0) > (user.icRecord || 0)) {
 await conn.sendMessage(m.chat, {
   text: buildWinMessage(game.track, reward, exp, m.sender),
   mentions: [m.sender],
+  contextInfo: finalContext(game.track)
+}, { quoted: m })
+
+await conn.sendMessage(m.chat, {
   footer: FOOTER,
   buttons: replayButtons(),
   headerType: 1,
-  contextInfo: finalContext(game.track)
+  text: ' '
 }, { quoted: m }).catch(() => {})
 
   } else if (similarityScore >= 0.3) {
