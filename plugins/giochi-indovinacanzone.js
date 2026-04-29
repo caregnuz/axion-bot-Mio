@@ -471,7 +471,7 @@ function finalContext(track) {
       title: track.title,
       body: `${track.artist} • ${track.genre || 'N/D'} • ${track.source || 'Music'}`,
       thumbnailUrl: track.artwork,
-      sourceUrl: track.url || `${track.artwork}?t=${Date.now()}`,
+      sourceUrl: 'https://localhost.invalid/',
       mediaType: 1,
       renderLargerThumbnail: true
     }
