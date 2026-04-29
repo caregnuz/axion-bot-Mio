@@ -52,8 +52,8 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 *✦ 𝐆𝐑𝐎𝐔𝐏 𝐈𝐃 ✦*
 *╰━━━━━━━🆔━━━━━━━╯*
 
-*🔹 𝐍𝐨𝐦𝐞:* ${info.subject || 'Sconosciuto'}
-*🔹 𝐈𝐃:* \`${groupId}\`
+*🏷 𝐍𝐨𝐦𝐞:* ${info.subject || 'Sconosciuto'}
+*🆔️:* \`${groupId}\`
 
 > *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`,
         m
@@ -102,8 +102,8 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 *✦ 𝐆𝐑𝐎𝐔𝐏 𝐋𝐈𝐍𝐊 ✦*
 *╰━━━━━━━🔗━━━━━━━╯*
 
-*🔹 𝐍𝐨𝐦𝐞:* ${groupName}
-*🔹 𝐋𝐢𝐧𝐤:* ${inviteLink}
+*🏷 𝐍𝐨𝐦𝐞:* ${groupName}
+*📎 𝐋𝐢𝐧𝐤:* ${inviteLink}
 
 > *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`,
         m
