@@ -268,15 +268,24 @@ Risposta utente: ${cleanText}`
     await react(m, '❌')
 
     await conn.sendMessage(m.chat, {
-      text:
+  text:
 `*╭━━━━━━━⚠️━━━━━━━╮*
 *✦ 𝐄𝐑𝐑𝐎𝐑𝐄 ✦*
 *╰━━━━━━━⚠️━━━━━━━╯*
 
-*❌ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚 𝐧𝐨𝐧 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞.*
+*❌ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐝𝐮𝐫𝐚𝐧𝐭𝐞 𝐥𝐚 𝐫𝐢𝐬𝐩𝐨𝐬𝐭𝐚.*
+
+\`\`\`
+${S(
+  e?.response?.data?.error?.message ||
+  e?.response?.data?.message ||
+  e?.message ||
+  e
+).slice(0, 1500)}
+\`\`\`
 
 > ${FOOTER}`
-    }, { quoted: m })
+}, { quoted: m })
 
     return true
   } finally {
