@@ -1,3 +1,6 @@
+/*Plugin per gestuone membri anche al di fuori del gruppo di destinazione
+by Bonzino */
+
 let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) => {
   const input = String(text || '').trim()
 
@@ -107,10 +110,12 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
 *✦ 𝐆𝐄𝐒𝐓𝐈𝐎𝐍𝐄 𝐔𝐓𝐄𝐍𝐓𝐈 ✦*
 *╰━━━━━━━👥━━━━━━━╯*
 
-*📌 𝐀𝐠𝐠𝐢𝐮𝐧𝐠𝐢:*
-*${usedPrefix}adduser 393xxxxxxxxx 1203630xxxxxxxxx@g.us*
+*📌 𝐈𝐧 𝐪𝐮𝐞𝐬𝐭𝐨 𝐠𝐫𝐮𝐩𝐩𝐨:*
+*${usedPrefix}adduser 393xxxxxxxxx*
+*${usedPrefix}kickuser 393xxxxxxxxx*
 
-*📌 𝐑𝐢𝐦𝐮𝐨𝐯𝐢:*
+*📌 𝐒𝐮 𝐮𝐧 𝐚𝐥𝐭𝐫𝐨 𝐠𝐫𝐮𝐩𝐩𝐨:*
+*${usedPrefix}adduser 393xxxxxxxxx 1203630xxxxxxxxx@g.us*
 *${usedPrefix}kickuser 393xxxxxxxxx 1203630xxxxxxxxx@g.us*${footer}`,
       m
     )
@@ -119,6 +124,12 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
   const groupId = extractGroupId(normalized)
   const inviteCode = extractInvite(normalized)
   const number = extractNumber(normalized)
+
+  let target = null
+
+  if (!groupId && !inviteCode && m.isGroup) {
+    target = m.chat
+  }
 
   if (!number) {
     await react('❌')
@@ -131,13 +142,19 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
     )
   }
 
-  if (!groupId && !inviteCode) {
+  if (!target && !groupId && !inviteCode) {
     await react('⚠️')
     return conn.reply(
       m.chat,
       `*╭━━━━━━━⚠️━━━━━━━╮*
 *✦ 𝐆𝐑𝐔𝐏𝐏𝐎 𝐌𝐀𝐍𝐂𝐀𝐍𝐓𝐄 ✦*
-*╰━━━━━━━⚠️━━━━━━━╯*${footer}`,
+*╰━━━━━━━⚠️━━━━━━━╯*
+
+*📌 𝐈𝐧 𝐮𝐧 𝐠𝐫𝐮𝐩𝐩𝐨:*
+*${usedPrefix}${baseCommand} 393xxxxxxxxx*
+
+*📌 𝐄𝐬𝐭𝐞𝐫𝐧𝐨:*
+*${usedPrefix}${baseCommand} 393xxxxxxxxx 1203630xxxxxxxxx@g.us*${footer}`,
       m
     )
   }
@@ -153,15 +170,15 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner, isROwner }) 
 
   const sleep = ms => new Promise(r => setTimeout(r, ms))
 
-  let target = null
-
-  if (groupId) {
-    target = groupId
-  } else {
-    try {
-      const info = await withTimeout(conn.groupGetInviteInfo(inviteCode), 20000)
-      target = info?.id
-    } catch {}
+  if (!target) {
+    if (groupId) {
+      target = groupId
+    } else {
+      try {
+        const info = await withTimeout(conn.groupGetInviteInfo(inviteCode), 20000)
+        target = info?.id
+      } catch {}
+    }
   }
 
   if (!target) {
