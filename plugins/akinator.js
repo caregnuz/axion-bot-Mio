@@ -2,6 +2,7 @@ import 'dotenv/config'
 import axios from 'axios'
 
 const sessions = new Map()
+const processing = new Set()
 
 const FOOTER = '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
 const TIMEOUT = 5 * 60 * 1000
@@ -15,6 +16,10 @@ async function react(m, emoji) {
 
 function getSessionId(m) {
   return `${m.chat}:${m.sender}`
+}
+
+function getMessageId(m) {
+  return m.key?.id || ''
 }
 
 function clearSession(id) {
@@ -116,24 +121,30 @@ function cleanAnswer(text, usedPrefix = '.') {
 
 async function handleAnswer(m, conn, usedPrefix = '.') {
   const id = getSessionId(m)
+  const msgId = getMessageId(m)
+
   if (!sessions.has(id)) return false
+  if (msgId && processing.has(msgId)) return true
 
-  const buttonAnswer =
-    m.message?.buttonsResponseMessage?.selectedButtonId ||
-    m.message?.templateButtonReplyMessage?.selectedId ||
-    null
+  if (msgId) processing.add(msgId)
 
-  const rawText = buttonAnswer || S(m.text).trim()
-  const cleanText = cleanAnswer(rawText, usedPrefix)
+  try {
+    const buttonAnswer =
+      m.message?.buttonsResponseMessage?.selectedButtonId ||
+      m.message?.templateButtonReplyMessage?.selectedId ||
+      null
 
-  if (!cleanText) return true
+    const rawText = buttonAnswer || S(m.text).trim()
+    const cleanText = cleanAnswer(rawText, usedPrefix)
 
-  if (/^(stop|annulla|fine|exit)$/i.test(cleanText)) {
-    clearSession(id)
-    await react(m, '🛑')
+    if (!cleanText) return true
 
-    await conn.sendMessage(m.chat, {
-      text:
+    if (/^(stop|annulla|fine|exit)$/i.test(cleanText)) {
+      clearSession(id)
+      await react(m, '🛑')
+
+      await conn.sendMessage(m.chat, {
+        text:
 `*╭━━━━━━━🛑━━━━━━━╮*
 *✦ 𝐀𝐊𝐈𝐍𝐀𝐓𝐎𝐑 ✦*
 *╰━━━━━━━🛑━━━━━━━╯*
@@ -141,17 +152,17 @@ async function handleAnswer(m, conn, usedPrefix = '.') {
 *𝐏𝐚𝐫𝐭𝐢𝐭𝐚 𝐭𝐞𝐫𝐦𝐢𝐧𝐚𝐭𝐚.*
 
 > ${FOOTER}`
-    }, { quoted: m })
+      }, { quoted: m })
 
-    return true
-  }
+      return true
+    }
 
-  if (!/^(si|no|forse|non so)$/i.test(cleanText)) return true
+    if (!/^(si|no|forse|non so)$/i.test(cleanText)) return true
 
-  try {
     await react(m, '🧠')
 
     const session = sessions.get(id)
+    if (!session) return true
 
     const prompt =
 `Storico partita:
@@ -213,7 +224,6 @@ Risposta utente: ${cleanText}`
     )
 
     return true
-
   } catch (e) {
     console.error('Errore akinator:', e?.response?.data || e?.message || e)
     clearSession(id)
@@ -231,11 +241,30 @@ Risposta utente: ${cleanText}`
     }, { quoted: m })
 
     return true
+  } finally {
+    if (msgId) {
+      setTimeout(() => processing.delete(msgId), 3000)
+    }
   }
 }
 
 let handler = async (m, { conn, usedPrefix }) => {
   const id = getSessionId(m)
+
+  const buttonAnswer =
+    m.message?.buttonsResponseMessage?.selectedButtonId ||
+    m.message?.templateButtonReplyMessage?.selectedId ||
+    null
+
+  const rawText = buttonAnswer || S(m.text).trim()
+  const cleanText = cleanAnswer(rawText, usedPrefix)
+
+  if (/^(stop|annulla|fine|exit)$/i.test(cleanText)) {
+    if (sessions.has(id)) {
+      return handleAnswer(m, conn, usedPrefix)
+    }
+    return
+  }
 
   if (sessions.has(id)) {
     return handleAnswer(m, conn, usedPrefix)
@@ -289,21 +318,9 @@ let handler = async (m, { conn, usedPrefix }) => {
 
 handler.before = async (m, { conn, usedPrefix }) => {
   const prefix = usedPrefix || '.'
-  const text = S(m.text).trim().toLowerCase()
+  const text = S(m.text).trim()
 
-  // Ignora comando iniziale
   if (new RegExp(`^\\${prefix}(akinator|aki)(\\s|$)`, 'i').test(text)) return
-
-  // Ignora risposte da pulsanti
-  const blocked = [
-    'akinator_si',
-    'akinator_no',
-    'akinator_forse',
-    'akinator_nonso',
-    'akinator_stop'
-  ]
-
-  if (blocked.includes(text)) return
 
   const id = getSessionId(m)
   if (!sessions.has(id)) return
