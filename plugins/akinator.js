@@ -1,5 +1,5 @@
-import axios from 'axios'
 import 'dotenv/config'
+import axios from 'axios'
 
 const sessions = new Map()
 
@@ -7,9 +7,7 @@ const FOOTER = '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
 const TIMEOUT = 5 * 60 * 1000
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 
-function S(v) {
-  return String(v || '')
-}
+const S = v => String(v || '')
 
 async function react(m, emoji) {
   try { await m.react(emoji) } catch {}
@@ -35,8 +33,7 @@ async function askAI(prompt) {
       messages: [
         {
           role: 'system',
-          content:
-            'Sei Akinator in italiano. Fai una sola domanda breve per volta. Risposte possibili: sì, no, forse, non so. Quando sei sicuro rispondi ESATTAMENTE con: INDOVINATO: Nome Personaggio'
+          content: 'Sei Akinator in italiano. Fai una sola domanda breve alla volta. Le risposte possibili sono sì, no, forse, non so. Quando sei abbastanza sicuro rispondi ESATTAMENTE con: INDOVINATO: Nome Personaggio'
         },
         {
           role: 'user',
@@ -61,7 +58,6 @@ async function askAI(prompt) {
 async function getCharacterImage(name) {
   try {
     const title = encodeURIComponent(name)
-
     const { data } = await axios.get(
       `https://it.wikipedia.org/api/rest_v1/page/summary/${title}`,
       { timeout: 15000 }
@@ -100,18 +96,27 @@ function buttonsMessage(text, usedPrefix) {
     text,
     footer: FOOTER,
     buttons: [
-      { buttonId: 'si', buttonText: { displayText: '✅ Sì' }, type: 1 },
-      { buttonId: 'no', buttonText: { displayText: '❌ No' }, type: 1 },
-      { buttonId: 'forse', buttonText: { displayText: '🤔 Forse' }, type: 1 },
-      { buttonId: 'non so', buttonText: { displayText: '❓ Non so' }, type: 1 },
+      { buttonId: `${usedPrefix}aki si`, buttonText: { displayText: '✅ Sì' }, type: 1 },
+      { buttonId: `${usedPrefix}aki no`, buttonText: { displayText: '❌ No' }, type: 1 },
+      { buttonId: `${usedPrefix}aki forse`, buttonText: { displayText: '🤔 Forse' }, type: 1 },
+      { buttonId: `${usedPrefix}aki non so`, buttonText: { displayText: '❓ Non so' }, type: 1 },
       { buttonId: `${usedPrefix}aki stop`, buttonText: { displayText: '🛑 Stop' }, type: 1 }
     ],
     headerType: 1
   }
 }
 
-let handler = async (m, { conn, usedPrefix }) => {
+function cleanAnswer(text, usedPrefix = '.') {
+  return S(text)
+    .replace(new RegExp(`^\\${usedPrefix}(akinator|aki)\\s*`, 'i'), '')
+    .trim()
+    .toLowerCase()
+    .replace(/^sì$/, 'si')
+}
+
+async function handleAnswer(m, conn, usedPrefix = '.') {
   const id = getSessionId(m)
+  if (!sessions.has(id)) return false
 
   const buttonAnswer =
     m.message?.buttonsResponseMessage?.selectedButtonId ||
@@ -119,18 +124,16 @@ let handler = async (m, { conn, usedPrefix }) => {
     null
 
   const rawText = buttonAnswer || S(m.text).trim()
+  const cleanText = cleanAnswer(rawText, usedPrefix)
 
-  const cleanText = S(rawText)
-    .replace(new RegExp(`^\\${usedPrefix}(akinator|aki)\\s*`, 'i'), '')
-    .trim()
+  if (!cleanText) return true
 
-  if (sessions.has(id)) {
-    if (/^(stop|annulla|fine|exit)$/i.test(cleanText)) {
-      clearSession(id)
-      await react(m, '🛑')
+  if (/^(stop|annulla|fine|exit)$/i.test(cleanText)) {
+    clearSession(id)
+    await react(m, '🛑')
 
-      return conn.sendMessage(m.chat, {
-        text:
+    await conn.sendMessage(m.chat, {
+      text:
 `*╭━━━━━━━🛑━━━━━━━╮*
 *✦ 𝐀𝐊𝐈𝐍𝐀𝐓𝐎𝐑 ✦*
 *╰━━━━━━━🛑━━━━━━━╯*
@@ -138,62 +141,65 @@ let handler = async (m, { conn, usedPrefix }) => {
 *𝐏𝐚𝐫𝐭𝐢𝐭𝐚 𝐭𝐞𝐫𝐦𝐢𝐧𝐚𝐭𝐚.*
 
 > ${FOOTER}`
-      }, { quoted: m })
-    }
+    }, { quoted: m })
 
-    if (!cleanText) return
+    return true
+  }
 
-    try {
-      await react(m, '🧠')
+  if (!/^(si|no|forse|non so)$/i.test(cleanText)) return true
 
-      const session = sessions.get(id)
+  try {
+    await react(m, '🧠')
 
-      const prompt =
-`Storico:
+    const session = sessions.get(id)
+
+    const prompt =
+`Storico partita:
 ${session.history.join('\n')}
 
 Risposta utente: ${cleanText}`
 
-      const replyText = await askAI(prompt)
+    const replyText = await askAI(prompt)
 
-      session.history.push(`Utente: ${cleanText}`)
-      session.history.push(`Akinator: ${replyText}`)
+    session.history.push(`Utente: ${cleanText}`)
+    session.history.push(`Akinator: ${replyText}`)
 
-      resetTimeout(id, m, conn)
+    resetTimeout(id, m, conn)
 
-      if (/INDOVINATO:/i.test(replyText)) {
-        const nome = replyText.split(/INDOVINATO:/i)[1]?.trim() || 'N/D'
-        const image = await getCharacterImage(nome)
+    if (/INDOVINATO:/i.test(replyText)) {
+      const nome = replyText.split(/INDOVINATO:/i)[1]?.trim() || 'N/D'
+      const image = await getCharacterImage(nome)
 
-        clearSession(id)
-        await react(m, '🏆')
+      clearSession(id)
+      await react(m, '🏆')
 
-        const caption =
+      const caption =
 `*╭━━━━━━━🏆━━━━━━━╮*
 *✦ 𝐀𝐊𝐈𝐍𝐀𝐓𝐎𝐑 ✦*
 *╰━━━━━━━🏆━━━━━━━╯*
 
 *✨ 𝐕𝐢𝐭𝐭𝐨𝐫𝐢𝐚!*
 
+*𝐒𝐭𝐚𝐯𝐢 𝐩𝐞𝐧𝐬𝐚𝐧𝐝𝐨 𝐚:*
 *${nome}*
 
 > ${FOOTER}`
 
-        if (image) {
-          return conn.sendMessage(m.chat, {
-            image: { url: image },
-            caption
-          }, { quoted: m })
-        }
-
-        return conn.sendMessage(m.chat, {
-          text: caption
+      if (image) {
+        await conn.sendMessage(m.chat, {
+          image: { url: image },
+          caption
         }, { quoted: m })
+      } else {
+        await conn.sendMessage(m.chat, { text: caption }, { quoted: m })
       }
 
-      return conn.sendMessage(
-        m.chat,
-        buttonsMessage(
+      return true
+    }
+
+    await conn.sendMessage(
+      m.chat,
+      buttonsMessage(
 `*╭━━━━━━━🧞━━━━━━━╮*
 *✦ 𝐀𝐊𝐈𝐍𝐀𝐓𝐎𝐑 ✦*
 *╰━━━━━━━🧞━━━━━━━╯*
@@ -201,18 +207,20 @@ Risposta utente: ${cleanText}`
 *${replyText}*
 
 > ${FOOTER}`,
-          usedPrefix
-        ),
-        { quoted: m }
-      )
+        usedPrefix
+      ),
+      { quoted: m }
+    )
 
-    } catch (e) {
-      console.error('Errore akinator:', e?.message || e)
-      clearSession(id)
-      await react(m, '❌')
+    return true
 
-      return conn.sendMessage(m.chat, {
-        text:
+  } catch (e) {
+    console.error('Errore akinator:', e?.response?.data || e?.message || e)
+    clearSession(id)
+    await react(m, '❌')
+
+    await conn.sendMessage(m.chat, {
+      text:
 `*╭━━━━━━━⚠️━━━━━━━╮*
 *✦ 𝐄𝐑𝐑𝐎𝐑𝐄 ✦*
 *╰━━━━━━━⚠️━━━━━━━╯*
@@ -220,8 +228,17 @@ Risposta utente: ${cleanText}`
 *❌ 𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚 𝐧𝐨𝐧 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞.*
 
 > ${FOOTER}`
-      }, { quoted: m })
-    }
+    }, { quoted: m })
+
+    return true
+  }
+}
+
+let handler = async (m, { conn, usedPrefix }) => {
+  const id = getSessionId(m)
+
+  if (sessions.has(id)) {
+    return handleAnswer(m, conn, usedPrefix)
   }
 
   try {
@@ -254,7 +271,7 @@ Risposta utente: ${cleanText}`
     )
 
   } catch (e) {
-    console.error('Errore avvio akinator:', e?.message || e)
+    console.error('Errore avvio akinator:', e?.response?.data || e?.message || e)
     await react(m, '❌')
 
     return conn.sendMessage(m.chat, {
@@ -268,6 +285,13 @@ Risposta utente: ${cleanText}`
 > ${FOOTER}`
     }, { quoted: m })
   }
+}
+
+handler.before = async (m, { conn, usedPrefix }) => {
+  const id = getSessionId(m)
+  if (!sessions.has(id)) return
+  await handleAnswer(m, conn, usedPrefix || '.')
+  return true
 }
 
 handler.help = ['akinator', 'aki']
