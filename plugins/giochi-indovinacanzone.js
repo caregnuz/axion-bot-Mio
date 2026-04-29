@@ -807,14 +807,13 @@ if ((user.icStreak || 0) > (user.icRecord || 0)) {
 
     await react(conn, m, '✅')
 
- await conn.sendMessage(m.chat, {
-      image: { url: game.track.artwork },
-      caption: buildWinMessage(game.track, reward, exp, m.sender),
-      mentions: [m.sender],
-      footer: FOOTER,
-      buttons: replayButtons(),
-      headerType: 4
-    }, { quoted: m }).catch(() => {})
+await conn.sendMessage(m.chat, {
+          image: { url: track.artwork },
+          caption: buildEndMessage(track),
+          footer: FOOTER,
+          buttons: replayButtons(),
+          headerType: 4
+        }, { quoted: m }).catch(() => {})
 
   } else if (similarityScore >= 0.3) {
     await react(conn, m, '❌')
