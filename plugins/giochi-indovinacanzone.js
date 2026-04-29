@@ -616,15 +616,13 @@ await conn.sendMessage(m.chat, {
           buildStartMessage(track, 0, modeLabel)
         )
 
-await conn.sendMessage(m.chat, {
-  image: { url: game.track.artwork },
-  caption: buildWinMessage(game.track, reward, exp, m.sender),
-  mentions: [m.sender],
+        await conn.sendMessage(m.chat, {
+  image: { url: track.artwork },
+  caption: buildEndMessage(track),
   footer: FOOTER,
   buttons: replayButtons(),
-  headerType: 4  
+  headerType: 4
 }, { quoted: m }).catch(() => {})
-
         }).catch(() => {})
       } catch (e) {
         console.error('Errore countdown:', e?.message || e)
@@ -809,23 +807,13 @@ if ((user.icStreak || 0) > (user.icRecord || 0)) {
 
     await react(conn, m, '✅')
 
-    await conn.sendMessage(m.chat, {
-      text: buildWinMessage(game.track, reward, exp, m.sender),
+ await conn.sendMessage(m.chat, {
+      image: { url: game.track.artwork },
+      caption: buildWinMessage(game.track, reward, exp, m.sender),
       mentions: [m.sender],
       footer: FOOTER,
       buttons: replayButtons(),
-      headerType: 1,
-      contextInfo: {
-  externalAdReply: {
-    title: game.track.title,
-    body: `${game.track.artist} • ${game.track.genre || 'N/D'} • ${game.track.source || 'Music'}`,
-    mediaType: 1,
-    renderLargerThumbnail: true,
-    showAdAttribution: false,
-    thumbnailUrl: game.track.artwork,
-    sourceUrl: game.track.url || 'https://music.apple.com'
-  }
-}
+      headerType: 4
     }, { quoted: m }).catch(() => {})
 
   } else if (similarityScore >= 0.3) {
