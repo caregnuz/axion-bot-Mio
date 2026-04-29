@@ -331,8 +331,7 @@ async function searchTracksOnline(mode, value = '', genre = '', artist = '') {
 
   let results = []
 
-  for (const q of queries) {
-    try for (const q of queries) {
+for (const q of queries) {
   try {
     const deezerResults = await searchDeezer(q, genre || '')
     results.push(...deezerResults)
@@ -346,7 +345,7 @@ async function searchTracksOnline(mode, value = '', genre = '', artist = '') {
   }
 }
 
-  const seen = new Set()
+const seen = new Set()
 
   results = results.filter(t => {
     const key = normalize(`${t.artist} ${t.title}`)
@@ -550,7 +549,7 @@ async function startGame(m, conn, options = {}) {
     if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true })
 
     const stamp = Date.now()
-    audioPath = path.join(tmpDir, `song_${stamp}.m4a`)
+    audioPath = path.join(tmpDir, `song_${stamp}.mp3`)
     voicePath = path.join(tmpDir, `song_${stamp}.ogg`)
 
     fs.writeFileSync(audioPath, Buffer.from(audioResponse.data))
