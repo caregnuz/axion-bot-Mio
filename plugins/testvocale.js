@@ -1,21 +1,27 @@
 // test-vocale.js
-// Test vocale PTT diretto da URL
 
-import axios from 'axios'
 import fs from 'fs'
 import path from 'path'
 import { execSync } from 'child_process'
 
 let handler = async (m, { conn }) => {
+  const inputPath = path.join(process.cwd(), 'media/foxa.aac')
   const tmpDir = path.join(process.cwd(), 'temp')
+
+  if (!fs.existsSync(inputPath)) {
+    return conn.reply(
+      m.chat,
+      '*❌ File non trovato:* /media/foxa.aac',
+      m
+    )
+  }
 
   if (!fs.existsSync(tmpDir)) {
     fs.mkdirSync(tmpDir, { recursive: true })
   }
 
   const stamp = Date.now()
-  const audioPath = path.join(tmpDir, `test_${stamp}.mp3`)
-  const voicePath = path.join(tmpDir, `test_${stamp}.opus`)
+  const voicePath = path.join(tmpDir, `foxa_${stamp}.ogg`)
 
   try {
     await conn.sendMessage(m.chat, {
@@ -25,21 +31,12 @@ let handler = async (m, { conn }) => {
       }
     })
 
-    const testUrl = 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/test/sample.m4a'
-
-    const response = await axios.get(testUrl, {
-      responseType: 'arraybuffer',
-      timeout: 20000
-    })
-
-    fs.writeFileSync(audioPath, Buffer.from(response.data))
-
     execSync(
-      `ffmpeg -y -i "${audioPath}" -vn -acodec libopus -ar 48000 -ac 1 -b:a 32k -application voip "${voicePath}"`
+      `ffmpeg -y -i "${inputPath}" -vn -ar 48000 -ac 1 -c:a libopus -b:a 32k -application voip -f ogg "${voicePath}"`
     )
 
     await conn.sendMessage(m.chat, {
-      audio: { url: voicePath },
+      audio: fs.readFileSync(voicePath),
       mimetype: 'audio/ogg; codecs=opus',
       ptt: true
     }, { quoted: m })
@@ -60,8 +57,9 @@ let handler = async (m, { conn }) => {
       m
     )
   } finally {
-    try { if (fs.existsSync(audioPath)) fs.unlinkSync(audioPath) } catch {}
-    try { if (fs.existsSync(voicePath)) fs.unlinkSync(voicePath) } catch {}
+    try {
+      if (fs.existsSync(voicePath)) fs.unlinkSync(voicePath)
+    } catch {}
   }
 }
 
