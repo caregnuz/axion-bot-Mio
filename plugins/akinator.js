@@ -288,9 +288,15 @@ let handler = async (m, { conn, usedPrefix }) => {
 }
 
 handler.before = async (m, { conn, usedPrefix }) => {
+  const prefix = usedPrefix || '.'
+  const text = S(m.text).trim()
+
+  if (new RegExp(`^\\${prefix}(akinator|aki)(\\s|$)`, 'i').test(text)) return
+
   const id = getSessionId(m)
   if (!sessions.has(id)) return
-  await handleAnswer(m, conn, usedPrefix || '.')
+
+  await handleAnswer(m, conn, prefix)
   return true
 }
 
