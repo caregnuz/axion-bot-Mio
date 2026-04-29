@@ -1,3 +1,6 @@
+/*Plugin originale: https://github.com/realvare/varebot
+edit by Bonzino */
+
 import fs from 'fs/promises'
 
 const MAX_DOMANDE_DEFAULT = 10

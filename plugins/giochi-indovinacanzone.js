@@ -11,7 +11,7 @@ const pendingMode = new Map()
 
 const FOOTER = '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
 const GAME_TIME = 30
-const TICK_TIME = 5
+const TICK_TIME = 1
 const REWARD_MIN = 50
 const REWARD_MAX = 149
 const REWARD_EXP = 500
@@ -424,7 +424,7 @@ function buildModeMessage() {
 
 *🎲 𝐂𝐚𝐬𝐮𝐚𝐥𝐞:* *𝐜𝐞𝐫𝐜𝐚 𝐝𝐚 𝐩𝐢𝐮̀ 𝐠𝐞𝐧𝐞𝐫𝐢.*
 *🎼 𝐆𝐞𝐧𝐞𝐫𝐞:* *𝐬𝐜𝐞𝐠𝐥𝐢 𝐫𝐚𝐩, 𝐭𝐫𝐚𝐩, 𝐩𝐨𝐩, 𝐭𝐞𝐜𝐡𝐧𝐨...*
-*👤 𝐀𝐫𝐭𝐢𝐬𝐭𝐚:* *𝐬𝐜𝐞𝐠𝐥𝐢 𝐮𝐧 𝐚𝐫𝐭𝐢𝐬𝐭𝐚.*`
+*👤 𝐀𝐫𝐭𝐢𝐬𝐭𝐚:* *𝐬𝐜𝐞𝐠𝐥𝐢 𝐮𝐧 𝐚𝐫𝐭𝐢𝐬𝐭𝐚.*\n`
 }
 
 function buildPromptMessage(type) {
@@ -450,7 +450,7 @@ function buildStartMessage(track, timeLeft, modeLabel) {
 *🎼 𝐆𝐞𝐧𝐞𝐫𝐞:* *${track.genre || 'N/D'}*
 *👤 𝐀𝐫𝐭𝐢𝐬𝐭𝐚:* *${track.artist}*
 
-*🎧 𝐀𝐬𝐜𝐨𝐥𝐭𝐚 𝐥’𝐚𝐧𝐭𝐞𝐩𝐫𝐢𝐦𝐚 𝐞 𝐬𝐜𝐫𝐢𝐯𝐢 𝐢𝐥 𝐭𝐢𝐭𝐨𝐥𝐨.*`)
+*🎧 𝐀𝐬𝐜𝐨𝐥𝐭𝐚 𝐥’𝐚𝐧𝐭𝐞𝐩𝐫𝐢𝐦𝐚 𝐞 𝐬𝐜𝐫𝐢𝐯𝐢 𝐢𝐥 𝐭𝐢𝐭𝐨𝐥𝐨.*\n`)
 }
 
 function finalContext(track) {
@@ -788,11 +788,19 @@ handler.before = async (m, { conn }) => {
 
     if (!global.db.data.users[m.sender]) global.db.data.users[m.sender] = {}
 
-    global.db.data.users[m.sender].euro =
-      (global.db.data.users[m.sender].euro || 0) + reward
+let user = global.db.data.users[m.sender]
 
-    global.db.data.users[m.sender].exp =
-      (global.db.data.users[m.sender].exp || 0) + exp
+user.euro = (user.euro || 0) + reward
+user.exp = (user.exp || 0) + exp
+
+user.icWins = (user.icWins || 0) + 1
+user.icGames = (user.icGames || 0) + 1
+user.icStreak = (user.icStreak || 0) + 1
+user.icEuroWon = (user.icEuroWon || 0) + reward
+
+if ((user.icStreak || 0) > (user.icRecord || 0)) {
+  user.icRecord = user.icStreak
+}
 
     await react(conn, m, '✅')
 
