@@ -632,7 +632,6 @@ handler.help = [
 
 handler.tags = ['giochi']
 handler.command = ['indovinacanzone', 'ic', 'ic_random', 'ic_genre', 'ic_artist']
-handler.register = true
 handler.group = true
 
 export default handler
