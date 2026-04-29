@@ -409,13 +409,13 @@ async function startGame(m, conn, options = {}) {
     if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true })
 
     const stamp = Date.now()
-    audioPath = path.join(tmpDir, `song_${stamp}.mp3`)
-    voicePath = path.join(tmpDir, `song_${stamp}.opus`)
+    audioPath = path.join(tmpDir, `song_${stamp}.m4a`)
+    voicePath = path.join(tmpDir, `song_${stamp}.ogg`)
 
     fs.writeFileSync(audioPath, Buffer.from(audioResponse.data))
-
-   execSync(
-  `ffmpeg -y -i "${audioPath}" -vn -acodec libopus -ar 48000 -ac 1 -b:a 32k -application voip "${voicePath}"`
+    
+execSync(
+  `ffmpeg -y -i "${audioPath}" -vn -ar 48000 -ac 1 -c:a libopus -b:a 32k -application voip -f ogg "${voicePath}"`
 )
 
     const gameMsg = await conn.sendMessage(m.chat, {
