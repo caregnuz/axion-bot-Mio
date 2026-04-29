@@ -199,12 +199,21 @@ async function searchTracksOnline(mode, value = '', genre = '', artist = '') {
     return true
   })
 
-  if ((mode === 'artist' || mode === 'genre_artist') && artist) {
-    const a = normalize(artist)
-    results = results.filter(t =>
-      normalize(t.artist).includes(a) || a.includes(normalize(t.artist))
+if ((mode === 'artist' || mode === 'genre_artist') && artist) {
+  const a = normalize(artist)
+
+  let filtered = results.filter(t => {
+    const artistName = normalize(t.artist)
+
+    return (
+      artistName.includes(a) ||
+      a.includes(artistName) ||
+      a.split(' ').every(word => artistName.includes(word))
     )
-  }
+  })
+
+  if (filtered.length) results = filtered
+}
 
   if (!results.length) throw new Error('track_not_found')
   return results
