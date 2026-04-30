@@ -332,7 +332,7 @@ async function searchTracksOnline(mode, value = '', genre = '', artist = '') {
   let queries = []
 
   if (mode === 'random') {
-    queries = ['top hits italy', 'rap italiano', 'trap italiana', 'pop italiano', 'techno', 'house music', 'reggaeton', 'dance']
+    queries = ['top hits italy', 'rap italiano', 'trap italiana', 'pop italiano', 'rap', 'drill', 'reggaeton', 'dance']
   } else if (mode === 'genre') {
     queries = [`${genre} music`, `${genre} hits`, `${genre} italy`]
   } else if (mode === 'artist') {
@@ -850,7 +850,7 @@ handler.help = [
 ]
 
 handler.tags = ['giochi']
-handler.command = ['indovinacanzone', 'marikadown', 'ic', 'ic_random', 'ic_genre', 'ic_artist']
+handler.command = ['indovinacanzone', 'ic', 'ic_random', 'ic_genre', 'ic_artist']
 handler.group = true
 
 export default handler
