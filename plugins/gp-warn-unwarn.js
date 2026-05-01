@@ -124,7 +124,7 @@ if (text) {
   const user = users[realKey]
   if (typeof user.warn !== 'number') user.warn = 0
 
-  const tag = '@' + cleanJid(realKey)
+  const tag = '@' + cleanJid(mentionedJid)
   const reasonText = reason?.trim() ? reason.trim() : '𝐍𝐞𝐬𝐬𝐮𝐧 𝐦𝐨𝐭𝐢𝐯𝐨 𝐬𝐩𝐞𝐜𝐢𝐟𝐢𝐜𝐚𝐭𝐨'
 
   if (command === 'warn') {

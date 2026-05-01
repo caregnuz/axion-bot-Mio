@@ -71,7 +71,7 @@ users[realKey] ??= {}
 
 const user = users[realKey]
 const currentWarn = typeof user.warn === 'number' ? user.warn : 0
-const tag = '@' + cleanJid(realKey)
+const tag = '@' + cleanJid(mentionedJid)
 
   if (currentWarn <= 0) {
     throw box(
