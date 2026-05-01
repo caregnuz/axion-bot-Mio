@@ -8,18 +8,20 @@ let handler = async (m, { conn }) => {
 
 *╭─── 👑 𝐂𝐑𝐄𝐀𝐓𝐎𝐑𝐄 ───╮*
 *│ ✦ 𝐍𝐨𝐦𝐞:* Deadly
-*│ ✦ 𝐑𝐮𝐨𝐥𝐨:* Creatore / Dev
+*│ ✦ 𝐑𝐮𝐨𝐥𝐨:* Creatore / Developer
 *│ ✦ 𝐂𝐨𝐧𝐭𝐚𝐭𝐭𝐨:* @212778494602
+*╰────────────────────╯*
+
+*╭─── 🔱 𝐂𝐎-𝐎𝐖𝐍𝐄𝐑 ───╮*
+*│ ✦ 𝐁𝐨𝐧𝐳𝐢𝐧𝐨*
+*│   ├ 𝐑𝐮𝐨𝐥𝐨:* Co-Owner/ Lead Developer
+*│   └ 𝐂𝐨𝐧𝐭𝐚𝐭𝐭𝐨:* @639350468907
 *╰────────────────────╯*
 
 *╭─── 🛡️ 𝐒𝐓𝐀𝐅𝐅 ───╮*
 *│ ✦ 𝐋𝐮𝐱𝐢𝐟𝐞𝐫*
 *│   ├ 𝐑𝐮𝐨𝐥𝐨:* Staffer
 *│   └ 𝐂𝐨𝐧𝐭𝐚𝐭𝐭𝐨:* @212781816909
-*│*
-*│ ✦ 𝐁𝐨𝐧𝐳𝐢𝐧𝐨*
-*│   ├ 𝐑𝐮𝐨𝐥𝐨:* Staffer
-*│   └ 𝐂𝐨𝐧𝐭𝐚𝐭𝐭𝐨:* @639350468907
 *╰────────────────────╯*
 
 *╭─── 📌 𝐈𝐍𝐅𝐎 𝐔𝐓𝐈𝐋𝐈 ───╮*
@@ -38,7 +40,8 @@ let handler = async (m, { conn }) => {
                 mentionedJid: [
                     '212778494602@s.whatsapp.net',
                     '212781816909@s.whatsapp.net',
-                    '639350468907@s.whatsapp.net'
+                    '639350468907@s.whatsapp.net',
+                    '393509594333@s.whatsapp.net'
                 ]
             }
         }
@@ -51,8 +54,16 @@ let handler = async (m, { conn }) => {
                     vcard: `BEGIN:VCARD
 VERSION:3.0
 FN:Deadly
-ORG:𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 - Creatore
+ORG:𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 - Creatore / Dev
 TEL;type=CELL;type=VOICE;waid=212778494602:212778494602
+END:VCARD`
+                },
+                {
+                    vcard: `BEGIN:VCARD
+VERSION:3.0
+FN:Bonzino
+ORG:𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 - Co-Owner
+TEL;type=CELL;type=VOICE;waid=639350468907:+639350468907
 END:VCARD`
                 },
                 {
@@ -61,14 +72,6 @@ VERSION:3.0
 FN:Luxifer
 ORG:𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 - Staffer
 TEL;type=CELL;type=VOICE;waid=212781816909:+212781816909
-END:VCARD`
-                },
-                {
-                    vcard: `BEGIN:VCARD
-VERSION:3.0
-FN:Bonzino
-ORG:𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 - Staffer
-TEL;type=CELL;type=VOICE;waid=639350468907:+639350468907
 END:VCARD`
                 }
             ]
