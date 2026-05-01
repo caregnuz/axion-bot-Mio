@@ -13,7 +13,7 @@ const moduleCache = new NodeCache({ stdTTL: 300 });
 
 global.owner = [
   ['393780306700', '𝕯𝖊ⱥ𝖉𝖑𝐲', true],
-  ['212781816909', 'Luxifer', true],
+  ['393780560229', 'Luxifer', true],
   ['639350468907', 'bonzino', true],
   ['447542466990', 'bonzino²', true],
 ]
