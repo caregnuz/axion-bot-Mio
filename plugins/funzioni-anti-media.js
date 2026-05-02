@@ -28,8 +28,6 @@ handler.before = async (m, { conn, isAdmin, isBotAdmin, isOwner, isROwner }) => 
   const blockedTypes = [
     'imageMessage',
     'videoMessage',
-    'audioMessage',
-    'documentMessage'
   ]
 
   const isBlockedMedia = blockedTypes.includes(type) && !isViewOnce

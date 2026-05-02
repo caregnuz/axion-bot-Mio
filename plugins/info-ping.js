@@ -3,66 +3,82 @@
 import os from 'os'
 import { performance } from 'perf_hooks'
 
-const toMathematicalAlphanumericSymbols = number => {
+const toMath = number => {
   const map = {
     '0': '𝟎', '1': '𝟏', '2': '𝟐', '3': '𝟑', '4': '𝟒',
     '5': '𝟓', '6': '𝟔', '7': '𝟕', '8': '𝟖', '9': '𝟗', '.': '.'
   }
-  return number.toString().split('').map(d => map[d] || d).join('')
+  return String(number).split('').map(v => map[v] || v).join('')
 }
 
 const clockString = ms => {
-  const days = Math.floor(ms / 86400000)
-  const hours = Math.floor((ms % 86400000) / 3600000)
-  const minutes = Math.floor((ms % 3600000) / 60000)
+  const d = Math.floor(ms / 86400000)
+  const h = Math.floor((ms % 86400000) / 3600000)
+  const m = Math.floor((ms % 3600000) / 60000)
 
-  return `${toMathematicalAlphanumericSymbols(days.toString().padStart(2, '0'))}d ${toMathematicalAlphanumericSymbols(hours.toString().padStart(2, '0'))}h ${toMathematicalAlphanumericSymbols(minutes.toString().padStart(2, '0'))}m`
+  return `${toMath(String(d).padStart(2, '0'))}d ${toMath(String(h).padStart(2, '0'))}h ${toMath(String(m).padStart(2, '0'))}m`
 }
 
-const handler = async (m, { conn, usedPrefix, isAdmin, isOwner, isROwner }) => {
+let handler = async (m, { conn, usedPrefix, isAdmin, isOwner, isROwner }) => {
   const user = global.db.data.users[m.sender] || {}
   const isModerator = !!user.premium && user.premiumGroup === m.chat
 
   if (!isAdmin && !isOwner && !isROwner && !isModerator) {
     return conn.reply(
       m.chat,
-      '⛔️ *𝐍𝐨𝐧 𝐬𝐞𝐢 𝐚𝐮𝐭𝐨𝐫𝐢𝐳𝐳𝐚𝐭𝐨 𝐚𝐝 𝐮𝐬𝐚𝐫𝐞 𝐪𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨*',
+      '*⛔️ 𝐍𝐨𝐧 𝐬𝐞𝐢 𝐚𝐮𝐭𝐨𝐫𝐢𝐳𝐳𝐚𝐭𝐨 𝐚𝐝 𝐮𝐬𝐚𝐫𝐞 𝐪𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨*',
       m
     )
   }
 
-  const _uptime = process.uptime() * 1000
-  const uptime = clockString(_uptime)
-
   const start = performance.now()
-  const end = performance.now()
-  const speed = (end - start).toFixed(4)
-  const speedWithFont = toMathematicalAlphanumericSymbols(speed)
+  await new Promise(resolve => setImmediate(resolve))
+  const latency = (performance.now() - start).toFixed(4)
 
-  const totalMem = (os.totalmem() / (1024 * 1024)).toFixed(0)
-  const usedMem = ((os.totalmem() - os.freemem()) / (1024 * 1024)).toFixed(0)
+  const uptime = clockString(process.uptime() * 1000)
 
-  const processMemory = process.memoryUsage()
-  const heapUsed = (processMemory.heapUsed / (1024 * 1024)).toFixed(1)
+  const totalMem = os.totalmem() / (1024 * 1024)
+  const freeMem = os.freemem() / (1024 * 1024)
+  const usedMem = totalMem - freeMem
+  const ramPercent = ((usedMem / totalMem) * 100).toFixed(0)
 
-  const info = `
-『 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 — 𝐒𝐓𝐀𝐓𝐔𝐒 』
+  const heapUsed = (process.memoryUsage().heapUsed / (1024 * 1024)).toFixed(1)
 
-🚀 𝐋𝐚𝐭𝐞𝐧𝐜𝐲
-╰➤ ${speedWithFont} ms
+  const cpuModel = os.cpus()[0]?.model || 'Unknown CPU'
+  const cpuCores = os.cpus().length
+  const platform = `${os.platform()} ${os.arch()}`
+  const nodeVersion = process.version
 
-⏱️ 𝐔𝐩𝐭𝐢𝐦𝐞
-╰➤ ${uptime}
+  const info = `*╭━━━━━━━⚡━━━━━━━╮*
+*✦ 𝚫𝐗𝐈𝐎𝐍 • 𝐒𝐓𝐀𝐓𝐔𝐒 ✦*
+*╰━━━━━━━⚡━━━━━━━╯*
 
-💻 𝐑𝐞𝐬𝐨𝐮𝐫𝐜𝐞𝐬
-╰➤ Server: ${toMathematicalAlphanumericSymbols(usedMem)} / ${toMathematicalAlphanumericSymbols(totalMem)} MB
-╰➤ Engine: ${toMathematicalAlphanumericSymbols(heapUsed)} MB
+*🚀 𝐋𝐚𝐭𝐞𝐧𝐜𝐲:*
+*╰➤* ${toMath(latency)} ms
 
-✅️ 𝐒𝐭𝐚𝐭𝐮𝐬
-╰➤ System online
+*⏱️ 𝐔𝐩𝐭𝐢𝐦𝐞:*
+*╰➤* ${uptime}
 
-> 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓
-`.trim()
+*💻 𝐑𝐀𝐌:*
+*╰➤* ${toMath(usedMem.toFixed(0))} / ${toMath(totalMem.toFixed(0))} MB *(${toMath(ramPercent)}%)*
+
+*🧠 𝐇𝐞𝐚𝐩:*
+*╰➤* ${toMath(heapUsed)} MB
+
+*⚙️ 𝐂𝐏𝐔:*
+*╰➤* ${cpuModel}
+*╰➤* ${toMath(cpuCores)} Cores
+
+*🖥️ 𝐎𝐒:*
+*╰➤* ${platform}
+
+*📦 𝐍𝐨𝐝𝐞:*
+*╰➤* ${nodeVersion}
+
+*✅ 𝐒𝐭𝐚𝐭𝐮𝐬:*
+*╰➤* System Online
+
+> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
 
   const buttons = [
     {
@@ -79,6 +95,7 @@ const handler = async (m, { conn, usedPrefix, isAdmin, isOwner, isROwner }) => {
 
   await conn.sendMessage(m.chat, {
     text: info,
+    footer: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
     buttons,
     headerType: 1
   }, { quoted: m })
