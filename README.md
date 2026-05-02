@@ -39,7 +39,7 @@ pkg update -y && pkg upgrade -y &&
 pkg install -y git nodejs ffmpeg imagemagick &&
 git clone https://github.com/axion-bot/axion-bot-Md.git &&
 cd ~/axion-bot-Md &&
-yarn install && npm install && 
+yarn install &&
 npm start
 
 ```
