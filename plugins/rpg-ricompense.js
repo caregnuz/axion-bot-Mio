@@ -205,7 +205,7 @@ async function controllaTraguardoGruppo(m, conn) {
 
       await conn.sendMessage(m.chat, {
         text:
-`🎉 *𝐍𝐮𝐨𝐯𝐨 𝐨𝐛𝐢𝐞𝐭𝐭𝐢𝐯𝐨 𝐫𝐚𝐠𝐠𝐢𝐮𝐧𝐭𝐨! 🥳*
+`🎉 *𝐍𝐮𝐨𝐯𝐨 𝐨𝐛𝐢𝐞𝐭𝐭𝐢𝐯𝐨 𝐆𝐫𝐮𝐩𝐩𝐨 𝐫𝐚𝐠𝐠𝐢𝐮𝐧𝐭𝐨!* 🥳
 
 ╭━━━━━━━━━━━━━━⬣
 ┃ *💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐆𝐫𝐮𝐩𝐩𝐨:* *${formatNumber(traguardo)}*
