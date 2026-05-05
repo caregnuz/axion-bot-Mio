@@ -98,6 +98,16 @@ async function trascriviGladia(buffer) {
 
 let handler = async (m, { conn }) => {
   const start = Date.now()
+  
+  let durata = 0
+
+if (m.quoted?.seconds) durata = m.quoted.seconds
+else if (m.msg?.seconds) durata = m.msg.seconds
+else if (m.quoted?.msg?.seconds) durata = m.quoted.msg.seconds
+
+const durataAudio = durata
+  ? `${Math.floor(durata / 60)}:${String(durata % 60).padStart(2, '0')}`
+  : '𝐍/𝐃'
 
   await react(conn, m, '🎙️')
 
@@ -138,9 +148,10 @@ let handler = async (m, { conn }) => {
         '📝',
         '𝐓𝐑𝐀𝐒𝐂𝐑𝐈𝐙𝐈𝐎𝐍𝐄',
         `*🌍 𝐋𝐢𝐧𝐠𝐮𝐚:* *${lang}*
-*⏱️ 𝐓𝐞𝐦𝐩𝐨:* *${time}s*
+        *🎙𝐃𝐮𝐫𝐚𝐭𝐚:* *${durataAudio}*
+        *⏱️ 𝐓𝐞𝐦𝐩𝐨:* *${time}s*
 
-*${text}*`
+${text}`
       ),
       m
     )
