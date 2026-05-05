@@ -28,6 +28,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 🗓️ ${usedPrefix}ricorda <messaggio>
 ┃ 🔍 ${usedPrefix}rivela <media>
 ┃ 🎶 ${usedPrefix}cur
+┃ 🎙 ${usedPrefix}trascrivi <audio>
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 📌 ɪɴғᴏ 〕━⬣
