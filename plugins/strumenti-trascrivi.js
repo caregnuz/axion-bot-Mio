@@ -15,10 +15,7 @@ ${body}
 async function react(conn, m, emoji) {
   try {
     await conn.sendMessage(m.chat, {
-      react: {
-        text: emoji,
-        key: m.key
-      }
+      react: { text: emoji, key: m.key }
     })
   } catch {}
 }
@@ -58,7 +55,7 @@ async function trascriviGladia(buffer) {
   try {
     data = JSON.parse(raw)
   } catch {
-    throw `𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚 𝐧𝐨𝐧 𝐯𝐚𝐥𝐢𝐝𝐚 𝐝𝐚 𝐆𝐥𝐚𝐝𝐢𝐚`
+    throw '𝐑𝐢𝐬𝐩𝐨𝐬𝐭𝐚 𝐧𝐨𝐧 𝐯𝐚𝐥𝐢𝐝𝐚 𝐝𝐚 𝐆𝐥𝐚𝐝𝐢𝐚'
   }
 
   if (!res.ok) throw `𝐄𝐫𝐫𝐨𝐫𝐞 𝐆𝐥𝐚𝐝𝐢𝐚 ${res.status}`
@@ -98,16 +95,15 @@ async function trascriviGladia(buffer) {
 
 let handler = async (m, { conn }) => {
   const start = Date.now()
-  
+
   let durata = 0
+  if (m.quoted?.seconds) durata = m.quoted.seconds
+  else if (m.msg?.seconds) durata = m.msg.seconds
+  else if (m.quoted?.msg?.seconds) durata = m.quoted.msg.seconds
 
-if (m.quoted?.seconds) durata = m.quoted.seconds
-else if (m.msg?.seconds) durata = m.msg.seconds
-else if (m.quoted?.msg?.seconds) durata = m.quoted.msg.seconds
-
-const durataAudio = durata
-  ? `${Math.floor(durata / 60)}:${String(durata % 60).padStart(2, '0')}`
-  : '𝐍/𝐃'
+  const durataAudio = durata
+    ? `${Math.floor(durata / 60)}:${String(durata % 60).padStart(2, '0')}`
+    : '𝐍/𝐃'
 
   await react(conn, m, '🎙️')
 
@@ -142,19 +138,16 @@ const durataAudio = durata
 
     await react(conn, m, '✅')
 
-return conn.reply(
-  m.chat,
-  box(
-    '📝',
-    '𝐓𝐑𝐀𝐒𝐂𝐑𝐈𝐙𝐈𝐎𝐍𝐄',
-    `*🌍 𝐋𝐢𝐧𝐠𝐮𝐚:* *${lang}*
+    return conn.reply(
+      m.chat,
+      box(
+        '📝',
+        '𝐓𝐑𝐀𝐒𝐂𝐑𝐈𝐙𝐈𝐎𝐍𝐄',
+`*🌍 𝐋𝐢𝐧𝐠𝐮𝐚:* *${lang}*
 *🎙 𝐋𝐮𝐧𝐠𝐡𝐞𝐳𝐳𝐚 𝐯𝐨𝐜𝐚𝐥𝐞:* *${durataAudio}*
 *⏱️ 𝐓𝐞𝐦𝐩𝐨 𝐭𝐫𝐚𝐬𝐜𝐨𝐫𝐬𝐨:* *${time}s*
 
 ${text}`
-  ),
-  m
-)
       ),
       m
     )
