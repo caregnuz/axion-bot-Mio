@@ -9,7 +9,7 @@ import moment from 'moment-timezone'
 import NodeCache from 'node-cache'
 
 const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf-8'))
-const moduleCache = new NodeCache({ stdTTL: 300 })
+const moduleCache = new NodeCache({ stdTTL: 300 });
 
 /*
 ⚠️ Attenzione, questo file è solo un esempio, sostituisci:
