@@ -21,9 +21,10 @@ con i tuoi valori
 */
 
 global.owner = [
-  ['393XXXXXXXX', '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓', true],
-  ['393XXXXXXXX', '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓', true],
-]
+  ['393780306700', '𝕯𝖊ⱥ𝖉𝖑𝐲'     , true],
+  ['393780560229', 'Luxifer', true],
+  ['639350468907', 'bonzino', true],
+  ['393780087063', 'bonzino²', true],
 
 global.mods = ['xxxxxxxxxx', 'xxxxxxxxxx']
 global.prems = ['xxxxxxxxxx', 'xxxxxxxxxx']
