@@ -1,38 +1,112 @@
 import { addExif } from '../lib/sticker.js'
 
-let handler = async (m, { conn, text, usedPrefix }) => {
-  if (!m.quoted) return m.reply(`『 ✧ 』 - \`Rispondi allo sticker che vuoi personalizzare\``)
+let handler = async (m, { conn, text }) => {
 
-  let stiker = false
+  if (!m.quoted) {
+    await conn.sendMessage(m.chat, {
+      react: {
+        text: '⚠️',
+        key: m.key
+      }
+    })
+
+    return conn.reply(
+      m.chat,
+      '*𝐑𝐢𝐬𝐩𝐨𝐧𝐝𝐢 𝐚𝐝 𝐮𝐧𝐨 𝐬𝐭𝐢𝐜𝐤𝐞𝐫 𝐩𝐞𝐫 𝐩𝐞𝐫𝐬𝐨𝐧𝐚𝐥𝐢𝐳𝐳𝐚𝐫𝐥𝐨.*\n\n> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*',
+      m
+    )
+  }
+
+  let sticker = false
+
   try {
+
+    await conn.sendMessage(m.chat, {
+      react: {
+        text: '🛠️',
+        key: m.key
+      }
+    })
+
     if (!text) {
-      let name = conn.getName(m.sender)
-      text = `${name}|`
+      const name = await conn.getName(m.sender)
+      text = `${name}|𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓`
     }
 
     let [packname, ...author] = text.split('|')
     author = (author || []).join('|')
-    let mime = m.quoted.mimetype || ''
-    if (!/webp/.test(mime)) return m.reply(`『 ✧ 』- \`Rispondi a uno sticker\``)
 
-    let img = await m.quoted.download()
-    if (!img) return m.reply(`${global.errore}`)
-    stiker = await addExif(img, packname || '', author || '')
+    const mime = m.quoted.mimetype || ''
+
+    if (!/webp/.test(mime)) {
+
+      await conn.sendMessage(m.chat, {
+        react: {
+          text: '❌',
+          key: m.key
+        }
+      })
+
+      return conn.reply(
+        m.chat,
+        '*𝐑𝐢𝐬𝐩𝐨𝐧𝐝𝐢 𝐚𝐝 𝐮𝐧𝐨 𝐬𝐭𝐢𝐜𝐤𝐞𝐫.*\n\n> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*',
+        m
+      )
+    }
+
+    const img = await m.quoted.download()
+
+    if (!img) {
+      throw new Error('Sticker download failed')
+    }
+
+    sticker = await addExif(
+      img,
+      packname || '',
+      author || ''
+    )
 
   } catch (e) {
-    console.error('Errore in sticker-wm:', e)
-    if (Buffer.isBuffer(e)) stiker = e
+
+    console.error('sticker-wm error:', e)
+
+    await conn.sendMessage(m.chat, {
+      react: {
+        text: '❌',
+        key: m.key
+      }
+    })
+
+    return conn.reply(
+      m.chat,
+      '*𝐄𝐫𝐫𝐨𝐫𝐞 𝐝𝐮𝐫𝐚𝐧𝐭𝐞 𝐥𝐚 𝐩𝐞𝐫𝐬𝐨𝐧𝐚𝐥𝐢𝐳𝐳𝐚𝐳𝐢𝐨𝐧𝐞 𝐝𝐞𝐥𝐥𝐨 𝐬𝐭𝐢𝐜𝐤𝐞𝐫.*\n\n> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*',
+      m
+    )
+
   } finally {
-    if (stiker) {
-      await conn.sendFile(m.chat, stiker, 'wm.webp', '', m)
-    } else {
-      m.reply(`${global.errore}`)
+
+    if (sticker) {
+
+      await conn.sendMessage(m.chat, {
+        react: {
+          text: '✅',
+          key: m.key
+        }
+      })
+
+      await conn.sendFile(
+        m.chat,
+        sticker,
+        'axion.webp',
+        '',
+        m
+      )
     }
   }
 }
 
-handler.help = ['wm']
-handler.tags = ['sticker', 'strumenti']
-handler.command = ['take', 'wm']
+handler.help = ['take']
+handler.tags = ['sticker']
+handler.command = /^(take|wm)$/i
 
 export default handler

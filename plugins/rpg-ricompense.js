@@ -140,11 +140,12 @@ async function controllaRicompensaMessaggi(m, conn) {
     user.euro += totale
     user.messageRewardIndex += 1
 
-    await conn.sendMessage(m.chat, {
-      text:
+await conn.sendMessage(m.chat, {
+  text:
 `🎉 *𝐍𝐮𝐨𝐯𝐨 𝐨𝐛𝐢𝐞𝐭𝐭𝐢𝐯𝐨 𝐫𝐚𝐠𝐠𝐢𝐮𝐧𝐭𝐨! 🥳*
 
 ╭━━━━━━━━━━━━━━⬣
+┃ *👤 𝐔𝐭𝐞𝐧𝐭𝐞:* @${m.sender.split('@')[0]}
 ┃ *💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐠𝐢:* *${formatNumber(traguardo)}*
 ┃ *💰 𝐑𝐢𝐜𝐨𝐦𝐩𝐞𝐧𝐬𝐚:* *${formatNumber(premioBase)}€*
 ┃ *🎁 𝐁𝐨𝐧𝐮𝐬:* *+${formatNumber(bonus)}€*
@@ -153,8 +154,8 @@ async function controllaRicompensaMessaggi(m, conn) {
 ┃
 ┃ *🚀 𝐂𝐨𝐧𝐭𝐢𝐧𝐮𝐚 𝐚 𝐬𝐜𝐫𝐢𝐯𝐞𝐫𝐞 𝐩𝐞𝐫 𝐬𝐛𝐥𝐨𝐜𝐜𝐚𝐫𝐞 𝐫𝐢𝐜𝐨𝐦𝐩𝐞𝐧𝐬𝐞 𝐬𝐞𝐦𝐩𝐫𝐞 𝐩𝐢ù 𝐚𝐥𝐭𝐞!*
 ╰━━━━━━━━━━━━━━⬣`,
-      mentions: [m.sender]
-    }, { quoted: m })
+  mentions: [m.sender]
+}, { quoted: m })
   } catch (e) {
     console.error('ricompensa messaggi error:', e)
   }

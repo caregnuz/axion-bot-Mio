@@ -1,12 +1,12 @@
 .env
 
 database.json
-
+config.js
 session/
 sessions/
 auth_info_baileys/
 node_modules/
-
+private.js
 plugins/owner-purge.js
 plugins/cucciole.js
 

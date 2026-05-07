@@ -1,5 +1,3 @@
-// plugins bacia by Bonzino
-
 const tag = (jid = '') => '@' + String(jid).split('@')[0].split(':')[0]
 
 function buildContextMsg(title) {
@@ -18,18 +16,21 @@ function buildContextMsg(title) {
   }
 }
 
-function resolveTarget(m, text = '') {
+function resolveTarget(m, text = '', botJid = '') {
   const ctx = m.message?.extendedTextMessage?.contextInfo || {}
+
+  const numero = String(text || '').replace(/[^\d]/g, '')
+  if (numero.length >= 5) return `${numero}@s.whatsapp.net`
+
+  if (String(text || '').endsWith('@s.whatsapp.net') || String(text || '').endsWith('@c.us')) {
+    return String(text).trim()
+  }
 
   if (Array.isArray(m.mentionedJid) && m.mentionedJid.length) return m.mentionedJid[0]
   if (Array.isArray(ctx.mentionedJid) && ctx.mentionedJid.length) return ctx.mentionedJid[0]
 
-  if (m.quoted?.sender) return m.quoted.sender
-  if (m.quoted?.participant) return m.quoted.participant
-  if (ctx.participant) return ctx.participant
-
-  const numero = String(text || '').replace(/[^\d]/g, '')
-  if (numero.length >= 5) return `${numero}@s.whatsapp.net`
+  const quotedSender = m.quoted?.sender || m.quoted?.participant || ctx.participant
+  if (quotedSender && quotedSender !== botJid) return quotedSender
 
   return null
 }
@@ -45,7 +46,8 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     (m.key?.fromMe ? conn?.user?.id : '')
   )
 
-  const target = resolveTarget(m, text)
+  const botJid = conn.user?.jid || conn.user?.id || ''
+  const target = resolveTarget(m, text, botJid)
   const q = buildContextMsg('*💋 𝐁𝐀𝐂𝐈𝐎*')
 
   if (!target) {
@@ -88,7 +90,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
 handler.help = ['bacia @user']
 handler.tags = ['fun']
-handler.command = ['bacia', 'bacio', 'bacino']
+handler.command = ['bacia', 'bacio', 'bacino', 'kiss']
 handler.group = true
 
 export default handler

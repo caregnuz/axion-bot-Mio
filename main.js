@@ -387,28 +387,27 @@ if (!opts['test']) {
 if (opts['server']) (await import('./server.js')).default(global.conn, PORT);
 
 async function notifyRestartComplete(conn) {
-    try {
-        if (!existsSync(RESTART_FILE)) return;
+  try {
+    if (!existsSync(RESTART_FILE)) return
 
-        const restartState = JSON.parse(fs.readFileSync(RESTART_FILE, 'utf-8'));
+    const restartState = JSON.parse(fs.readFileSync(RESTART_FILE, 'utf-8'))
 
-        if (
-            restartState.type !== 'manual_restart' ||
-            !restartState.startedAt ||
-            !restartState.chat ||
-            !restartState.sender
-        ) {
-            try {
-                unlinkSync(RESTART_FILE)
-            } catch {}
-            return
-        }
+    if (
+      restartState.type !== 'manual_restart' ||
+      !restartState.startedAt ||
+      !restartState.chat ||
+      !restartState.sender
+    ) {
+      try {
+        unlinkSync(RESTART_FILE)
+      } catch {}
+      return
+    }
 
-        const elapsed = ((Date.now() - restartState.startedAt) / 1000).toFixed(1);
-        const errors = restartState.errors || 0;
+    const elapsed = ((Date.now() - restartState.startedAt) / 1000).toFixed(1)
+    const errors = restartState.errors || 0
 
-        await conn.sendMessage(restartState.chat, {
-            text:
+    const finalText =
 `╭━━━━━━━⚡━━━━━━━╮
 *✦ 𝐁𝐎𝐓 𝐑𝐈𝐀𝐕𝐕𝐈𝐀𝐓𝐎 ✦*
 ╰━━━━━━━⚡━━━━━━━╯
@@ -418,21 +417,46 @@ async function notifyRestartComplete(conn) {
 *⏱️ 𝐓𝐞𝐦𝐩𝐨 𝐝𝐢 𝐫𝐢𝐚𝐯𝐯𝐢𝐨:* ${elapsed}𝐬
 *🧾 𝐄𝐫𝐫𝐨𝐫𝐢 𝐫𝐢𝐥𝐞𝐯𝐚𝐭𝐢:* ${errors}
 
-> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`,
-            mentions: [restartState.sender]
-        });
+> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
 
-        try {
-            unlinkSync(RESTART_FILE)
-        } catch {}
-    } catch (e) {
-        console.error('[RESTART COMPLETE ERROR]', e);
-        try {
-            if (existsSync(RESTART_FILE)) unlinkSync(RESTART_FILE);
-        } catch {}
+    if (restartState.messageKey) {
+      await conn.relayMessage(
+        restartState.chat,
+        {
+          protocolMessage: {
+            key: restartState.messageKey,
+            type: 14,
+            editedMessage: {
+              extendedTextMessage: {
+                text: finalText,
+                contextInfo: {
+                  mentionedJid: [restartState.sender]
+                }
+              }
+            }
+          }
+        },
+        {}
+      )
+    } else {
+      await conn.sendMessage(restartState.chat, {
+        text: finalText,
+        mentions: [restartState.sender]
+      })
     }
-}
 
+    try {
+      unlinkSync(RESTART_FILE)
+    } catch {}
+
+  } catch (e) {
+    console.error('[RESTART COMPLETE ERROR]', e)
+
+    try {
+      if (existsSync(RESTART_FILE)) unlinkSync(RESTART_FILE)
+    } catch {}
+  }
+}
 async function connectionUpdate(update) {
     const { connection, lastDisconnect, isNewLogin, qr } = update;
     global.stopped = connection;
@@ -492,7 +516,7 @@ global.isLogoPrinted = true;
             await global.reloadHandler(true).catch(console.error);
         } else if (reason === DisconnectReason.connectionReplaced) {
             if (!global.connectionMessagesPrinted.connectionReplaced) {
-                console.log(chalk.hex('#00CED1').bold(`CONNESSIONE SOSTITUITA\nÈ stata aperta un'altra sessione, \nchiudi prima quella attuale.\nNEXSUS BOT`));
+                console.log(chalk.hex('#00CED1').bold(`CONNESSIONE SOSTITUITA\nÈ stata aperta un'altra sessione, \nchiudi prima quella attuale.\n𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓`));
                 global.connectionMessagesPrinted.connectionReplaced = true;
             }
         } else if (reason === DisconnectReason.loggedOut) {

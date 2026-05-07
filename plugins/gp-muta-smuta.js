@@ -1,131 +1,227 @@
-// Plugin muta by Bonzino e 𝕯𝖊ⱥ𝖉𝖑𝐲
+import { createMuteCard } from '../lib/cards/mute-card.js'
 
-const tag = (jid = '') => '@' + String(jid).split('@')[0].split(':')[0]
+function normalizeJid(jid = '') {
+  if (!jid) return null
 
-function resolveTarget(m, text = '') {
-  const ctx = m.message?.extendedTextMessage?.contextInfo || {}
+  if (jid.includes('@s.whatsapp.net')) return jid
+  if (jid.includes('@lid')) return jid
 
-  if (Array.isArray(m.mentionedJid) && m.mentionedJid.length) return m.mentionedJid[0]
-  if (Array.isArray(ctx.mentionedJid) && ctx.mentionedJid.length) return ctx.mentionedJid[0]
+  const clean = String(jid).replace(/[^0-9]/g, '')
 
-  if (m.quoted?.sender) return m.quoted.sender
-  if (m.quoted?.participant) return m.quoted.participant
-  if (ctx.participant) return ctx.participant
-
-  const numero = String(text || '').replace(/[^\d]/g, '')
-  if (numero.length >= 8 && numero.length <= 15) return `${numero}@s.whatsapp.net`
-
-  if (String(text || '').endsWith('@s.whatsapp.net') || String(text || '').endsWith('@c.us')) {
-    return String(text).trim()
+  if (clean.length > 5) {
+    return clean + '@s.whatsapp.net'
   }
 
   return null
 }
 
-let handler = async (m, { conn, command, text, isAdmin }) => {
-  const chatId = m.chat
-  if (!chatId) return
+function getMentioned(m) {
+  return (
+    m.mentionedJid?.[0] ||
+    m.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0] ||
+    m.msg?.contextInfo?.mentionedJid?.[0] ||
+    null
+  )
+}
 
-  const BOT_OWNERS = (global.owner || []).map(o => o[0] + '@s.whatsapp.net')
-  const mentionedJid = resolveTarget(m, text)
-  const botNumber = conn.user?.jid || conn.user?.id || ''
+function resolveTarget(m, text = '') {
+  const mentioned = getMentioned(m)
 
-  let groupOwner = null
+  if (mentioned) return normalizeJid(mentioned)
+
+  if (m.quoted?.sender) return normalizeJid(m.quoted.sender)
+
+  const clean = String(text || '').replace(/[^0-9]/g, '')
+
+  if (clean.length > 5) return normalizeJid(clean)
+
+  return null
+}
+
+function resolveAction(m, command = '') {
+  const cmd = String(command || '').toLowerCase().replace(/^[.!/#]/, '')
+  const body = String(
+    m.text ||
+    m.body ||
+    m.message?.conversation ||
+    ''
+  ).toLowerCase().trim()
+
+  if (cmd === 'muta') return true
+  if (cmd === 'smuta') return false
+
+  if (/^[.!/#]smuta(\s|$)/i.test(body)) return false
+  if (/^[.!/#]muta(\s|$)/i.test(body)) return true
+
+  return null
+}
+
+function ensureChatMuteStore(chat) {
+  global.db.data.chats ||= {}
+  global.db.data.chats[chat] ||= {}
+  global.db.data.chats[chat].mutedUsers ||= {}
+
+  return global.db.data.chats[chat].mutedUsers
+}
+
+function parseDuration(text = '') {
+  const match = String(text)
+    .toLowerCase()
+    .match(/(?:^|\s)(\d+)\s*(m|min|minuti|h|ore|ora|d|giorni|giorno)?(?:\s|$)/)
+
+  if (!match) return null
+
+  const value = Number(match[1])
+  const unit = match[2] || 'm'
+
+  if (!value || value <= 0) return null
+
+  if (['h', 'ora', 'ore'].includes(unit)) {
+    return {
+      ms: value * 60 * 60 * 1000,
+      label: `${value} ${value === 1 ? 'ora' : 'ore'}`
+    }
+  }
+
+  if (['d', 'giorno', 'giorni'].includes(unit)) {
+    return {
+      ms: value * 24 * 60 * 60 * 1000,
+      label: `${value} ${value === 1 ? 'giorno' : 'giorni'}`
+    }
+  }
+
+  return {
+    ms: value * 60 * 1000,
+    label: `${value} ${value === 1 ? 'minuto' : 'minuti'}`
+  }
+}
+
+let handler = async (m, {
+  conn,
+  text,
+  command
+}) => {
+
   try {
-    const metadata = await conn.groupMetadata(chatId)
-    groupOwner = metadata.owner
-  } catch {
-    groupOwner = null
-  }
 
-  if (!isAdmin) {
-    throw `*╭━━━❌━━━╮*
-*𝐀𝐂𝐂𝐄𝐒𝐒𝐎 𝐍𝐄𝐆𝐀𝐓𝐎*
-*╰━━━❌━━━╯*
+    const isMute = resolveAction(m, command)
+    const target = resolveTarget(m, text || '')
 
-*𝐒𝐨𝐥𝐨 𝐠𝐥𝐢 𝐚𝐝𝐦𝐢𝐧 𝐩𝐨𝐬𝐬𝐨𝐧𝐨 𝐮𝐬𝐚𝐫𝐞 𝐪𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨.*`
-  }
+    if (isMute === null) return
 
-  if (!mentionedJid) {
-    return conn.sendMessage(chatId, {
-      text: `*╭━━━⚠️━━━╮*
-*𝐔𝐓𝐄𝐍𝐓𝐄 𝐍𝐎𝐍 𝐓𝐑𝐎𝐕𝐀𝐓𝐎*
-*╰━━━⚠️━━━╯*
-
-*𝐓𝐚𝐠𝐠𝐚 𝐮𝐧 𝐮𝐭𝐞𝐧𝐭𝐞 𝐝𝐚 ${command === 'muta' ? '𝐦𝐮𝐭𝐚𝐫𝐞 🔇' : '𝐬𝐦𝐮𝐭𝐚𝐫𝐞 🔊'}*`,
-      contextInfo: global.rcanal?.contextInfo || {}
-    }, { quoted: m })
-  }
-
-  if ([groupOwner, botNumber, ...BOT_OWNERS].includes(mentionedJid)) {
-    throw `*╭━━━👑━━━╮*
-*𝐏𝐑𝐎𝐓𝐄𝐓𝐓𝐎*
-*╰━━━👑━━━╯*
-
-*𝐍𝐨𝐧 𝐩𝐮𝐨𝐢 ${command === 'muta' ? '𝐦𝐮𝐭𝐚𝐫𝐞' : '𝐬𝐦𝐮𝐭𝐚𝐫𝐞'} 𝐪𝐮𝐞𝐬𝐭𝐨 𝐮𝐭𝐞𝐧𝐭𝐞 𝐩𝐞𝐫𝐜𝐡𝐞́ è 𝐩𝐫𝐨𝐭𝐞𝐭𝐭𝐨.*`
-  }
-
-  if (!global.db.data.users[mentionedJid]) global.db.data.users[mentionedJid] = {}
-  const user = global.db.data.users[mentionedJid]
-  const isMute = command === 'muta'
-
-  if (isMute) {
-    if (user.muto) {
-      throw `*⚠️ 𝐋’𝐮𝐭𝐞𝐧𝐭𝐞 è 𝐠𝐢𝐚̀ 𝐦𝐮𝐭𝐚𝐭𝐨.*`
+    if (!target) {
+      return conn.reply(
+        m.chat,
+        '*⚠️ 𝐃𝐞𝐯𝐢 𝐦𝐞𝐧𝐳𝐢𝐨𝐧𝐚𝐫𝐞 𝐨 𝐫𝐢𝐬𝐩𝐨𝐧𝐝𝐞𝐫𝐞 𝐚𝐝 𝐮𝐧 𝐮𝐭𝐞𝐧𝐭𝐞.*\n\n> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*',
+        m
+      )
     }
 
-    user.muto = true
+    const mutedUsers = ensureChatMuteStore(m.chat)
 
-    return conn.sendMessage(chatId, {
-      text: `*╭━━━━━━━🔇━━━━━━━╮*
-*✦ 𝐌𝐔𝐓𝐄 𝐀𝐓𝐓𝐈𝐕𝐀𝐓𝐎 ✦*
-*╰━━━━━━━🔇━━━━━━━╯*
+    const duration = isMute
+      ? parseDuration(text || '')
+      : null
 
-*👤 𝐔𝐭𝐞𝐧𝐭𝐞:* ${tag(mentionedJid)}
-*🔇 𝐒𝐭𝐚𝐭𝐨:* *𝐌𝐮𝐭𝐚𝐭𝐨*
-*🗑 𝐀𝐳𝐢𝐨𝐧𝐞:* *𝐈 𝐬𝐮𝐨𝐢 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐯𝐞𝐫𝐫𝐚𝐧𝐧𝐨 𝐞𝐥𝐢𝐦𝐢𝐧𝐚𝐭𝐢.*`,
-      contextInfo: {
-        ...(global.rcanal?.contextInfo || {}),
-        mentionedJid: [mentionedJid]
-      },
-      mentions: [mentionedJid]
+    const expiresAt = duration
+      ? Date.now() + duration.ms
+      : null
+
+    if (isMute) {
+      mutedUsers[target] = {
+        active: true,
+        expiresAt
+      }
+    } else {
+      delete mutedUsers[target]
+    }
+
+    const username = await conn.getName(target)
+    const executor = `@${m.sender.split('@')[0]}`
+
+    let avatar
+
+    try {
+      avatar = await conn.profilePictureUrl(target, 'image')
+    } catch {
+      avatar = 'https://i.imgur.com/8K9mXz4.png'
+    }
+
+    const card = await createMuteCard(
+      username,
+      avatar,
+      isMute
+    )
+
+    const caption = isMute
+      ? `*🔇 𝐈 𝐬𝐮𝐨𝐢 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢 𝐯𝐞𝐫𝐫𝐚𝐧𝐧𝐨 𝐞𝐥𝐢𝐦𝐢𝐧𝐚𝐭𝐢.*
+
+*👮 𝐄𝐬𝐞𝐠𝐮𝐢𝐭𝐨 𝐝𝐚:* ${executor}
+*⏳ 𝐃𝐮𝐫𝐚𝐭𝐚:* ${duration?.label || 'permanente'}
+
+> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
+      : `*🔊 𝐋’𝐮𝐭𝐞𝐧𝐭𝐞 𝐩𝐮𝐨̀ 𝐭𝐨𝐫𝐧𝐚𝐫𝐞 𝐚 𝐬𝐜𝐫𝐢𝐯𝐞𝐫𝐞.*
+
+*👮 𝐄𝐬𝐞𝐠𝐮𝐢𝐭𝐨 𝐝𝐚:* ${executor}
+
+> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
+
+    await conn.sendMessage(m.chat, {
+      image: card,
+      caption,
+      mentions: [target, m.sender]
     }, { quoted: m })
-  }
 
-  if (!user.muto) {
-    throw `*⚠️ 𝐋’𝐮𝐭𝐞𝐧𝐭𝐞 𝐧𝐨𝐧 è 𝐦𝐮𝐭𝐚𝐭𝐨.*`
-  }
+  } catch (e) {
 
-  user.muto = false
+    console.error('[MUTA ERROR]', e)
 
-  return conn.sendMessage(chatId, {
-    text: `*╭━━━━━━━🔊━━━━━━━╮*
-*✦ 𝐌𝐔𝐓𝐄 𝐑𝐈𝐌𝐎𝐒𝐒𝐎 ✦*
-*╰━━━━━━━🔊━━━━━━━╯*
-
-*👤 𝐔𝐭𝐞𝐧𝐭𝐞:* ${tag(mentionedJid)}
-*🔊 𝐒𝐭𝐚𝐭𝐨:* *𝐒𝐦𝐮𝐭𝐚𝐭𝐨*`,
-    contextInfo: {
-      ...(global.rcanal?.contextInfo || {}),
-      mentionedJid: [mentionedJid]
-    },
-    mentions: [mentionedJid]
-  }, { quoted: m })
-}
-
-handler.before = async function (m, { conn, isBotAdmin }) {
-  if (!m.chat || !m.sender || !global.db.data.users[m.sender]) return
-
-  const user = global.db.data.users[m.sender]
-
-  if (user.muto) {
-    if (!isBotAdmin) return
-    await conn.sendMessage(m.chat, { delete: m.key })
-    return false
+    conn.reply(
+      m.chat,
+      '*❌ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐝𝐮𝐫𝐚𝐧𝐭𝐞 𝐥𝐚 𝐠𝐞𝐬𝐭𝐢𝐨𝐧𝐞 𝐝𝐞𝐥 𝐦𝐮𝐭𝐞.*\n\n> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*',
+      m
+    )
   }
 }
 
-handler.command = /^(muta|smuta)$/i
+handler.before = async function (m, { conn }) {
+
+  if (!m.isGroup) return
+  if (!m.sender) return
+  if (m.fromMe) return
+
+  const sender = normalizeJid(m.sender)
+
+  if (!sender) return
+
+  const mutedUsers = ensureChatMuteStore(m.chat)
+  const muteData = mutedUsers[sender]
+
+  if (!muteData) return
+
+  if (
+    muteData !== true &&
+    muteData.expiresAt &&
+    Date.now() >= muteData.expiresAt
+  ) {
+    delete mutedUsers[sender]
+    return
+  }
+
+  const isMuted =
+    muteData === true ||
+    muteData.active === true
+
+  if (!isMuted) return
+
+  try {
+    await conn.sendMessage(m.chat, {
+      delete: m.key
+    })
+  } catch {}
+}
+
+handler.command = ['muta', 'smuta']
 handler.group = true
 handler.admin = true
 handler.botAdmin = true
