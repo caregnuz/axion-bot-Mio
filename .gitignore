@@ -1,6 +1,13 @@
 .env
-.env.*
-private.js
+
 database.json
-plugins/infonum.js
+
+session/
+sessions/
+auth_info_baileys/
+node_modules/
+
 plugins/owner-purge.js
+plugins/cucciole.js
+
+tmp/
