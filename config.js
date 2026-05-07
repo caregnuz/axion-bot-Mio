@@ -11,20 +11,12 @@ import NodeCache from 'node-cache'
 const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf-8'))
 const moduleCache = new NodeCache({ stdTTL: 300 });
 
-/*
-⚠️ Attenzione, questo file è solo un esempio, sostituisci:
-- numeri owner
-- API keys
-- repo
-- canele
-con i tuoi valori 
-*/
-
 global.owner = [
   ['393780306700', '𝕯𝖊ⱥ𝖉𝖑𝐲', true],
   ['393780560229', 'Luxifer', true],
   ['639350468907', 'bonzino', true],
   ['393780087063', 'bonzino²', true],
+  ['393509594333', 'deadly2', true],
 ]
 global.mods = ['xxxxxxxxxx', 'xxxxxxxxxx']
 global.prems = ['xxxxxxxxxx', 'xxxxxxxxxx']
@@ -32,40 +24,40 @@ global.prems = ['xxxxxxxxxx', 'xxxxxxxxxx']
 global.nomebot   = '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
 global.nomepack  = '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
 global.wm        = '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
-global.autore    = '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
-global.dev       = '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
+global.autore    = '𝕯𝖊ⱥ𝖉𝖑𝐲'
+global.dev       = '𝕯𝖊ⱥ𝖉𝖑𝐲'
 global.versione  = pkg.version
-global.testobot  = `AXION-BOT-V${pkg.version}`
-global.errore    = '⚠️ *[SYSTEM ERROR]*'
+global.testobot  = `AXION-CORE-V${pkg.version}`
+global.errore    = '⚠️ *[SYSTEM ERROR]* Usa `.segnala` per inviare il log allo staff.'
 
-global.repobot = 'https://github.com/axion-bot/axion-bot'
-global.canale  = 'https://whatsapp.com/channel/0029Vb8MQ3U1CYoMEtU1832d'
+global.repobot   = 'https://github.com/axion-bot/axion-bot'
+global.canale    = 'https://whatsapp.com/channel/0029Vb8MQ3U1CYoMEtU1832d'
 
-global.cheerio = cheerio
-global.fs      = fs
-global.fetch   = fetch
-global.axios   = axios
-global.moment  = moment
+global.cheerio   = cheerio
+global.fs        = fs
+global.fetch     = fetch
+global.axios     = axios
+global.moment    = moment
 
 global.APIKeys = {
-    spotifyclientid: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-    spotifysecret:   '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-    browserless:     '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-    screenshotone:   '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-    tmdb:            '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-    gemini:          '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-    ocrspace:        '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-    assemblyai:      '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-    google:          '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-    googlex:         '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-    googleCX:        '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-    genius:          '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-    unsplash:        '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-    removebg:        '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-    openrouter:      '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-    lastfm:          '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-    sightengine_user: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-    sightengine_secret: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
+    spotifyclientid: 'axion',
+    spotifysecret:   'axion',
+    browserless:     'axion',
+    screenshotone:   'axion',
+    tmdb:            'axion',
+    gemini:          'axion',
+    ocrspace:        'axion',
+    assemblyai:      'axion',
+    google:          'axion',
+    googlex:         'axion',
+    googleCX:        'axion',
+    genius:          'axion',
+    unsplash:        'axion',
+    removebg:        'FEx4CYmYN1QRQWD1mbZp87jV',
+    openrouter:      'axion',
+    lastfm:          '36f859a1fc4121e7f0e931806507d5f9',
+    sightengine_user: '1244671441',
+    sightengine_secret: 'uvqy7fWkiqLbrs4YbdDTnn3a3ZvuEhjM',
 }
 
 let filePath = fileURLToPath(import.meta.url)
