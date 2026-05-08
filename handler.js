@@ -689,17 +689,39 @@ if (m.key) {
                     } else {
                         groupData.count++
                     }
+                    
+//Antispam by Bonzino
 
-                    if (groupData.count > 8) {
-                        groupData.isSuspended = true
-                        await this.reply(m.chat, `⚠️  \`Anti-spam comandi\`\n\n> Rilevati troppi comandi in un minuto, aspettate \`10 secondi\` prima di riutilizzare i comandi.`, m).catch(e => console.error('[ERRORE] Errore nell\'invio della risposta:', e))
-                        setTimeout(() => {
-                            delete global.groupSpam[m.chat]
-                            console.log(`[Anti-Spam] Comandi riattivati per il gruppo: ${m.chat}`)
-                        }, 15000)
-                        return
-                    }
-                }
+const TEMPO_ANTISPAM = 15000
+const secondiAttesa = TEMPO_ANTISPAM / 1000
+
+if (groupData.count > 8) {
+    groupData.isSuspended = true
+
+    await this.reply(
+        m.chat,
+        `*╭━━━━━━━⚠️━━━━━━━╮*
+*✦ 𝐀𝐍𝐓𝐈 𝐒𝐏𝐀𝐌 ✦*
+*╰━━━━━━━⚠️━━━━━━━╯*
+
+*𝐒𝐨𝐧𝐨 𝐬𝐭𝐚𝐭𝐢 𝐫𝐢𝐥𝐞𝐯𝐚𝐭𝐢 𝐭𝐫𝐨𝐩𝐩𝐢 𝐜𝐨𝐦𝐚𝐧𝐝𝐢 𝐢𝐧 𝐩𝐨𝐜𝐨 𝐭𝐞𝐦𝐩𝐨.*
+
+*➜ 𝐀𝐬𝐩𝐞𝐭𝐭𝐚𝐭𝐞 ${secondiAttesa} 𝐬𝐞𝐜𝐨𝐧𝐝𝐢*
+*➜ 𝐄𝐯𝐢𝐭𝐚𝐭𝐞 𝐢𝐥 𝐟𝐥𝐨𝐨𝐝 𝐝𝐞𝐢 𝐜𝐨𝐦𝐚𝐧𝐝𝐢*
+
+> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`,
+        m
+    ).catch(e => console.error('[ERRORE] Errore nell\'invio della risposta:', e))
+
+    setTimeout(() => {
+        delete global.groupSpam[m.chat]
+        console.log(`[Anti-Spam] Comandi riattivati per il gruppo: ${m.chat}`)
+    }, TEMPO_ANTISPAM)
+
+    return
+}
+
+}
 
                 if (chat.modoadmin && !isOwner && !isROwner && m.isGroup && !isAdmin && !user.premium) return
                 if (settings.soloCreatore && !isROwner) return

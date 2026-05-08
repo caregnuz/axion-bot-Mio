@@ -2,17 +2,29 @@ import { createMuteCard } from '../lib/cards/mute-card.js'
 
 function normalizeJid(jid = '') {
   if (!jid) return null
-
   if (jid.includes('@s.whatsapp.net')) return jid
   if (jid.includes('@lid')) return jid
 
   const clean = String(jid).replace(/[^0-9]/g, '')
-
-  if (clean.length > 5) {
-    return clean + '@s.whatsapp.net'
-  }
+  if (clean.length > 5) return clean + '@s.whatsapp.net'
 
   return null
+}
+
+function cleanJid(jid = '') {
+  return String(jid || '').replace(/[^0-9]/g, '')
+}
+
+function isOwnerJid(jid = '') {
+  const num = cleanJid(jid)
+
+  return (global.owner || []).some(owner => {
+    const ownerNum = Array.isArray(owner)
+      ? cleanJid(owner[0])
+      : cleanJid(owner)
+
+    return ownerNum === num
+  })
 }
 
 function getMentioned(m) {
@@ -99,11 +111,11 @@ function parseDuration(text = '') {
 let handler = async (m, {
   conn,
   text,
-  command
+  command,
+  isOwner,
+  isROwner
 }) => {
-
   try {
-
     const isMute = resolveAction(m, command)
     const target = resolveTarget(m, text || '')
 
@@ -117,7 +129,27 @@ let handler = async (m, {
       )
     }
 
+    const executorIsOwner = !!(isOwner || isROwner || isOwnerJid(m.sender))
+    const targetIsOwner = isOwnerJid(target)
+
+    if (isMute && targetIsOwner) {
+      return conn.reply(
+        m.chat,
+        '*⛔ 𝐍𝐨𝐧 𝐩𝐮𝐨𝐢 𝐦𝐮𝐭𝐚𝐫𝐞 𝐝𝐢𝐨.*\n\n> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*',
+        m
+      )
+    }
+
     const mutedUsers = ensureChatMuteStore(m.chat)
+    const oldMuteData = mutedUsers[target]
+
+    if (!isMute && oldMuteData?.mutedByOwner && !executorIsOwner) {
+      return conn.reply(
+        m.chat,
+        '*⛔ 𝐐𝐮𝐞𝐬𝐭𝐨 𝐮𝐭𝐞𝐧𝐭𝐞 è 𝐬𝐭𝐚𝐭𝐨 𝐦𝐮𝐭𝐚𝐭𝐨 𝐝𝐚 𝐮𝐧 𝐨𝐰𝐧𝐞𝐫.*\n*𝐒𝐨𝐥𝐨 𝐮𝐧 𝐨𝐰𝐧𝐞𝐫 𝐩𝐮𝐨̀ 𝐬𝐦𝐮𝐭𝐚𝐫𝐥𝐨.*\n\n> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*',
+        m
+      )
+    }
 
     const duration = isMute
       ? parseDuration(text || '')
@@ -130,7 +162,9 @@ let handler = async (m, {
     if (isMute) {
       mutedUsers[target] = {
         active: true,
-        expiresAt
+        expiresAt,
+        mutedBy: m.sender,
+        mutedByOwner: executorIsOwner
       }
     } else {
       delete mutedUsers[target]
@@ -173,7 +207,6 @@ let handler = async (m, {
     }, { quoted: m })
 
   } catch (e) {
-
     console.error('[MUTA ERROR]', e)
 
     conn.reply(
@@ -185,7 +218,6 @@ let handler = async (m, {
 }
 
 handler.before = async function (m, { conn }) {
-
   if (!m.isGroup) return
   if (!m.sender) return
   if (m.fromMe) return

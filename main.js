@@ -20,6 +20,11 @@ import { makeWASocket, protoType, serialize } from './lib/simple.js';
 import { Low, JSONFile } from 'lowdb';
 import NodeCache from 'node-cache';
 const RESTART_FILE = './tmp/restart-state.json';
+for (const dir of ['./temp', './tmp']) {
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true })
+  }
+}
 
 const DisconnectReason = {
     connectionClosed: 428,
