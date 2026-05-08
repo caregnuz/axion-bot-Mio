@@ -6,14 +6,12 @@ const processing = new Set()
 
 const FOOTER = '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
 const TIMEOUT = 5 * 60 * 1000
-
-(GROQ_API_KEY=gsk_...)
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 
 const S = v => String(v || '')
 
 async function react(m, emoji) {
-  try { await m.react(emoji) } catch {}
+  try { await m.react(emoji) } catch (e) {}
 }
 
 function getSessionId(m) {
@@ -31,8 +29,7 @@ function clearSession(id) {
 }
 
 async function askAI(prompt) {
-  if (!GROQ_API_KEY) throw new Error('CHIAVE_MANCANTE: Assicurati di aver messo GROQ_API_KEY=gsk_... nel file .env')
-
+  if (!GROQ_API_KEY) throw new Error('GROQ_API_KEY mancante')
   const { data } = await axios.post(
     'https://api.groq.com/openai/v1/chat/completions',
     {
@@ -55,7 +52,6 @@ async function askAI(prompt) {
       timeout: 45000
     }
   )
-
   return S(data?.choices?.[0]?.message?.content || '').trim()
 }
 
@@ -67,7 +63,7 @@ async function getWikiImage(lang, name) {
       { timeout: 15000, headers: { 'User-Agent': 'AxionBot/1.0' } }
     )
     return data?.originalimage?.source || data?.thumbnail?.source || null
-  } catch { return null }
+  } catch (e) { return null }
 }
 
 function resetTimeout(id, m, conn) {
@@ -76,7 +72,7 @@ function resetTimeout(id, m, conn) {
   if (session.timeout) clearTimeout(session.timeout)
   session.timeout = setTimeout(async () => {
     sessions.delete(id)
-    await conn.sendMessage(m.chat, { text: `*⏱️ Sessione Akinator scaduta per inattività.*` }, { quoted: m })
+    await conn.sendMessage(m.chat, { text: '*⏱️ Sessione scaduta.*' }, { quoted: m })
   }, TIMEOUT)
 }
 
@@ -101,27 +97,20 @@ async function handleAnswer(m, conn, usedPrefix = '.') {
   if (!sessions.has(id)) return false
   if (msgId && processing.has(msgId)) return true
   processing.add(msgId)
-
   try {
     const rawText = m.text || ''
     const cleanText = rawText.replace(new RegExp(`^\\${usedPrefix}(akinator|aki)\\s*`, 'i'), '').trim().toLowerCase().replace(/^sì$/, 'si')
-
     if (/^(stop|annulla|fine|exit)$/i.test(cleanText)) {
       clearSession(id)
       await react(m, '🛑')
       return m.reply('*Partita terminata.*')
     }
-
     if (!/^(si|no|forse|non so)$/i.test(cleanText)) return true
     await react(m, '🧠')
-
     const session = sessions.get(id)
-    const prompt = `Storico: ${session.history.join('\n')}\nRisposta: ${cleanText}`
-    const replyText = await askAI(prompt)
-
+    const replyText = await askAI(`Storico: ${session.history.join('\n')}\nRisposta: ${cleanText}`)
     session.history.push(`Utente: ${cleanText}`, `Akinator: ${replyText}`)
     resetTimeout(id, m, conn)
-
     if (/INDOVINATO:/i.test(replyText)) {
       const nome = replyText.split(/INDOVINATO:/i)[1]?.trim() || 'N/D'
       const image = await getWikiImage('it', nome) || await getWikiImage('en', nome)
@@ -130,13 +119,11 @@ async function handleAnswer(m, conn, usedPrefix = '.') {
       let caption = `*🏆 AKINATOR HA VINTO!*\n\n*Stavi pensando a:*\n*${nome}*`
       return image ? conn.sendMessage(m.chat, { image: { url: image }, caption }, { quoted: m }) : m.reply(caption)
     }
-
     await conn.sendMessage(m.chat, buttonsMessage(`*🧞 Akinator:* \n\n${replyText}`, usedPrefix), { quoted: m })
     return true
   } catch (e) {
     clearSession(id)
-    await react(m, '❌')
-    return m.reply('*Errore:* Verifica che GROQ_API_KEY sia corretta nel file .env')
+    return m.reply('*Errore durante la partita.*')
   } finally {
     if (msgId) setTimeout(() => processing.delete(msgId), 2000)
   }
@@ -145,16 +132,14 @@ async function handleAnswer(m, conn, usedPrefix = '.') {
 let handler = async (m, { conn, usedPrefix }) => {
   const id = getSessionId(m)
   if (sessions.has(id)) return handleAnswer(m, conn, usedPrefix)
-
   try {
     await react(m, '🧞')
     const startTxt = await askAI('Inizia una partita ad Akinator. Fai la prima domanda.')
     sessions.set(id, { history: [`Akinator: ${startTxt}`], timeout: null })
     resetTimeout(id, m, conn)
-    await conn.sendMessage(m.chat, buttonsMessage(`*🧞 AKINATOR AI*\n\n${startTxt}`, usedPrefix), { quoted: m })
+    await conn.sendMessage(m.chat, buttonsMessage(`*🧞 AKINATOR*\n\n${startTxt}`, usedPrefix), { quoted: m })
   } catch (e) {
-      console.error(e)
-    m.reply('*Errore:* Inserisci GROQ_API_KEY=gsk_... nel file .env')
+    m.reply('*Errore avvio: Controlla la chiave Groq.*')
   }
 }
 
