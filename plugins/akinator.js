@@ -6,6 +6,8 @@ const processing = new Set()
 
 const FOOTER = '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
 const TIMEOUT = 5 * 60 * 1000
+
+(GROQ_API_KEY=gsk_...)
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 
 const S = v => String(v || '')
@@ -29,7 +31,7 @@ function clearSession(id) {
 }
 
 async function askAI(prompt) {
-  if (!GROQ_API_KEY) throw new Error('GROQ_API_KEY mancante')
+  if (!GROQ_API_KEY) throw new Error('CHIAVE_MANCANTE: Assicurati di aver messo GROQ_API_KEY=gsk_... nel file .env')
 
   const { data } = await axios.post(
     'https://api.groq.com/openai/v1/chat/completions',
@@ -60,51 +62,21 @@ async function askAI(prompt) {
 async function getWikiImage(lang, name) {
   try {
     const title = encodeURIComponent(name)
-
     const { data } = await axios.get(
       `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${title}`,
-      {
-        timeout: 15000,
-        headers: {
-          'User-Agent': 'AxionBot/1.0 (axionbot@example.com)'
-        }
-      }
+      { timeout: 15000, headers: { 'User-Agent': 'AxionBot/1.0' } }
     )
-
     return data?.originalimage?.source || data?.thumbnail?.source || null
-
-  } catch (e) {
-    console.error(
-      'Errore immagine Wikipedia:',
-      e?.response?.status || e?.message || e
-    )
-
-    return null
-  }
-}
-async function getCharacterImage(name) {
-  return await getWikiImage('it', name) || await getWikiImage('en', name)
+  } catch { return null }
 }
 
 function resetTimeout(id, m, conn) {
   const session = sessions.get(id)
   if (!session) return
-
   if (session.timeout) clearTimeout(session.timeout)
-
   session.timeout = setTimeout(async () => {
     sessions.delete(id)
-
-    await conn.sendMessage(m.chat, {
-      text:
-`*╭━━━━━━━⏱️━━━━━━━╮*
-*✦ 𝐀𝐊𝐈𝐍𝐀𝐓𝐎𝐑 ✦*
-*╰━━━━━━━⏱️━━━━━━━╯*
-
-*⏱️ 𝐒𝐞𝐬𝐬𝐢𝐨𝐧𝐞 𝐬𝐜𝐚𝐝𝐮𝐭𝐚.*
-
-> ${FOOTER}`
-    }, { quoted: m })
+    await conn.sendMessage(m.chat, { text: `*⏱️ Sessione Akinator scaduta per inattività.*` }, { quoted: m })
   }, TIMEOUT)
 }
 
@@ -123,257 +95,73 @@ function buttonsMessage(text, usedPrefix) {
   }
 }
 
-function finalButtonsMessage(text, usedPrefix, image = null) {
-  const msg = {
-    footer: FOOTER,
-    buttons: [
-      { buttonId: `${usedPrefix}aki giocaancora`, buttonText: { displayText: '🔁 Gioca ancora' }, type: 1 }
-    ],
-    headerType: image ? 4 : 1
-  }
-
-  if (image) {
-    msg.image = { url: image }
-    msg.caption = text
-  } else {
-    msg.text = text
-  }
-
-  return msg
-}
-
-function cleanAnswer(text, usedPrefix = '.') {
-  return S(text)
-    .replace(new RegExp(`^\\${usedPrefix}(akinator|aki)\\s*`, 'i'), '')
-    .trim()
-    .toLowerCase()
-    .replace(/^sì$/, 'si')
-}
-
-function isAnswer(text) {
-  return /^(si|no|forse|non so)$/i.test(text)
-}
-
 async function handleAnswer(m, conn, usedPrefix = '.') {
   const id = getSessionId(m)
   const msgId = getMessageId(m)
-
   if (!sessions.has(id)) return false
   if (msgId && processing.has(msgId)) return true
-
-  if (msgId) processing.add(msgId)
+  processing.add(msgId)
 
   try {
-    const buttonAnswer =
-      m.message?.buttonsResponseMessage?.selectedButtonId ||
-      m.message?.templateButtonReplyMessage?.selectedId ||
-      null
-
-    const rawText = buttonAnswer || S(m.text).trim()
-    const cleanText = cleanAnswer(rawText, usedPrefix)
-
-    if (!cleanText) return true
+    const rawText = m.text || ''
+    const cleanText = rawText.replace(new RegExp(`^\\${usedPrefix}(akinator|aki)\\s*`, 'i'), '').trim().toLowerCase().replace(/^sì$/, 'si')
 
     if (/^(stop|annulla|fine|exit)$/i.test(cleanText)) {
       clearSession(id)
       await react(m, '🛑')
-
-      await conn.sendMessage(
-  m.chat,
-  {
-    text:
-`*╭━━━━━━━🛑━━━━━━━╮*
-*✦ 𝐀𝐊𝐈𝐍𝐀𝐓𝐎𝐑 ✦*
-*╰━━━━━━━🛑━━━━━━━╯*
-
-*𝐏𝐚𝐫𝐭𝐢𝐭𝐚 𝐭𝐞𝐫𝐦𝐢𝐧𝐚𝐭𝐚.*`,
-
-    footer: FOOTER,
-    buttons: [
-      {
-        buttonId: `${usedPrefix}aki giocaancora`,
-        buttonText: { displayText: '🔁 Gioca ancora' },
-        type: 1
-      }
-    ],
-    headerType: 1
-  },
-  { quoted: m }
-)
-      return true
+      return m.reply('*Partita terminata.*')
     }
 
-    if (!isAnswer(cleanText)) return true
-
+    if (!/^(si|no|forse|non so)$/i.test(cleanText)) return true
     await react(m, '🧠')
 
     const session = sessions.get(id)
-    if (!session) return true
-
-    const prompt =
-`Storico partita:
-${session.history.join('\n')}
-
-Risposta utente: ${cleanText}`
-
+    const prompt = `Storico: ${session.history.join('\n')}\nRisposta: ${cleanText}`
     const replyText = await askAI(prompt)
 
-    session.history.push(`Utente: ${cleanText}`)
-    session.history.push(`Akinator: ${replyText}`)
-
+    session.history.push(`Utente: ${cleanText}`, `Akinator: ${replyText}`)
     resetTimeout(id, m, conn)
 
     if (/INDOVINATO:/i.test(replyText)) {
       const nome = replyText.split(/INDOVINATO:/i)[1]?.trim() || 'N/D'
-      const image = await getCharacterImage(nome)
-
+      const image = await getWikiImage('it', nome) || await getWikiImage('en', nome)
       clearSession(id)
       await react(m, '🏆')
-
-      const caption =
-`*╭━━━━━━━🏆━━━━━━━╮*
-*✦ 𝐀𝐊𝐈𝐍𝐀𝐓𝐎𝐑 ✦*
-*╰━━━━━━━🏆━━━━━━━╯*
-
-*✨ 𝐕𝐢𝐭𝐭𝐨𝐫𝐢𝐚!*
-
-*𝐒𝐭𝐚𝐯𝐢 𝐩𝐞𝐧𝐬𝐚𝐧𝐝𝐨 𝐚:*
-*${nome}*
-
-> ${FOOTER}`
-
-      await conn.sendMessage(
-        m.chat,
-        finalButtonsMessage(caption, usedPrefix, image),
-        { quoted: m }
-      )
-
-      return true
+      let caption = `*🏆 AKINATOR HA VINTO!*\n\n*Stavi pensando a:*\n*${nome}*`
+      return image ? conn.sendMessage(m.chat, { image: { url: image }, caption }, { quoted: m }) : m.reply(caption)
     }
 
-    await conn.sendMessage(
-      m.chat,
-      buttonsMessage(
-`*╭━━━━━━━🧞━━━━━━━╮*
-*✦ 𝐀𝐊𝐈𝐍𝐀𝐓𝐎𝐑 ✦*
-*╰━━━━━━━🧞━━━━━━━╯*
-
-*${replyText}*
-
-> ${FOOTER}`,
-        usedPrefix
-      ),
-      { quoted: m }
-    )
-
+    await conn.sendMessage(m.chat, buttonsMessage(`*🧞 Akinator:* \n\n${replyText}`, usedPrefix), { quoted: m })
     return true
-
   } catch (e) {
-    console.error('Errore akinator:', e?.response?.data || e?.message || e)
     clearSession(id)
     await react(m, '❌')
-
-    await conn.sendMessage(m.chat, {
-  text:
-`*╭━━━━━━━⚠️━━━━━━━╮*
-*✦ 𝐄𝐑𝐑𝐎𝐑𝐄 ✦*
-*╰━━━━━━━⚠️━━━━━━━╯*
-
-*❌ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐝𝐮𝐫𝐚𝐧𝐭𝐞 𝐥𝐚 𝐫𝐢𝐬𝐩𝐨𝐬𝐭𝐚.*
-
-\`\`\`
-${S(
-  e?.response?.data?.error?.message ||
-  e?.response?.data?.message ||
-  e?.message ||
-  e
-).slice(0, 1500)}
-\`\`\`
-
-> ${FOOTER}`
-}, { quoted: m })
-
-    return true
+    return m.reply('*Errore:* Verifica che GROQ_API_KEY sia corretta nel file .env')
   } finally {
-    if (msgId) setTimeout(() => processing.delete(msgId), 3000)
+    if (msgId) setTimeout(() => processing.delete(msgId), 2000)
   }
 }
 
 let handler = async (m, { conn, usedPrefix }) => {
   const id = getSessionId(m)
-
-  const buttonAnswer =
-    m.message?.buttonsResponseMessage?.selectedButtonId ||
-    m.message?.templateButtonReplyMessage?.selectedId ||
-    null
-
-  const rawText = buttonAnswer || S(m.text).trim()
-  const cleanText = cleanAnswer(rawText, usedPrefix)
-
-  if (sessions.has(id)) {
-    return handleAnswer(m, conn, usedPrefix)
-  }
-
-  if (isAnswer(cleanText) || /^(stop|annulla|fine|exit)$/i.test(cleanText)) {
-    return
-  }
+  if (sessions.has(id)) return handleAnswer(m, conn, usedPrefix)
 
   try {
     await react(m, '🧞')
-
-    const startTxt = await askAI(
-      'Inizia una partita ad Akinator in italiano. Saluta brevemente e fai la prima domanda.'
-    )
-
-    sessions.set(id, {
-      history: [`Akinator: ${startTxt}`],
-      timeout: null
-    })
-
+    const startTxt = await askAI('Inizia una partita ad Akinator. Fai la prima domanda.')
+    sessions.set(id, { history: [`Akinator: ${startTxt}`], timeout: null })
     resetTimeout(id, m, conn)
-
-    return conn.sendMessage(
-      m.chat,
-      buttonsMessage(
-`*╭━━━━━━━🧞━━━━━━━╮*
-*✦ 𝐀𝐊𝐈𝐍𝐀𝐓𝐎𝐑 𝐀𝐈 ✦*
-*╰━━━━━━━🧞━━━━━━━╯*
-
-*${startTxt}*
-
-> ${FOOTER}`,
-        usedPrefix
-      ),
-      { quoted: m }
-    )
-
+    await conn.sendMessage(m.chat, buttonsMessage(`*🧞 AKINATOR AI*\n\n${startTxt}`, usedPrefix), { quoted: m })
   } catch (e) {
-    console.error('Errore avvio akinator:', e?.response?.data || e?.message || e)
-    await react(m, '❌')
-
-    return conn.sendMessage(m.chat, {
-      text:
-`*╭━━━━━━━⚠️━━━━━━━╮*
-*✦ 𝐄𝐑𝐑𝐎𝐑𝐄 ✦*
-*╰━━━━━━━⚠️━━━━━━━╯*
-
-*❌ 𝐀𝐏𝐈 𝐧𝐨𝐧 𝐫𝐚𝐠𝐠𝐢𝐮𝐧𝐠𝐢𝐛𝐢𝐥𝐞.*
-
-> ${FOOTER}`
-    }, { quoted: m })
+      console.error(e)
+    m.reply('*Errore:* Inserisci GROQ_API_KEY=gsk_... nel file .env')
   }
 }
 
 handler.before = async (m, { conn, usedPrefix }) => {
-  const prefix = usedPrefix || '.'
-  const text = S(m.text).trim()
-
-  if (new RegExp(`^\\${prefix}(akinator|aki)(\\s|$)`, 'i').test(text)) return
-
   const id = getSessionId(m)
-  if (!sessions.has(id)) return
-
-  await handleAnswer(m, conn, prefix)
+  if (!sessions.has(id) || m.text.startsWith(usedPrefix)) return
+  await handleAnswer(m, conn, usedPrefix)
   return true
 }
 
