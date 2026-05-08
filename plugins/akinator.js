@@ -1,4 +1,4 @@
-Import 'dotenv/config'
+import 'dotenv/config'
 import axios from 'axios'
 
 const sessions = new Map()
