@@ -38,9 +38,7 @@ const handler = async (m, { conn, usedPrefix, command }) => {
 
     const caption = `*📌 𝐐𝐫 𝐠𝐫𝐮𝐩𝐩𝐨*
 
-👥 *Membri:* ${totalMembers}
-
-⚠️ *Non condividere il link con sconosciuti.*`
+👥 *Membri:* ${totalMembers}`
 
     await conn.sendMessage(m.chat, {
       image: qrBuffer,
