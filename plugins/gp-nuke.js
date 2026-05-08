@@ -1,3 +1,5 @@
+// by deadly
+
 import fs from 'fs'
 
 let handler = async (m, { conn, command }) => {
