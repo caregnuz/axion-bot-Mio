@@ -1,3 +1,5 @@
+// by deadly
+
 let handler = async (m, { conn, text, command, usedPrefix }) => {
     let chat = global.db.data.chats[m.chat]
     if (!chat) global.db.data.chats[m.chat] = {}
