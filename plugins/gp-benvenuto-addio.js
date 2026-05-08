@@ -1,3 +1,5 @@
+// plugin by deadly
+
 import { WAMessageStubType } from '@realvare/baileys'
 
 let handler = m => m
