@@ -94,17 +94,6 @@ let handler = async (m, { conn }) => {
 
     await delay(RITARDO_RISULTATO)
 
-    await conn.reply(
-      m.chat,
-`*💼 𝐒𝐚𝐥𝐝𝐨 𝐚𝐭𝐭𝐮𝐚𝐥𝐞*
-
-*💸 𝐃𝐞𝐧𝐚𝐫𝐨:* *${formatNumber(user.euro)}€*
-*⭐ 𝐄𝐗𝐏:* *${formatNumber(user.exp)}*
-
-> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`,
-      m
-    )
-
   } catch (e) {
     console.error(e)
 
