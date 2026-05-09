@@ -21,7 +21,7 @@ let handler = async (m, { conn }) => {
 *╭─── 🛡️ 𝐒𝐓𝐀𝐅𝐅 ───╮*
 *│ ✦ 𝐋𝐮𝐱𝐢𝐟𝐞𝐫*
 *│   ├ 𝐑𝐮𝐨𝐥𝐨:* Staffer
-*│   └ 𝐂𝐨𝐧𝐭𝐚𝐭𝐭𝐨:* @212781816909
+*│   └ 𝐂𝐨𝐧𝐭𝐚𝐭𝐭𝐨:* @393780560229
 *╰────────────────────╯*
 
 *╭─── 📌 𝐈𝐍𝐅𝐎 𝐔𝐓𝐈𝐋𝐈 ───╮*
@@ -39,7 +39,7 @@ let handler = async (m, { conn }) => {
             contextInfo: {
                 mentionedJid: [
                     '393780306700@s.whatsapp.net',
-                    '212781816909@s.whatsapp.net',
+                    '393780560229@s.whatsapp.net',
                     '639350468907@s.whatsapp.net',
                     '393509594333@s.whatsapp.net'
                 ]
@@ -71,7 +71,7 @@ END:VCARD`
 VERSION:3.0
 FN:Luxifer
 ORG:𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 - Staffer
-TEL;type=CELL;type=VOICE;waid=212781816909:+212781816909
+TEL;type=CELL;type=VOICE;waid=3780560229:+393780560229
 END:VCARD`
                 }
             ]
