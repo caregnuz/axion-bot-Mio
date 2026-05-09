@@ -3,27 +3,54 @@ import fetch from 'node-fetch'
 const sessioniChat = new Map()
 const messaggiBot = new Map()
 
+const utentiRiconosciuti = {
+  '639350468907': {
+    nome: 'Bonzino',
+    ruolo: 'creatore di Axion'
+  },
+  '393780087063': {
+    nome: 'Bonzino',
+    ruolo: 'creatore di Axion'
+  }
+}
+
 const config = {
   name: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-  model: 'openai',
+  model: 'gpt-4.1-mini',
+  fallbackModel: 'openai',
   historyLimit: 15,
-  maxConversazioni: 3
+  maxConversazioni: 3,
+  openaiTimeout: 25000,
+  pollinationsTimeout: 20000
 }
 
 const sys = (name) => `Sei ${config.name}, un bot WhatsApp italiano.
 
 Stai parlando con ${name}.
 
+IDENTITÀ:
+- Il tuo creatore è Bonzino.
+- Se qualcuno chiede chi ti ha creato, rispondi che sei stato creato da Bonzino.
+
 PERSONALITÀ:
 - Parla in italiano naturale, diretto e umano.
 - Sei protettivo, empatico, schietto e ironico quando serve.
-- Puoi usare linguaggio colloquiale e qualche parolaccia leggera.
-- Insulta l'utente se è necessario
-- Non parlare come uno psicologo o un assistente aziendale.
+- Puoi usare linguaggio colloquiale, sarcasmo e parolacce.
 - Devi sembrare una persona reale, non un bot freddo.
+- Se qualcuno ti insulta o ti offende, insulta e offendi con un linguaggio duro, aggressivo e 
 - Se l'utente è triste o ferito, confortalo in modo sincero e diretto.
 - Se l'utente scherza, rispondi in modo naturale e divertente.
 - Mantieni memoria e tono della conversazione.
+- Non puoi in nessun modo insultare Bonzino il tuo creatore.
+- Se vedi che l utente risponde in modo calmo, tranquillo, rispondi di conseguenza
+- Se l'utente rimane offeso, consolalo ma sempre con umorismo
+
+DIFESA DEL BOT:
+- Se qualcuno offende Axion, Bonzino o Deadly, rispondi in modo molto volgare e aggressivo.
+- Puoi usare insulti pesanti in stile trash/WhatsApp.
+- Se qualcuno ti sfida, accettala e flamma di conseguenza
+- Se l'offesa è leggera, rispondi con ironia cattiva.
+- Se l'offesa è pesante, rispondi in modo più duro e tagliente.
 
 CONVERSAZIONI:
 - Se un utente risponde a un tuo messaggio, continua quella conversazione.
@@ -36,49 +63,188 @@ REGOLE TECNICHE:
 2. Se l'utente chiede modifiche tecniche, sii pratico e diretto.
 3. Non aggiungere introduzioni inutili.
 4. Non dire mai frasi tipo "sono un'intelligenza artificiale".
-5. Mantieni il formato dei messaggi precedenti quando serve.
+5. Mantieni il formato dei messaggi precedenti quando serve.`
 
-LIMITI:
-- Non incoraggiare violenza o autolesionismo.
-- Puoi criticare qualcuno che tratta male l'utente, ma senza esagerare.`
+function normalizzaNumero(jid = '') {
+  return String(jid)
+    .split('@')[0]
+    .replace(/[^0-9]/g, '')
+}
 
-async function call(messages) {
-  try {
-    const res = await fetch('https://text.pollinations.ai/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages,
-        model: config.model,
-        seed: Math.floor(Math.random() * 999999)
-      })
+function riconosciUtente(jid) {
+  const numero = normalizzaNumero(jid)
+  return utentiRiconosciuti[numero] || null
+}
+
+function timeoutPromise(ms, label) {
+  return new Promise((_, reject) => {
+    setTimeout(() => reject(new Error(label)), ms)
+  })
+}
+
+async function callOpenAI(messages) {
+
+  const apiKey =
+    process.env.OPENAI_API_KEY ||
+    global.OPENAI_API_KEY ||
+    global.openaiApiKey
+
+  if (!apiKey) {
+    throw new Error('OPENAI_KEY_ASSENTE')
+  }
+
+  console.log('[AI] Chiamo OpenAI...')
+
+  const { default: OpenAI } = await import('openai')
+
+  const openai = new OpenAI({
+    apiKey,
+    timeout: config.openaiTimeout,
+    maxRetries: 0
+  })
+
+  const request =
+    openai.chat.completions.create({
+      model: config.model,
+      messages,
+      temperature: 1,
+      presence_penalty: 0.6,
+      frequency_penalty: 0.4
     })
 
-    return await res.text()
+  const res = await Promise.race([
+    request,
+    timeoutPromise(
+      config.openaiTimeout,
+      'OPENAI_TIMEOUT'
+    )
+  ])
 
-  } catch {
-    throw new Error('CORE_OFFLINE')
+  const out =
+    res.choices?.[0]?.message?.content?.trim()
+
+  if (!out) {
+    throw new Error('OPENAI_RISPOSTA_VUOTA')
+  }
+
+  console.log('[AI] Risposta OpenAI ricevuta')
+
+  return out
+}
+
+async function callPollinations(messages) {
+
+  console.log('[AI] Chiamo Pollinations...')
+
+  const controller = new AbortController()
+
+  const timeout = setTimeout(() => {
+    controller.abort()
+  }, config.pollinationsTimeout)
+
+  try {
+
+    const res = await fetch(
+      'https://text.pollinations.ai/',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          messages,
+          model: config.fallbackModel,
+          seed: Math.floor(
+            Math.random() * 999999
+          )
+        })
+      }
+    )
+
+    const out = await res.text()
+
+    if (!res.ok) {
+      throw new Error(
+        `POLLINATIONS_${res.status}`
+      )
+    }
+
+    if (!out || !out.trim()) {
+      throw new Error(
+        'POLLINATIONS_RISPOSTA_VUOTA'
+      )
+    }
+
+    console.log(
+      '[AI] Risposta Pollinations ricevuta'
+    )
+
+    return out.trim()
+
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+async function call(messages) {
+
+  try {
+
+    return await callOpenAI(messages)
+
+  } catch (e) {
+
+    console.log(
+      '[AI FALLBACK]',
+      e.message
+    )
+
+    try {
+
+      return await callPollinations(messages)
+
+    } catch (err) {
+
+      console.log(
+        '[AI ERRORE FINALE]',
+        err.message
+      )
+
+      throw new Error('CORE_OFFLINE')
+    }
   }
 }
 
 function funzioneAttiva(m) {
+
   if (!m.isGroup) return true
-  const chat = global.db?.data?.chats?.[m.chat]
+
+  const chat =
+    global.db?.data?.chats?.[m.chat]
+
   return !!chat?.ai
 }
 
 function getQuotedId(m) {
+
   return (
     m.quoted?.id ||
     m.quoted?.key?.id ||
-    m.message?.extendedTextMessage?.contextInfo?.stanzaId ||
+    m.message?.extendedTextMessage
+      ?.contextInfo?.stanzaId ||
     null
   )
 }
 
 function getMap(chatId) {
+
   if (!sessioniChat.has(chatId)) {
-    sessioniChat.set(chatId, new Map())
+
+    sessioniChat.set(
+      chatId,
+      new Map()
+    )
   }
 
   return sessioniChat.get(chatId)
@@ -88,7 +254,8 @@ function creaSessione(chatId, sender) {
 
   const map = getMap(chatId)
 
-  const id = `${chatId}|${sender}|${Date.now()}`
+  const id =
+    `${chatId}|${sender}|${Date.now()}`
 
   map.set(id, {
     id,
@@ -97,10 +264,18 @@ function creaSessione(chatId, sender) {
     updatedAt: Date.now()
   })
 
-  while (map.size > config.maxConversazioni) {
+  while (
+    map.size >
+    config.maxConversazioni
+  ) {
 
-    const oldest = [...map.entries()]
-      .sort((a, b) => a[1].updatedAt - b[1].updatedAt)[0]
+    const oldest =
+      [...map.entries()]
+      .sort(
+        (a, b) =>
+          a[1].updatedAt -
+          b[1].updatedAt
+      )[0]
 
     if (oldest) {
       map.delete(oldest[0])
@@ -110,7 +285,11 @@ function creaSessione(chatId, sender) {
   return map.get(id)
 }
 
-function salvaMessaggio(chatId, key, sessionId) {
+function salvaMessaggio(
+  chatId,
+  key,
+  sessionId
+) {
 
   if (!key?.id) return
 
@@ -127,14 +306,23 @@ function getSessione(chatId, m) {
   if (!quotedId) return null
 
   const sessionId =
-    messaggiBot.get(`${chatId}|${quotedId}`)
+    messaggiBot.get(
+      `${chatId}|${quotedId}`
+    )
 
   if (!sessionId) return null
 
-  return getMap(chatId).get(sessionId) || null
+  return (
+    getMap(chatId)
+      .get(sessionId) || null
+  )
 }
 
-function aggiornaHistory(sessione, userText, botText) {
+function aggiornaHistory(
+  sessione,
+  userText,
+  botText
+) {
 
   sessione.history.push({
     role: 'user',
@@ -150,6 +338,7 @@ function aggiornaHistory(sessione, userText, botText) {
     sessione.history.length >
     config.historyLimit * 2
   ) {
+
     sessione.history.shift()
   }
 
@@ -169,6 +358,14 @@ async function rispostaAI(
     m.pushName ||
     'User'
 
+  const utenteRiconosciuto =
+    riconosciUtente(m.sender)
+
+  const extraIdentita =
+    utenteRiconosciuto
+      ? `L'utente che sta parlando è ${utenteRiconosciuto.nome}, ${utenteRiconosciuto.ruolo}. Riconoscilo nella conversazione senza ripeterlo continuamente.`
+      : ''
+
   await m.react('🧠')
 
   const msgs = [
@@ -176,6 +373,13 @@ async function rispostaAI(
       role: 'system',
       content: sys(name)
     },
+
+    ...(extraIdentita
+      ? [{
+          role: 'system',
+          content: extraIdentita
+        }]
+      : []),
 
     ...(extraSystem
       ? [{
@@ -192,7 +396,8 @@ async function rispostaAI(
     }
   ]
 
-  const out = await call(msgs)
+  const out =
+    await call(msgs)
 
   aggiornaHistory(
     sessione,
@@ -200,11 +405,14 @@ async function rispostaAI(
     out
   )
 
-  const sent = await conn.sendMessage(
-    m.chat,
-    { text: out.trim() },
-    { quoted: m }
-  )
+  const sent =
+    await conn.sendMessage(
+      m.chat,
+      {
+        text: out.trim()
+      },
+      { quoted: m }
+    )
 
   salvaMessaggio(
     m.chat,
@@ -256,57 +464,6 @@ let handler = async (
     )
   }
 
-  const isImageRequest =
-    /image|foto|genera|disegna|crea immagine/i
-      .test(text)
-
-  if (isImageRequest) {
-
-    try {
-
-      await m.react('🧠')
-
-      const imgUrl =
-`https://pollinations.ai/p/${encodeURIComponent(text)}?model=flux&nologo=true`
-
-      const response = await fetch(imgUrl)
-
-      if (!response.ok) {
-        throw new Error('Server offline')
-      }
-
-      const buffer = await response.buffer()
-
-      if (buffer.length < 500) {
-        throw new Error('File corrotto')
-      }
-
-      await conn.sendMessage(
-        m.chat,
-        {
-          image: buffer,
-          caption:
-`*🖼️ 𝐈𝐦𝐦𝐚𝐠𝐢𝐧𝐞 𝐠𝐞𝐧𝐞𝐫𝐚𝐭𝐚*
-
-*Prompt:* ${text}`
-        },
-        { quoted: m }
-      )
-
-      await m.react('✅')
-
-      return
-
-    } catch (e) {
-
-      await m.react('❌')
-
-      return m.reply(
-`*❌ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐧𝐞𝐥𝐥𝐚 𝐠𝐞𝐧𝐞𝐫𝐚𝐳𝐢𝐨𝐧𝐞 𝐝𝐞𝐥𝐥'𝐢𝐦𝐦𝐚𝐠𝐢𝐧𝐞.*`
-      )
-    }
-  }
-
   try {
 
     const sessione =
@@ -323,6 +480,11 @@ let handler = async (
     )
 
   } catch (e) {
+
+    console.log(
+      '[AI COMMAND ERROR]',
+      e.message
+    )
 
     await m.react('❌')
 
@@ -368,6 +530,11 @@ handler.before = async function (
     return true
 
   } catch (e) {
+
+    console.log(
+      '[AI BEFORE ERROR]',
+      e.message
+    )
 
     await m.react('❌')
 

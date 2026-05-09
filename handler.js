@@ -459,6 +459,14 @@ chat = global.db.data.chats[m.chat] || (global.db.data.chats[m.chat] = {
     users: {}
 })
 
+let settings = global.db.data.settings[this.user.jid] || (global.db.data.settings[this.user.jid] = {
+    autoread: false,
+    jadibotmd: false,
+    antiPrivate: true,
+    soloCreatore: false,
+    status: 0
+})
+
         if (m.mtype === 'pollUpdateMessage') return
         if (m.mtype === 'reactionMessage') return
         let groupMetadata = m.isGroup ? global.groupCache.get(m.chat) : null
