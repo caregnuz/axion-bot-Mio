@@ -5,7 +5,7 @@ const messaggiBot = new Map()
 
 const config = {
   name: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-  model: 'mistral',
+  model: 'openai',
   historyLimit: 15,
   maxConversazioni: 3
 }
