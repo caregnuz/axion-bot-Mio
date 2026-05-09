@@ -9,5 +9,4 @@ node_modules/
 private.js
 plugins/owner-purge.js
 plugins/cucciole.js
-
 tmp/

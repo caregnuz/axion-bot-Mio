@@ -38,6 +38,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 🏎️ ${usedPrefix}gara
 ┃ 🎰 ${usedPrefix}slot
 ┃ 🎵 ${usedPrefix}ic
+┃ 🧞‍♂️${usedPrefix}akinator
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 🐾 𝐀𝐍𝐈𝐌𝐀𝐋𝐄 〕━⬣

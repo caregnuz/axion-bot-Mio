@@ -1,3 +1,5 @@
+// memu funzioni by Bonzino
+
 import fs from 'fs'
 import fetch from 'node-fetch'
 
@@ -15,10 +17,14 @@ let handler = async (m, { conn, usedPrefix }) => {
   } catch {}
 
   let thumbnail = null
+
   try {
     if (pp) {
       const res = await fetch(pp)
-      if (res.ok) thumbnail = Buffer.from(await res.arrayBuffer())
+
+      if (res.ok) {
+        thumbnail = Buffer.from(await res.arrayBuffer())
+      }
     }
   } catch {}
 
@@ -41,16 +47,18 @@ let handler = async (m, { conn, usedPrefix }) => {
 *◈ 𝐀𝐧𝐭𝐢𝐠𝐨𝐫𝐞:* ${stato(chat.antigore)}
 *◈ 𝐀𝐧𝐭𝐢𝐭𝐫𝐚𝐯𝐚:* ${stato(chat.antitrava)}
 *◈ 𝐀𝐧𝐭𝐢𝐌𝐞𝐝𝐢𝐚:* ${stato(chat.antimedia)}
-
-*📱 𝐑𝐞𝐭𝐞*
 *◈ 𝐀𝐧𝐭𝐢𝐈𝐧𝐬𝐭𝐚:* ${stato(chat.antiInsta)}
 *◈ 𝐀𝐧𝐭𝐢𝐓𝐞𝐥𝐞𝐠𝐫𝐚𝐦:* ${stato(chat.antiTelegram)}
 *◈ 𝐀𝐧𝐭𝐢𝐓𝐢𝐤𝐓𝐨𝐤:* ${stato(chat.antiTiktok)}
+*◈ 𝐀𝐧𝐭𝐢𝐍𝐮𝐤𝐞:* ${stato(chat.antinuke)}
 
 *⚙️ 𝐆𝐞𝐬𝐭𝐢𝐨𝐧𝐞*
 *◈ 𝐌𝐨𝐝𝐨 𝐀𝐝𝐦𝐢𝐧:* ${stato(chat.modoadmin)}
 *◈ 𝐁𝐞𝐧𝐯𝐞𝐧𝐮𝐭𝐨:* ${stato(chat.welcome)}
 *◈ 𝐀𝐝𝐝𝐢𝐨:* ${stato(chat.goodbye)}
+
+*🧠 𝐀𝐢 & 𝐀𝐮𝐭𝐨𝐦𝐚𝐳𝐢𝐨𝐧𝐞*
+*◈ 𝐈𝐀:* ${stato(chat.ai)}
 
 *🔒 𝐏𝐫𝐢𝐯𝐚𝐭𝐨*
 *◈ 𝐀𝐧𝐭𝐢𝐩𝐫𝐢𝐯𝐚𝐭𝐨:* ${stato(bot.antiprivato)}
@@ -60,33 +68,39 @@ let handler = async (m, { conn, usedPrefix }) => {
 *🟢 𝐀𝐭𝐭𝐢𝐯𝐚:* *${usedPrefix}1 <funzione>*
 *⚪ 𝐃𝐢𝐬𝐚𝐭𝐭𝐢𝐯𝐚:* *${usedPrefix}0 <funzione>*`
 
-await conn.sendMessage(m.chat, {
-  text,
-  footer: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
-  buttons: [
+  await conn.sendMessage(
+    m.chat,
     {
-      buttonId: `${usedPrefix}menu`,
-      buttonText: {
-        displayText: '⬅️ Menu Principale'
-      },
-      type: 1
-    }
-  ],
-  headerType: 1,
-  contextInfo: {
-    ...(global.rcanal?.contextInfo || {}),
-    ...(thumbnail ? {
-      externalAdReply: {
-        title: '𝐀𝐗𝐈𝐎𝐍 𝐅𝐔𝐍𝐙𝐈𝐎𝐍𝐈',
-        body: 'Stato moduli del sistema',
-        thumbnail,
-        mediaType: 1,
-        renderLargerThumbnail: false,
-        showAdAttribution: false
+      text,
+      footer: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
+      buttons: [
+        {
+          buttonId: `${usedPrefix}menu`,
+          buttonText: {
+            displayText: '⬅️ Menu Principale'
+          },
+          type: 1
+        }
+      ],
+      headerType: 1,
+      contextInfo: {
+        ...(global.rcanal?.contextInfo || {}),
+        ...(thumbnail
+          ? {
+              externalAdReply: {
+                title: '𝐀𝐗𝐈𝐎𝐍 𝐅𝐔𝐍𝐙𝐈𝐎𝐍𝐈',
+                body: 'Stato moduli del sistema',
+                thumbnail,
+                mediaType: 1,
+                renderLargerThumbnail: false,
+                showAdAttribution: false
+              }
+            }
+          : {})
       }
-    } : {})
-  }
-}, { quoted: m })
+    },
+    { quoted: m }
+  )
 }
 
 handler.help = ['funzioni']

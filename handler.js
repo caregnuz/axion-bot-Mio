@@ -429,32 +429,35 @@ if (m.key) {
             firstTime: Date.now(),
             spam: 0
         })
-        chat = global.db.data.chats[m.chat] || (global.db.data.chats[m.chat] = {
-            isBanned: false,
-            welcome: false,
-            goodbye: false,
-            ai: false,
-            vocali: false,
-            antiporno: false,
-            antioneview: false,
-            autolevelup: false,
-            antivoip: false,
-            rileva: false,
-            modoadmin: false,
-            antiLink: false,
-            antiLink2: false,
-            reaction: false,
-            antispam: false,
-            expired: 0,
-            users: {}
-        })
-        let settings = global.db.data.settings[this.user.jid] || (global.db.data.settings[this.user.jid] = {
-            autoread: false,
-            jadibotmd: false,
-            antiPrivate: true,
-            soloCreatore: false,
-            status: 0
-        })
+        
+chat = global.db.data.chats[m.chat] || (global.db.data.chats[m.chat] = {
+    isBanned: false,
+    welcome: false,
+    goodbye: false,
+    ai: true,
+    vocali: false,
+    antiporno: false,
+    antigore: false,
+    antimedia: false,
+    antiTag: false,
+    antiBot: false,
+    antiInsta: false,
+    antiTelegram: false,
+    antiTiktok: false,
+    antioneview: false,
+    autolevelup: false,
+    antivoip: false,
+    antitrava: false,
+    rileva: false,
+    modoadmin: false,
+    antiLink: false,
+    antiLink2: false,
+    reaction: false,
+    antispam: false,
+    antinuke: false,
+    expired: 0,
+    users: {}
+})
 
         if (m.mtype === 'pollUpdateMessage') return
         if (m.mtype === 'reactionMessage') return
