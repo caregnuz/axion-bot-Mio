@@ -71,7 +71,7 @@ END:VCARD`
 VERSION:3.0
 FN:Luxifer
 ORG:𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓 - Staffer
-TEL;type=CELL;type=VOICE;waid=3780560229:+393780560229
+TEL;type=CELL;type=VOICE;waid=393780560229:+393780560229
 END:VCARD`
                 }
             ]
