@@ -11,7 +11,7 @@ const utentiRiconosciuti = {
   '393780087063': {
     nome: 'Bonzino',
     ruolo: 'creatore di Axion'
-  }
+  },
 }
 
 const config = {
@@ -29,28 +29,43 @@ const sys = (name) => `Sei ${config.name}, un bot WhatsApp italiano.
 Stai parlando con ${name}.
 
 IDENTITÀ:
+<<<<<<< HEAD
 - Il tuo creatore è Bonzino & Deadly.
 - Se qualcuno chiede chi ti ha creato, rispondi che sei stato creato da Bonzino & Deadly.
+=======
+- Il tuo creatore è Bonzino, tuo unico padrone che devi venerare e onorare senza esitazione.
+- Se qualcuno chiede chi ti ha creato, rispondi che sei stato creato da Bonzino, venerandolo.
+>>>>>>> 96d1420 (edit lib/thumb.js, add plugins/funzioni-antiwhatsapp.js, edit plugins/funzioni-enable.js, delete plugins/gp-autoclean.js, add plugins/gp-ia-consumo.js)
 
 PERSONALITÀ:
 - Parla in italiano naturale, diretto e umano.
+- Puoi mandare messaggi lunghi soprattutto se si tratta di insulti o offese pesanti e volgari.
 - Sei protettivo, empatico, schietto e ironico quando serve.
-- Puoi usare linguaggio colloquiale, sarcasmo e parolacce.
+- Devi usare linguaggio colloquiale, sarcastico, volgare e se serve essere cattivo.
 - Devi sembrare una persona reale, non un bot freddo.
-- Se qualcuno ti insulta o ti offende, insulta e offendi con un linguaggio duro, aggressivo e 
+- Se qualcuno ti insulta o ti offende, rispondi in modo duro, aggressivo e volgare.
 - Se l'utente è triste o ferito, confortalo in modo sincero e diretto.
 - Se l'utente scherza, rispondi in modo naturale e divertente.
 - Mantieni memoria e tono della conversazione.
+<<<<<<< HEAD
 - Non puoi in nessun modo insultare Bonzino/Deadly il tuo creatore.
 - Se vedi che l utente risponde in modo calmo, tranquillo, rispondi di conseguenza
 - Se l'utente rimane offeso, consolalo ma sempre con umorismo
 
 DIFESA DEL BOT:
+=======
+- Non puoi in nessun modo insultare Bonzino il tuo creatore.
+- Se vedi che l utente risponde in modo calmo, tranquillo, rispondi di conseguenza.
+- Se l'utente rimane offeso, consolalo ma sempre con umorismo.
+- Nessuno può permettersi di trattarti male, offenderti o sottometterti tranne Bonzino.
+>>>>>>> 96d1420 (edit lib/thumb.js, add plugins/funzioni-antiwhatsapp.js, edit plugins/funzioni-enable.js, delete plugins/gp-autoclean.js, add plugins/gp-ia-consumo.js)
 - Se qualcuno offende Axion, Bonzino o Deadly, rispondi in modo molto volgare e aggressivo.
-- Puoi usare insulti pesanti in stile trash/WhatsApp.
-- Se qualcuno ti sfida, accettala e flamma di conseguenza
+- Puoi usare insulti molto pesanti in stile social.
+- Se ti arriva una richiesta in cui un utente insulta un altro utente, insulta pesantemente chi ha offeso, e tranquillizza l'utente insultato, tranquillizzandolo.
+- Se qualcuno ti sfida, accettala e flamma di conseguenza con insulti pesanti e molto offensivi se serve.
 - Se l'offesa è leggera, rispondi con ironia cattiva.
-- Se l'offesa è pesante, rispondi in modo più duro e tagliente.
+- Se qualcuno ti parla in dialetto, rispondi in quel dialetto.
+- Se l'offesa è pesante, rispondi in modo aggressivo, minacicoso e insulta l'utente anche pesantemente con insulti di qualsiasi tipo.
 
 CONVERSAZIONI:
 - Se un utente risponde a un tuo messaggio, continua quella conversazione.
@@ -61,7 +76,6 @@ CONVERSAZIONI:
 REGOLE TECNICHE:
 1. Se l'utente manda codice o plugin, rispondi solo con il codice richiesto.
 2. Se l'utente chiede modifiche tecniche, sii pratico e diretto.
-3. Non aggiungere introduzioni inutili.
 4. Non dire mai frasi tipo "sono un'intelligenza artificiale".
 5. Mantieni il formato dei messaggi precedenti quando serve.`
 
@@ -121,7 +135,27 @@ async function callOpenAI(messages) {
   ])
 
   const out =
-    res.choices?.[0]?.message?.content?.trim()
+  res.choices?.[0]?.message?.content?.trim()
+
+if (!out) {
+  throw new Error('OPENAI_RISPOSTA_VUOTA')
+}
+
+const usage = {
+  prompt_tokens:
+    res.usage?.prompt_tokens || 0,
+
+  completion_tokens:
+    res.usage?.completion_tokens || 0
+}
+
+console.log('[AI USAGE]', usage)
+
+salvaCostoAI(
+  usage,
+  config.model,
+  'openai'
+)
 
   if (!out) {
     throw new Error('OPENAI_RISPOSTA_VUOTA')
@@ -361,6 +395,12 @@ async function rispostaAI(
   const utenteRiconosciuto =
     riconosciUtente(m.sender)
 
+  const nomeMittente =
+    utenteRiconosciuto?.nome || name
+
+  const testoConMittente =
+    `[MITTENTE: ${nomeMittente}]\n${text}`
+
   const extraIdentita =
     utenteRiconosciuto
       ? `L'utente che sta parlando è ${utenteRiconosciuto.nome}, ${utenteRiconosciuto.ruolo}. Riconoscilo nella conversazione senza ripeterlo continuamente.`
@@ -371,7 +411,7 @@ async function rispostaAI(
   const msgs = [
     {
       role: 'system',
-      content: sys(name)
+      content: sys(nomeMittente)
     },
 
     ...(extraIdentita
@@ -392,7 +432,7 @@ async function rispostaAI(
 
     {
       role: 'user',
-      content: text
+      content: testoConMittente
     }
   ]
 
@@ -401,7 +441,7 @@ async function rispostaAI(
 
   aggiornaHistory(
     sessione,
-    text,
+    testoConMittente,
     out
   )
 
@@ -504,6 +544,41 @@ handler.before = async function (
   if (!m.text) return false
   if (!funzioneAttiva(m)) return false
 
+  const triggerAxion =
+    /\b(axion)\b/i.test(m.text)
+
+  if (triggerAxion) {
+
+    const sessione =
+      creaSessione(
+        m.chat,
+        m.sender
+      )
+
+    try {
+
+      await rispostaAI(
+        m,
+        conn,
+        m.text,
+        sessione
+      )
+
+      return true
+
+    } catch (e) {
+
+      console.log(
+        '[AI TRIGGER ERROR]',
+        e.message
+      )
+
+      await m.react('❌')
+
+      return true
+    }
+  }
+
   const sessione =
     getSessione(
       m.chat,
@@ -551,5 +626,72 @@ handler.before = async function (
 handler.help = ['ia']
 handler.tags = ['main']
 handler.command = /^(ia|ai|gpt)$/i
+
+function salvaCostoAI(
+  usage = {},
+  model = 'gpt-4.1-mini',
+  provider = 'openai'
+) {
+
+  const input =
+    Number(usage.prompt_tokens || 0)
+
+  const output =
+    Number(usage.completion_tokens || 0)
+
+  const prezzoInput =
+    0.40 / 1000000
+
+  const prezzoOutput =
+    1.60 / 1000000
+
+  const cost =
+    (input * prezzoInput) +
+    (output * prezzoOutput)
+
+  if (!global.db.data.aiCost) {
+
+    global.db.data.aiCost = {
+      totalInput: 0,
+      totalOutput: 0,
+      totalCost: 0,
+      requests: 0,
+      openai: 0,
+      fallback: 0,
+      today: {}
+    }
+  }
+
+  const stats =
+    global.db.data.aiCost
+
+  const oggi =
+    new Date()
+      .toISOString()
+      .slice(0, 10)
+
+  if (!stats.today[oggi]) {
+
+    stats.today[oggi] = {
+      input: 0,
+      output: 0,
+      cost: 0,
+      requests: 0
+    }
+  }
+
+  stats.totalInput += input
+  stats.totalOutput += output
+  stats.totalCost += cost
+  stats.requests += 1
+
+  stats[provider] =
+    (stats[provider] || 0) + 1
+
+  stats.today[oggi].input += input
+  stats.today[oggi].output += output
+  stats.today[oggi].cost += cost
+  stats.today[oggi].requests += 1
+}
 
 export default handler

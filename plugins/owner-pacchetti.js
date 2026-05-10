@@ -113,11 +113,11 @@ const pushDeps = async (msg) => {
 }
 
 let handler = async (m, { conn, args, command, usedPrefix }) => {
-  if (command === 'dipendenze') {
+  if (command === 'pacchetti') {
     const missing = scanMissing()
 
     if (!Object.keys(missing).length) {
-      return m.reply('✅ Nessun pacchetto nancante!')
+      return m.reply('*✅ Nessun pacchetto nancante!*')
     }
 
     const mods = Object.keys(missing)
