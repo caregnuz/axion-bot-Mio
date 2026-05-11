@@ -20,7 +20,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 
 const buttons = [
     { buttonId: `${usedPrefix}admin`, buttonText: { displayText: '🛡️ ADMIN' }, type: 1 },
-    { buttonId: `${usedPrefix}mod`, buttonText: { displayText: '🧑‍⚖️ MOD' }, type: 1 },
+    { buttonId: `${usedPrefix}mod`, buttonText: { displayText: '👮‍♂️ MOD' }, type: 1 },
     { buttonId: `${usedPrefix}owner`, buttonText: { displayText: '👑 OWNER' }, type: 1 },
     { buttonId: `${usedPrefix}funzioni`, buttonText: { displayText: '⚙️ FUNZIONI' }, type: 1 },
     { buttonId: `${usedPrefix}utente`, buttonText: { displayText: '👤 UTENTE' }, type: 1 },

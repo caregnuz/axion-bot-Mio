@@ -24,7 +24,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 🏆 ${usedPrefix}top
 ┃ 🌐 ${usedPrefix}topall
 ┃ 🚩 ${usedPrefix}topbandiera
-┃ 📊 ${usedPrefix}topic
+┃ 🎵 ${usedPrefix}topic
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 🕹️ 𝐆𝐈𝐎𝐂𝐇𝐈 〕━⬣

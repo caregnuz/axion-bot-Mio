@@ -151,7 +151,7 @@ ${body}
       buttons: [
         {
           buttonId: `${usedPrefix}crimine`,
-          buttonText: { displayText: '🔁 𝐀𝐥𝐭𝐫𝐨 𝐜𝐨𝐥𝐩𝐨' },
+          buttonText: { displayText: '🔁 Altro colpo' },
           type: 1
         }
       ],
@@ -171,18 +171,18 @@ ${body}
 
 *🎯 𝐂𝐫𝐢𝐦𝐢𝐧𝐞:* ${crime.name}
 *⏳ 𝐏𝐞𝐧𝐚:* 5 𝐦𝐢𝐧𝐮𝐭𝐢
-*⚖️ 𝐂𝐚𝐮𝐳𝐢𝐨𝐧𝐞:* ${formatNumber(cauzionePrezzo)}`
+*⚖️ 𝐂𝐚𝐮𝐳𝐢𝐨𝐧𝐞* ${formatNumber(cauzionePrezzo)}`
   )
 
   const jailButtons = [
     {
       buttonId: `${usedPrefix}evadibla`,
-      buttonText: { displayText: '🏃‍♂️ 𝐓𝐞𝐧𝐭𝐚 𝐞𝐯𝐚𝐬𝐢𝐨𝐧𝐞' },
+      buttonText: { displayText: '🏃‍♂️ Tenta Evasione' },
       type: 1
     },
     {
       buttonId: `${usedPrefix}cauzione`,
-      buttonText: { displayText: '⚖️ 𝐏𝐚𝐠𝐚 𝐜𝐚𝐮𝐳𝐢𝐨𝐧𝐞' },
+      buttonText: { displayText: '⚖️ Paga Cauzione' },
       type: 1
     }
   ]

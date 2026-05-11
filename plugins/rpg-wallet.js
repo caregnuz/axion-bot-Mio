@@ -1,18 +1,23 @@
+// rpg-wallet by Bonzino 
+
 let handler = async (m, { conn }) => {
     let who = m.sender
 
-    if (!global.db.data.users[who]) {
-        global.db.data.users[who] = {}
-    }
+    global.db.data.users[who] ??= {}
 
     let user = global.db.data.users[who]
 
     if (typeof user.euro !== 'number') user.euro = 0
     if (typeof user.bank !== 'number') user.bank = 0
 
-    let denaro = user.euro
+    let contanti = user.euro
     let banca = user.bank
-    let totale = denaro + banca
+    let totale = contanti + banca
+
+    let percentuale =
+        totale > 0
+            ? Math.round((banca / totale) * 100)
+            : 0
 
     let text = `╭━━━━━━━💸━━━━━━━╮
 *✦ 𝐏𝐎𝐑𝐓𝐀𝐅𝐎𝐆𝐋𝐈𝐎 ✦*
@@ -20,15 +25,34 @@ let handler = async (m, { conn }) => {
 
 *👤 𝐔𝐭𝐞𝐧𝐭𝐞:* @${who.split('@')[0]}
 
-*💸 𝐃𝐞𝐧𝐚𝐫𝐨:* ${formatNumber(denaro)}
-*🏦 𝐁𝐚𝐧𝐜𝐚:* ${formatNumber(banca)}
+*💼 𝐂𝐨𝐧𝐭𝐚𝐧𝐭𝐢:* ${formatNumber(contanti)}
+*🏦 𝐓𝐨𝐭𝐚𝐥𝐞 𝐛𝐚𝐧𝐜𝐚:* ${formatNumber(banca)}
+*📊 𝐃𝐞𝐩𝐨𝐬𝐢𝐭𝐚𝐭𝐨:* ${percentuale}%
+
 *━━━━━━━━━━━━━━*
-*💰 𝐓𝐨𝐭𝐚𝐥𝐞:* ${formatNumber(totale)}`
+
+*💰 𝐏𝐚𝐭𝐫𝐢𝐦𝐨𝐧𝐢𝐨:* ${formatNumber(totale)}`
 
     const buttons = [
         {
+            buttonId: '.deposita',
+            buttonText: {
+                displayText: 'Deposita'
+            },
+            type: 1
+        },
+        {
+            buttonId: '.preleva',
+            buttonText: {
+                displayText: 'Preleva'
+            },
+            type: 1
+        },
+        {
             buttonId: '.soldi',
-            buttonText: { displayText: '💸 𝐌𝐞𝐧𝐮 𝐄𝐜𝐨𝐧𝐨𝐦𝐢𝐚' },
+            buttonText: {
+                displayText: 'Menu Economia'
+            },
             type: 1
         }
     ]
@@ -47,11 +71,12 @@ let handler = async (m, { conn }) => {
 }
 
 handler.command = /^(wallet|portafoglio)$/i
-handler.help = ['wallet', 'portafoglio']
+handler.help = ['wallet']
 handler.tags = ['economia']
 
 export default handler
 
 function formatNumber(num) {
-    return new Intl.NumberFormat('it-IT').format(num || 0)
+    return new Intl.NumberFormat('it-IT')
+        .format(num || 0)
 }
