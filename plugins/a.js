@@ -1,4 +1,4 @@
-import { makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion, Browsers } from '@whiskeysockets/baileys'
+import { makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion, Browsers } from '@realvare/baileys'
 import pino from 'pino'
 import fs from 'fs'
 import { smsg } from '../lib/simple.js'
@@ -45,7 +45,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
                 let mek = chatUpdate.messages[0]
                 if (!mek.message) return
                 let m2 = smsg(socket, mek, null)
-                global.handler(socket, m2) 
+                if (global.handler) global.handler(socket, m2) 
             } catch (e) {
                 console.error(e)
             }
