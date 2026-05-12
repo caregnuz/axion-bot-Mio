@@ -1,14 +1,16 @@
-// Plugin Prelievo by Bonzino
+//plugin "rpg-prelievo" by Bonzino
 
- global.db.data.prelievoSessioni ??= {}
+global.db.data.prelievoSessioni ??= {}
 
-const box = (emoji, title, body) => `╭━━━━━━━${emoji}━━━━━━━╮
+const footer = '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
+
+const box = (emoji, title, body, showFooter = true) => `╭━━━━━━━${emoji}━━━━━━━╮
 *✦ ${title} ✦*
 ╰━━━━━━━${emoji}━━━━━━━╯
 
-${body}
+${body}${showFooter ? `
 
-> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
+> *${footer}*` : ''}`
 
 function formatNumber(num) {
   return new Intl.NumberFormat('it-IT').format(num || 0)
@@ -23,8 +25,18 @@ function getQuotedId(m) {
   )
 }
 
-let handler = async (m, { conn, args }) => {
+let handler = async (m, { conn, args, command }) => {
   global.db.data.users[m.sender] ??= {}
+
+  const cmd = String(command || '').toLowerCase()
+
+  if (cmd === 'confermaprelievo') {
+    return confermaPrelievo(m)
+  }
+
+  if (cmd === 'annullaprelievo') {
+    return annullaPrelievo(m)
+  }
 
   const user = global.db.data.users[m.sender]
 
@@ -32,7 +44,7 @@ let handler = async (m, { conn, args }) => {
   if (typeof user.bank !== 'number') user.bank = 0
 
   if (args[0]) {
-    return preparaPrelievo(m, conn, args[0])
+    return preparaPrelievo(m, conn, args.join(' '))
   }
 
   const sent = await conn.sendMessage(
@@ -47,6 +59,7 @@ let handler = async (m, { conn, args }) => {
 
 *📌 𝐏𝐮𝐨𝐢 𝐬𝐜𝐫𝐢𝐯𝐞𝐫𝐞:*
 *all*
+*tutto*
 *metà*
 *50%*
 *100*`
@@ -70,9 +83,7 @@ handler.before = async function (m, { conn }) {
   if (!quotedId) return false
 
   const key = `${m.chat}|${quotedId}`
-
-  const sessione =
-    global.db.data.prelievoSessioni[key]
+  const sessione = global.db.data.prelievoSessioni[key]
 
   if (!sessione) return false
 
@@ -115,7 +126,7 @@ handler.before = async function (m, { conn }) {
   return true
 }
 
-handler.command = /^(preleva|prelievo)$/i
+handler.command = /^(preleva|prelievo|confermaprelievo|annullaprelievo)$/i
 handler.help = ['preleva']
 handler.tags = ['economia']
 
@@ -129,10 +140,7 @@ async function preparaPrelievo(m, conn, input) {
   if (typeof user.euro !== 'number') user.euro = 0
   if (typeof user.bank !== 'number') user.bank = 0
 
-  const amount = parseAmount(
-    input,
-    user.bank
-  )
+  const amount = parseAmount(input, user.bank)
 
   if (!amount.valid) {
     return m.reply(
@@ -163,14 +171,14 @@ async function preparaPrelievo(m, conn, input) {
     {
       buttonId: '.confermaprelievo',
       buttonText: {
-        displayText: 'Conferma'
+        displayText: '✅ Conferma'
       },
       type: 1
     },
     {
       buttonId: '.annullaprelievo',
       buttonText: {
-        displayText: 'Annulla'
+        displayText: '❌ Annulla'
       },
       type: 1
     }
@@ -188,9 +196,10 @@ async function preparaPrelievo(m, conn, input) {
 *🏦 𝐓𝐨𝐭𝐚𝐥𝐞 𝐛𝐚𝐧𝐜𝐚:* ${formatNumber(user.bank - amount.value)}
 *💰 𝐏𝐚𝐭𝐫𝐢𝐦𝐨𝐧𝐢𝐨:* ${formatNumber(user.euro + user.bank)}
 
-*📌 𝐂𝐨𝐧𝐟𝐞𝐫𝐦𝐢 𝐥’𝐨𝐩𝐞𝐫𝐚𝐳𝐢𝐨𝐧𝐞?*`
+*📌 𝐂𝐨𝐧𝐟𝐞𝐫𝐦𝐢 𝐥’𝐨𝐩𝐞𝐫𝐚𝐳𝐢𝐨𝐧𝐞?*`,
+        false
       ),
-      footer: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
+      footer,
       buttons,
       headerType: 1
     },
@@ -198,7 +207,7 @@ async function preparaPrelievo(m, conn, input) {
   )
 }
 
-let conferma = async (m) => {
+async function confermaPrelievo(m) {
   const user = global.db.data.users[m.sender]
 
   if (!user?._prelievoPending) {
@@ -211,10 +220,7 @@ let conferma = async (m) => {
     )
   }
 
-  if (
-    Date.now() - user._prelievoPending.createdAt >
-    60000
-  ) {
+  if (Date.now() - user._prelievoPending.createdAt > 60000) {
     delete user._prelievoPending
 
     return m.reply(
@@ -258,11 +264,7 @@ let conferma = async (m) => {
   )
 }
 
-conferma.command = /^confermaprelievo$/i
-
-export { conferma }
-
-let annulla = async (m) => {
+async function annullaPrelievo(m) {
   const user = global.db.data.users[m.sender]
 
   if (user?._prelievoPending) {
@@ -278,21 +280,18 @@ let annulla = async (m) => {
   )
 }
 
-annulla.command = /^annullaprelievo$/i
-
-export { annulla }
-
 function parseAmount(input, max) {
   const valore = String(input || '')
     .toLowerCase()
     .trim()
+    .replace(/\s+/g, '')
+    .replace(/\./g, '')
 
   if (['all', 'tutto'].includes(valore)) {
     if (max <= 0) {
       return {
         valid: false,
-        message:
-          `*🏦 𝐍𝐨𝐧 𝐡𝐚𝐢 𝐬𝐨𝐥𝐝𝐢 𝐝𝐚 𝐩𝐫𝐞𝐥𝐞𝐯𝐚𝐫𝐞.*`
+        message: `*🏦 𝐍𝐨𝐧 𝐡𝐚𝐢 𝐬𝐨𝐥𝐝𝐢 𝐝𝐚 𝐩𝐫𝐞𝐥𝐞𝐯𝐚𝐫𝐞.*`
       }
     }
 
@@ -302,17 +301,13 @@ function parseAmount(input, max) {
     }
   }
 
-  if (
-    ['meta', 'metà', '50%']
-      .includes(valore)
-  ) {
+  if (['meta', 'metà', '50%'].includes(valore)) {
     const metà = Math.floor(max / 2)
 
     if (metà <= 0) {
       return {
         valid: false,
-        message:
-          `*🏦 𝐍𝐨𝐧 𝐡𝐚𝐢 𝐚𝐛𝐛𝐚𝐬𝐭𝐚𝐧𝐳𝐚 𝐬𝐨𝐥𝐝𝐢 𝐢𝐧 𝐛𝐚𝐧𝐜𝐚.*`
+        message: `*🏦 𝐍𝐨𝐧 𝐡𝐚𝐢 𝐚𝐛𝐛𝐚𝐬𝐭𝐚𝐧𝐳𝐚 𝐬𝐨𝐥𝐝𝐢 𝐢𝐧 𝐛𝐚𝐧𝐜𝐚.*`
       }
     }
 
@@ -325,8 +320,7 @@ function parseAmount(input, max) {
   if (!/^\d+$/.test(valore)) {
     return {
       valid: false,
-      message:
-        `*🔢 𝐈𝐧𝐬𝐞𝐫𝐢𝐬𝐜𝐢 𝐮𝐧 𝐧𝐮𝐦𝐞𝐫𝐨 𝐯𝐚𝐥𝐢𝐝𝐨.*`
+      message: `*🔢 𝐈𝐧𝐬𝐞𝐫𝐢𝐬𝐜𝐢 𝐮𝐧 𝐧𝐮𝐦𝐞𝐫𝐨 𝐯𝐚𝐥𝐢𝐝𝐨.*`
     }
   }
 
@@ -335,8 +329,7 @@ function parseAmount(input, max) {
   if (amount <= 0) {
     return {
       valid: false,
-      message:
-        `*💸 𝐋𝐚 𝐪𝐮𝐚𝐧𝐭𝐢𝐭à 𝐦𝐢𝐧𝐢𝐦𝐚 è 𝟏.*`
+      message: `*💸 𝐋𝐚 𝐪𝐮𝐚𝐧𝐭𝐢𝐭à 𝐦𝐢𝐧𝐢𝐦𝐚 è 𝟏.*`
     }
   }
 

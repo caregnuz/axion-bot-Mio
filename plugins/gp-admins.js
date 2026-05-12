@@ -1,4 +1,4 @@
-const handler = async (m, { conn, participants, groupMetadata, args, isOwner, isAdmin }) => {//non dimenticarti di pregare
+const handler = async (m, { conn, participants, groupMetadata, args, isOwner, isAdmin }) => {
 
     const cooldownInMilliseconds = 18 * 60 * 60 * 1000;
 
@@ -67,6 +67,6 @@ handler.tags = ['gruppo'];
 handler.command = /^(admins)$/i;
 handler.group = true;
 
-handler.cooldown = 18 * 60 * 60 * 1000; // 18 ore
+handler.cooldown = 18 * 60 * 60 * 1000; 
 
 export default handler;
