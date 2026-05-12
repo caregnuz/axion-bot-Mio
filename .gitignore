@@ -9,4 +9,5 @@ node_modules/
 private.js
 plugins/owner-purge.js
 plugins/cucciole.js
-tmp/private.js
+private.js
+plugins/gp-ia.js

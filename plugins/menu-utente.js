@@ -59,6 +59,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 💋 ${usedPrefix}bacia <reply/tag>
 ┃ 🤗 ${usedPrefix}abbraccia <reply/tag>
 ┃ 😏 ${usedPrefix}sega <reply/tag>
+┃ 🫦 ${usedPrefix}pompino <reply/tag>
 ┃ 🤟 ${usedPrefix}ditalino <reply/tag>
 ┃ 💥 ${usedPrefix}bonk <reply/tag>
 ┃ 📄 ${usedPrefix}curriculum <reply/tag>
