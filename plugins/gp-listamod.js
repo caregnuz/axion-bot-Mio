@@ -1,6 +1,7 @@
-// by 𝕯𝖊ⱥ𝖉𝖑𝐲 × Bonzino
+// Plugin listamod by Bonzino
 
 import fetch from 'node-fetch'
+import fs from 'fs'
 
 const S = v => String(v || '')
 
@@ -14,7 +15,7 @@ const handler = async (m, { conn }) => {
   const groupMods = []
 
   for (let jid in users) {
-    if (users[jid].premium && users[jid].premiumGroup === m.chat) {
+    if (users[jid]?.moderator) {
       groupMods.push(jid)
     }
   }
@@ -23,18 +24,9 @@ const handler = async (m, { conn }) => {
     return m.reply('*⚠️ 𝐍𝐨𝐧 𝐜𝐢 𝐬𝐨𝐧𝐨 𝐦𝐨𝐝𝐞𝐫𝐚𝐭𝐨𝐫𝐢 𝐢𝐧 𝐪𝐮𝐞𝐬𝐭𝐨 𝐠𝐫𝐮𝐩𝐩𝐨.*')
   }
 
-  let thumb = 'https://i.ibb.co/2kR7x9J/avatar.png'
-  try {
-    thumb = await conn.profilePictureUrl(m.chat, 'image')
-  } catch {}
-
-  const thumbnailBuffer = typeof thumb === 'string'
-    ? await (await fetch(thumb)).buffer()
-    : thumb
-
-  const list = groupMods
-    .map((jid, i) => `🛡️ ${i + 1}. @${jid.split('@')[0]}`)
-    .join('\n')
+const list = groupMods
+  .map(jid => `➤ @${jid.split('@')[0]}`)
+  .join('\n')
 
   const text = `*╭━━━━━━━🛡️━━━━━━━╮*
 *✦ 𝐌𝐎𝐃𝐄𝐑𝐀𝐓𝐎𝐑𝐈 ✦*
@@ -42,26 +34,53 @@ const handler = async (m, { conn }) => {
 
 ${list}`
 
+  let userPfp
+
+  try {
+    userPfp = await conn.profilePictureUrl(m.sender, 'image')
+  } catch {
+    userPfp = './media/default-avatar.png'
+  }
+
+  const displayName =
+    m.pushName ||
+    await conn.getName(m.sender) ||
+    '𝐔𝐭𝐞𝐧𝐭𝐞'
+
+  const fakeContact = {
+    key: {
+      participants: '0@s.whatsapp.net',
+      fromMe: false,
+      id: '𝐀𝐗𝐈𝐎𝐍'
+    },
+    message: {
+      contactMessage: {
+        displayName,
+        vcard:
+`BEGIN:VCARD
+VERSION:3.0
+FN:${displayName}
+TEL;type=CELL;type=VOICE;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}
+END:VCARD`,
+        jpegThumbnail: Buffer.isBuffer(userPfp)
+          ? userPfp
+          : userPfp.startsWith('./')
+            ? await fs.promises.readFile(userPfp)
+            : await (await fetch(userPfp)).buffer()
+      }
+    },
+    participant: '0@s.whatsapp.net'
+  }
+
   await conn.sendMessage(m.chat, {
     text,
-    mentions: groupMods,
-    contextInfo: {
-      ...(global.rcanal?.contextInfo || {}),
-      externalAdReply: {
-        title: 'Moderatori del gruppo',
-        body: ' ',
-        thumbnail: thumbnailBuffer,
-        mediaType: 1,
-        renderLargerThumbnail: false,
-        showAdAttribution: false
-      }
-    }
-  }, { quoted: m })
+    mentions: groupMods
+  }, { quoted: fakeContact })
 }
 
-handler.help = ['listmod']
+handler.help = ['mods', 'listamod']
 handler.tags = ['group']
-handler.command = ['listamod']
+handler.command = /^(mods|listamod)$/i
 handler.group = true
 
 export default handler

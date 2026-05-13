@@ -39,16 +39,10 @@ ${desc}`
 *${usedPrefix}1 <funzione>*
 *${usedPrefix}0 <funzione>*
 
-*⚡ 𝐓𝐮𝐭𝐭𝐨 𝐢𝐧 𝐮𝐧𝐨:*
-*${usedPrefix}1 tutte*
-*${usedPrefix}0 tutte*
-
 *🛡️ 𝐒𝐢𝐜𝐮𝐫𝐞𝐳𝐳𝐚:*
 *antilink, antispam, antibot*
 *antiporno, antigore, antitrava*
-*antitag, antiprivato, antimedia, antinuke, *antiwz,*
-
-*📱 𝐑𝐞𝐭𝐞:*
+*antitag, antiprivato, antivoip, antimedia, antinuke, antiwz,*
 *antiinsta, antitelegram, antitiktok*
 
 *⚙️ 𝐆𝐞𝐬𝐭𝐢𝐨𝐧𝐞:*
@@ -172,8 +166,15 @@ ${desc}`
       chat.antiBot = isEnable
       result = box('𝐀𝐍𝐓𝐈 𝐁𝐎𝐓', `*${isEnable ? '✅' : '❌'} 𝐁𝐥𝐨𝐜𝐜𝐨 𝐚𝐥𝐭𝐫𝐢 𝐛𝐨𝐭 ${isEnable ? '𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐨' : '𝐝𝐢𝐬𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐨'}*`)
       break
+      
+      case 'antivoip':
+      requireAdmin()
+      chat.antivoip = isEnable
+      thumbFeature = 'antivoip'
+      result = box('𝐀𝐍𝐓𝐈 𝐕𝐎𝐈𝐏', `*${isEnable ? '✅' : '❌'} 𝐅𝐢𝐥𝐭𝐫𝐨 𝐧𝐮𝐦𝐞𝐫𝐢 𝐞𝐬𝐭𝐞𝐫𝐢 ${isEnable ? '𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐨' : '𝐝𝐢𝐬𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐨'}*`)
+      break
 
-case 'antiwhatsapp':
+    case 'antiwhatsapp':
     case 'antiwz':
     case 'antiwa':
       requireAdmin()
@@ -204,6 +205,33 @@ case 'antiwhatsapp':
        result = box(  '𝐀𝐍𝐓𝐈 𝐍𝐔𝐊𝐄',    `*${isEnable ? '✅' : '❌'} 𝐏𝐫𝐨𝐭𝐞𝐳𝐢𝐨𝐧𝐞 𝐧𝐮𝐤𝐞 ${isEnable ? '𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐚' : '𝐝𝐢𝐬𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐚'}*`
   )
   break
+  
+    case 'tutte':
+    case 'all':
+      requireAdmin()
+
+      chat.antiLink = isEnable
+      chat.antispam = isEnable
+      chat.antiBot = isEnable
+      chat.antiporno = isEnable
+      chat.antigore = isEnable
+      chat.antitrava = isEnable
+      chat.antiTag = isEnable
+      chat.antimedia = isEnable
+      chat.antinuke = isEnable
+      chat.antiWhatsapp = isEnable
+      chat.antiInsta = isEnable
+      chat.antiTelegram = isEnable
+      chat.antiTiktok = isEnable
+      chat.antivoip = isEnable
+
+      thumbFeature = 'system'
+
+      result = box(
+        '𝐓𝐔𝐓𝐓𝐄 𝐋𝐄 𝐏𝐑𝐎𝐓𝐄𝐙𝐈𝐎𝐍𝐈',
+        `*${isEnable ? '✅' : '❌'} 𝐓𝐮𝐭𝐭𝐞 𝐥𝐞 𝐩𝐫𝐨𝐭𝐞𝐳𝐢𝐨𝐧𝐢 𝐬𝐨𝐧𝐨 𝐬𝐭𝐚𝐭𝐞 ${isEnable ? '𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐞' : '𝐝𝐢𝐬𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐞'}*`
+      )
+      break
   
   default:
   result = box(

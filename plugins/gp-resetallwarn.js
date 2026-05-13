@@ -9,14 +9,6 @@ let handler = async (m, { conn, isAdmin, isOwner, isROwner, usedPrefix }) => {
 
 ${body}`
 
-  if (!(isAdmin || isOwner || isROwner)) {
-    throw box(
-      '❌',
-      '𝐀𝐂𝐂𝐄𝐒𝐒𝐎 𝐍𝐄𝐆𝐀𝐓𝐎',
-      `*𝐒𝐨𝐥𝐨 𝐠𝐥𝐢 𝐚𝐝𝐦𝐢𝐧 𝐩𝐨𝐬𝐬𝐨𝐧𝐨 𝐮𝐬𝐚𝐫𝐞 𝐪𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨.*`
-    )
-  }
-
   global.db.data.users ??= {}
 
   const metadata = await conn.groupMetadata(chatId)
@@ -86,5 +78,6 @@ ${body}`
 
 handler.command = /^(resetallwarn|resetwarnall|azzerawarn|azzeratuttiwarn)$/i
 handler.group = true
+handler.admin = true
 
 export default handler

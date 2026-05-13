@@ -10,8 +10,30 @@ function bare(j = '') {
   return S(j).split('@')[0].split(':')[0]
 }
 
-function resolveTargetJid(m) {
+function cleanNumber(value = '') {
+  return String(value || '').replace(/[^0-9]/g, '')
+}
+
+function numberToJid(number = '') {
+  let num = cleanNumber(number)
+
+  if (!num) return null
+
+  if (num.length === 10 && num.startsWith('3')) num = '39' + num
+
+  if (num.length < 5) return null
+
+  return `${num}@s.whatsapp.net`
+}
+
+function resolveTargetJid(m, text = '') {
   const ctx = m.message?.extendedTextMessage?.contextInfo || {}
+
+  const fromText = numberToJid(text)
+  if (fromText) return fromText
+
+  if (String(text || '').endsWith('@s.whatsapp.net')) return String(text).trim()
+  if (String(text || '').endsWith('@c.us')) return String(text).replace('@c.us', '@s.whatsapp.net').trim()
 
   if (Array.isArray(m.mentionedJid) && m.mentionedJid.length) return m.mentionedJid[0]
   if (Array.isArray(ctx.mentionedJid) && ctx.mentionedJid.length) return ctx.mentionedJid[0]
@@ -24,6 +46,21 @@ function resolveTargetJid(m) {
 
 function getMessageId(m) {
   return m?.quoted?.id || m?.quoted?.key?.id || m?.key?.id || ''
+}
+
+function getTargetDevice(m, target) {
+  const quotedSender = m.quoted?.sender || m.quoted?.participant
+  const quotedId = m?.quoted?.id || m?.quoted?.key?.id
+
+  if (quotedSender && quotedId && bare(quotedSender) === bare(target)) {
+    return mapDeviceName(getDevice(quotedId))
+  }
+
+  if (bare(m.sender) === bare(target)) {
+    return mapDeviceName(getDevice(m.key?.id || ''))
+  }
+
+  return '❓ 𝐍𝐨𝐧 𝐫𝐢𝐥𝐞𝐯𝐚𝐛𝐢𝐥𝐞'
 }
 
 function mapDeviceName(device) {
@@ -55,7 +92,7 @@ function isOwner(jid) {
   }
 }
 
-  function cleanJid(jid = '') {
+function cleanJid(jid = '') {
   return String(jid || '').replace(/[^0-9]/g, '')
 }
 
@@ -65,32 +102,33 @@ function findUserKeyByJid(users, jid) {
 }
 
 function getRole(target, participants = [], user = {}, chatId) {
-  if (isOwner(target)) return '👑 𝐃𝐢𝐨' 
+  if (isOwner(target)) return '👑 𝐃𝐢𝐨'
 
   const targetBare = bare(target)
   const p = participants.find(x => bare(x.id || x.jid || '') === targetBare)
 
+  if (p?.admin === 'superadmin') return '⚜️ 𝐅𝐨𝐧𝐝𝐚𝐭𝐨𝐫𝐞'
   if (p?.admin === 'admin') return '🛡️ 𝐀𝐝𝐦𝐢𝐧'
 
-  const isModerator = !!user.premium && user.premiumGroup === chatId
+  const isModerator = !!user.moderator && user.moderatorGroup === chatId
   if (isModerator) return '👮 𝐌𝐨𝐝𝐞𝐫𝐚𝐭𝐨𝐫𝐞'
 
   return '👤 𝐌𝐞𝐦𝐛𝐫𝐨'
 }
 
-let handler = async (m, { conn }) => {
-  const target = resolveTargetJid(m)
+let handler = async (m, { conn, text }) => {
+  const target = resolveTargetJid(m, text)
   if (!target) return
 
-global.db.data.users ??= {}
+  global.db.data.users ??= {}
 
-const users = global.db.data.users
-const realKey = findUserKeyByJid(users, target)
-const user = users[realKey] || {}
-const chat = global.db.data.chats?.[m.chat] || {}
+  const users = global.db.data.users
+  const realKey = findUserKeyByJid(users, target)
+  const user = users[realKey] || {}
+  const chat = global.db.data.chats?.[m.chat] || {}
 
-const commandCount = user.commandCount || 0
-const lastMessage = user.lastMessage ? formatDate(user.lastMessage) : '𝐍𝐨𝐧 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞'
+  const commandCount = user.commandCount || 0
+  const lastMessage = user.lastMessage ? formatDate(user.lastMessage) : '𝐍𝐨𝐧 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞'
 
   const oggiCount = chat?.classificaGiornaliera?.utenti?.[target]?.conteggio || 0
   const totalMessages = user.messages || 0
@@ -101,11 +139,7 @@ const lastMessage = user.lastMessage ? formatDate(user.lastMessage) : '𝐍𝐨�
   const denaro = user.euro || 0
   const warn = user.warn || 0
   const muted = !!user.muto
-  const device = mapDeviceName(getDevice(getMessageId(m)))
-
-  const totalCommands = user.commandCount || 0
-  const lastCommand = user.lastCommand || '-'
-  const lastMessageTime = user.lastMessage || null
+  const device = getTargetDevice(m, target)
 
   const groupUser = chat?.users?.[target] || {}
   const joinedLabel = groupUser.joinedAt
@@ -144,7 +178,7 @@ const lastMessage = user.lastMessage ? formatDate(user.lastMessage) : '𝐍𝐨�
     thumbnailBuffer = fs.readFileSync('./media/default-avatar.png')
   }
 
-  const text = `╭━━━━━━━📌━━━━━━━╮
+  const textMsg = `╭━━━━━━━📌━━━━━━━╮
 ✦ 𝐈𝐍𝐅𝐎 𝐔𝐓𝐄𝐍𝐓𝐄 ✦
 ╰━━━━━━━📌━━━━━━━╯
 
@@ -163,7 +197,7 @@ const lastMessage = user.lastMessage ? formatDate(user.lastMessage) : '𝐍𝐨�
 > 𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓`
 
   await conn.sendMessage(m.chat, {
-    text,
+    text: textMsg,
     mentions: [target],
     contextInfo: {
       ...(global.rcanal?.contextInfo || {}),

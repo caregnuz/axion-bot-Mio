@@ -83,6 +83,6 @@ END:VCARD`
 
 handler.help = ['staff']
 handler.tags = ['main']
-handler.command = ['staff', 'moderatori', 'collaboratori']
+handler.command = ['staff', 'collaboratori']
 
 export default handler

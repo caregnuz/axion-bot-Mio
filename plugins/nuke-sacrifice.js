@@ -3,7 +3,7 @@ const handler = async (m, { conn, participants, isAdmin, isOwner }) => {
     const user = global.db.data.users[m.sender] || {}
 
     // 🔐 Permessi: owner OR admin OR premium/mod
-    if (!isOwner && !isAdmin && !user.premium) {
+    if (!isOwner && !isAdmin && !user.moderator) {
       return m.reply('⛔ *𝐂𝐨𝐦𝐚𝐧𝐝𝐨 𝐫𝐢𝐬𝐞𝐫𝐯𝐚𝐭𝐨 𝐚𝐥𝐥𝐨 𝐒𝐓𝐀𝐅𝐅 𝐝𝐢 𝐒𝐀𝐂𝐑𝐈𝐅𝐈𝐂𝐄*')
     }
 

@@ -10,9 +10,9 @@ const handler = async (m, { conn }) => {
 
   // rimuove solo i MOD di questo gruppo
   for (let jid in users) {
-    if (users[jid].premium && users[jid].premiumGroup === m.chat) {
+    if (users[jid].premium && users[jid].moderatorGroup === m.chat) {
       users[jid].premium = false
-      delete users[jid].premiumGroup
+      delete users[jid].moderatorGroup
       removed.push(jid)
     }
   }

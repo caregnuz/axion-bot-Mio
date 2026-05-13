@@ -2,7 +2,7 @@
 
 let handler = m => m
 
-handler.before = async function (m, { conn, isAdmin, isPrems, isBotAdmin, isOwner, isROwner }) {
+handler.before = async function (m, { conn, isAdmin, isModerator, isBotAdmin, isOwner, isROwner }) {
   if (!m.isGroup) return false
   if (m.fromMe || m.isBaileys) return true
 
@@ -13,7 +13,7 @@ handler.before = async function (m, { conn, isAdmin, isPrems, isBotAdmin, isOwne
   const isBot = m.sender === botNumber
 
   if (!m.mentionedJid || m.mentionedJid.length === 0) return false
-  if (isBot || isOwner || isROwner || isAdmin || isPrems) return true
+  if (isBot || isOwner || isROwner || isAdmin || isModerator) return true
 
   const tagLimit = 40
   const warnLimit = 3

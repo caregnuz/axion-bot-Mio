@@ -23,13 +23,13 @@ function getMessageText(m) {
   )
 }
 
-export async function before(m, { isAdmin, isPrems, isBotAdmin, conn }) {
+export async function before(m, { isAdmin, isModerator, isBotAdmin, conn }) {
   if (m.isBaileys || m.fromMe) return true
   if (!m.isGroup) return false
 
   const chat = global.db.data.chats[m.chat]
   if (!chat?.antiWhatsapp) return false
-  if (isAdmin || isPrems) return false
+  if (isAdmin || isModerator) return false
 
   const text = getMessageText(m)
   if (!text) return false

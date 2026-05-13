@@ -478,8 +478,7 @@ let settings = global.db.data.settings[this.user.jid] || (global.db.data.setting
         let isDio = global.owner.some(([num]) => num + '@s.whatsapp.net' === normalizedSender)
         let isROwner = isDio || global.owner.some(([num]) => num + '@s.whatsapp.net' === normalizedSender)
         let isOwner = isROwner || m.fromMe
-        let isMods = isOwner || global.mods?.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(normalizedSender) || false
-        let isPrems = isROwner || global.prems?.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(normalizedSender) || false
+        let isModerator = !!user.moderator && user.moderatorGroup === m.chat
         if (m.isGroup) {
             if (!groupMetadata) {
                 groupMetadata = await fetchGroupMetadataWithRetry(this, m.chat)
@@ -592,7 +591,7 @@ let settings = global.db.data.settings[this.user.jid] || (global.db.data.setting
                     isRAdmin,
                     isAdmin,
                     isBotAdmin,
-                    isPrems,
+                    isModerator,
                     chatUpdate,
                     __dirname: ___dirname,
                     __filename
@@ -734,7 +733,7 @@ if (groupData.count > 8) {
 
 }
 
-                if (chat.modoadmin && !isOwner && !isROwner && m.isGroup && !isAdmin && !user.premium) return
+                if (chat.modoadmin && !isOwner && !isROwner && m.isGroup && !isAdmin && !isModerator) return
                 if (settings.soloCreatore && !isROwner) return
 
                 if (plugin.dio && !isDio) {
@@ -745,17 +744,15 @@ if (groupData.count > 8) {
                     fail('rowner', m, this)
                     continue
                 }
+                plugin.moderator = plugin.moderator || plugin.mods
+                
                 if (plugin.owner && !isOwner) {
                     fail('owner', m, this)
                     continue
                 }
-                if (plugin.mods && !isMods) {
-                    fail('mods', m, this)
-                    continue
-                }
-                if (plugin.premium && !isPrems) {
-                    fail('premium', m, this)
-                    continue
+                 if (plugin.moderator && !isModerator) {
+                     fail('moderator', m, this)
+                     continue
                 }
                 if (plugin.group && !m.isGroup) {
                     fail('group', m, this)
@@ -786,7 +783,7 @@ if (groupData.count > 8) {
                     m.exp += xp
                 }
 
-                if (!isPrems && plugin.euro && user.euro < plugin.euro) {
+                if (!isModerator && plugin.euro && user.euro < plugin.euro) {
                     await this.reply(m.chat, `Niente più soldini, stupido poraccio`, m, null, global.fake).catch(e => console.error('[ERRORE] Errore nella risposta:', e))
                     continue
                 }
@@ -810,7 +807,7 @@ if (groupData.count > 8) {
                     isRAdmin,
                     isAdmin,
                     isBotAdmin,
-                    isPrems,
+                    isModerator,
                     chatUpdate,
                     __dirname: ___dirname,
                     __filename
@@ -832,7 +829,7 @@ try {
 
     await plugin.call(this, m, extra)
 
-    if (!isPrems) m.euro = plugin.euro || false
+    if (!isModerator) m.euro = plugin.euro || false
 } catch (e) {
                     m.error = e
                     console.error(`[ERRORE] Errore nell'esecuzione del plugin per la chat ${m.chat}, mittente ${m.sender}:`, e)
@@ -926,9 +923,7 @@ rowner:   '👑 *𝐐𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨 è 𝐫�
 
 owner:    '⛔️ *𝐐𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨 è 𝐫𝐢𝐬𝐞𝐫𝐯𝐚𝐭𝐨 𝐚𝐠𝐥𝐢 𝐨𝐰𝐧𝐞𝐫 𝐝𝐞𝐥 𝐛𝐨𝐭.*',
 
-mods:     '⚙️ *𝐐𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨 è 𝐫𝐢𝐬𝐞𝐫𝐯𝐚𝐭𝐨 𝐚𝐥𝐥𝐨 𝐬𝐭𝐚𝐟𝐟 𝐝𝐢 𝐦𝐨𝐝𝐞𝐫𝐚𝐳𝐢𝐨𝐧𝐞.*',
-
-premium:  '💎 *𝐐𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨 è 𝐝𝐢𝐬𝐩𝐨𝐧𝐢𝐛𝐢𝐥𝐞 𝐬𝐨𝐥𝐨 𝐩𝐞𝐫 𝐠𝐥𝐢 𝐮𝐭𝐞𝐧𝐭𝐢 𝐩𝐫𝐞𝐦𝐢𝐮𝐦.*',
+moderator: '👮‍♂️ *𝐐𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨 è 𝐫𝐢𝐬𝐞𝐫𝐯𝐚𝐭𝐨 𝐚𝐢 𝐦𝐨𝐝𝐞𝐫𝐚𝐭𝐨𝐫𝐢 𝐝𝐞𝐥 𝐠𝐫𝐮𝐩𝐩𝐨*',
 
 group:    '👥 *𝐐𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨 𝐩𝐮ò 𝐞𝐬𝐬𝐞𝐫𝐞 𝐮𝐬𝐚𝐭𝐨 𝐬𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢.*',
 

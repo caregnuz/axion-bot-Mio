@@ -1,19 +1,13 @@
-const handler = async (m, { conn, text, participants, isAdmin, isOwner }) => {
+const handler = async (m, { conn, text, participants }) => {
   try {
-    const user = global.db.data.users[m.sender] || {}
-
-    // 🔐 Permessi: owner OR admin OR premium/mod
-    if (!isOwner && !isAdmin && !user.premium) {
-      return m.reply('⛔ *Questo comando è riservato ai MOD / PREMIUM*');
-    }
-
-    const users = participants.map(u => conn.decodeJid(u.id));
+    const users = participants.map(u => conn.decodeJid(u.id))
 
     if (m.quoted) {
-      const quoted = m.quoted;
+      const quoted = m.quoted
 
       if (quoted.mtype === 'imageMessage') {
-        const media = await quoted.download();
+        const media = await quoted.download()
+
         await conn.sendMessage(
           m.chat,
           {
@@ -22,10 +16,11 @@ const handler = async (m, { conn, text, participants, isAdmin, isOwner }) => {
             mentions: users
           },
           { quoted: m }
-        );
+        )
 
       } else if (quoted.mtype === 'videoMessage') {
-        const media = await quoted.download();
+        const media = await quoted.download()
+
         await conn.sendMessage(
           m.chat,
           {
@@ -34,10 +29,11 @@ const handler = async (m, { conn, text, participants, isAdmin, isOwner }) => {
             mentions: users
           },
           { quoted: m }
-        );
+        )
 
       } else if (quoted.mtype === 'audioMessage') {
-        const media = await quoted.download();
+        const media = await quoted.download()
+
         await conn.sendMessage(
           m.chat,
           {
@@ -46,10 +42,11 @@ const handler = async (m, { conn, text, participants, isAdmin, isOwner }) => {
             mentions: users
           },
           { quoted: m }
-        );
+        )
 
       } else if (quoted.mtype === 'documentMessage') {
-        const media = await quoted.download();
+        const media = await quoted.download()
+
         await conn.sendMessage(
           m.chat,
           {
@@ -60,10 +57,11 @@ const handler = async (m, { conn, text, participants, isAdmin, isOwner }) => {
             mentions: users
           },
           { quoted: m }
-        );
+        )
 
       } else if (quoted.mtype === 'stickerMessage') {
-        const media = await quoted.download();
+        const media = await quoted.download()
+
         await conn.sendMessage(
           m.chat,
           {
@@ -71,7 +69,7 @@ const handler = async (m, { conn, text, participants, isAdmin, isOwner }) => {
             mentions: users
           },
           { quoted: m }
-        );
+        )
 
       } else {
         await conn.sendMessage(
@@ -81,7 +79,7 @@ const handler = async (m, { conn, text, participants, isAdmin, isOwner }) => {
             mentions: users
           },
           { quoted: m }
-        );
+        )
       }
 
     } else if (text) {
@@ -92,22 +90,22 @@ const handler = async (m, { conn, text, participants, isAdmin, isOwner }) => {
           mentions: users
         },
         { quoted: m }
-      );
+      )
 
     } else {
-      return m.reply('❌ Inserisci un testo o rispondi a un messaggio/media.');
+      return m.reply('❌ Inserisci un testo o rispondi a un messaggio/media.')
     }
 
   } catch (e) {
-    console.error('Errore tagmod:', e);
-    m.reply('❌ Si è verificato un errore durante il tag.');
+    console.error('Errore tagmod:', e)
+    m.reply('❌ Si è verificato un errore durante il tag.')
   }
-};
+}
 
-handler.help = ['tagm'];
-handler.tags = ['gruppo', 'moderazione'];
-handler.command = /^tagm$/i;
-handler.group = true;
-handler.premium = false
+handler.help = ['tagm']
+handler.tags = ['gruppo', 'moderazione']
+handler.command = /^tagm$/i
+handler.group = true
+handler.moderator = true
 
-export default handler;
+export default handler

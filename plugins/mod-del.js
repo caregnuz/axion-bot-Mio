@@ -1,12 +1,4 @@
-const handler = async (m, { conn, usedPrefix, command, isOwner, isAdmin }) => {
-
-  const user = global.db.data.users[m.sender] || {}
-
-  // 🔐 CONTROLLO PERMESSI (MOD / PREMIUM)
-  if (!isOwner && !isAdmin && !user.premium) {
-    return m.reply('⛔ *Questo comando è riservato ai MOD / PREMIUM*')
-  }
-
+const handler = async (m, { conn }) => {
   if (!m.quoted) return
 
   try {
@@ -21,19 +13,16 @@ const handler = async (m, { conn, usedPrefix, command, isOwner, isAdmin }) => {
       console.error(e)
     }
 
-    // Elimina messaggio citato
     await conn.sendMessage(m.chat, { delete: key })
-
-    // Elimina messaggio comando
     await conn.sendMessage(m.chat, { delete: m.key })
 
   } catch (e) {
     console.error('Errore del:', e)
 
-    // Fallback
     if (m.quoted?.vM?.key) {
       await conn.sendMessage(m.chat, { delete: m.quoted.vM.key })
     }
+
     await conn.sendMessage(m.chat, { delete: m.key })
   }
 }
@@ -41,8 +30,8 @@ const handler = async (m, { conn, usedPrefix, command, isOwner, isAdmin }) => {
 handler.help = ['delete']
 handler.tags = ['group']
 handler.command = /^delm?$/i
-handler.group = false
+handler.group = true
 handler.botAdmin = true
-handler.premium = false
+handler.moderator = true
 
 export default handler

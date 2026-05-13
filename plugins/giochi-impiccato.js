@@ -201,7 +201,17 @@ handler.before = async (m, { conn, usedPrefix }) => {
 
   const input = S(m.text).toLowerCase().trim()
   if (!input) return
-  if (/^\./.test(input)) return
+  if (/^[./#!]/.test(input)) return
+
+  const quotedId =
+    m.quoted?.id ||
+    m.message?.extendedTextMessage?.contextInfo?.stanzaId ||
+    m.message?.imageMessage?.contextInfo?.stanzaId ||
+    ''
+
+  const gameMessageId = game.messageKey?.id || ''
+
+  if (!quotedId || quotedId !== gameMessageId) return
 
   if (input.length > 1) {
     if (normalizeWord(input) === game.word) return winGame(conn, chat, game, m, usedPrefix, m.sender)
@@ -423,7 +433,7 @@ function getDefaultData() {
 async function sendHangman(conn, chat, game, text, buttons, quoted, mentions = []) {
   const image = renderHangmanImage(game)
 
-  return conn.sendMessage(chat, {
+  const sent = await conn.sendMessage(chat, {
     image,
     caption: text,
     footer,
@@ -431,6 +441,12 @@ async function sendHangman(conn, chat, game, text, buttons, quoted, mentions = [
     headerType: 4,
     mentions
   }, { quoted })
+
+  if (game && sent?.key) {
+    game.messageKey = sent.key
+  }
+
+  return sent
 }
 
 function renderContributors(game) {

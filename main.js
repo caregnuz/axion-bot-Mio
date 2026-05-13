@@ -16,6 +16,7 @@ import lodash from 'lodash';
 import chalk from 'chalk';
 import { format } from 'util';
 import pino from 'pino';
+import fetch from 'node-fetch'
 import { makeWASocket, protoType, serialize } from './lib/simple.js';
 import { Low, JSONFile } from 'lowdb';
 import NodeCache from 'node-cache';
@@ -173,6 +174,31 @@ ${green.italic('\nSupporto Tecnico: Contatta lo sviluppatore deadly lo trovi nei
 
 const groupMetadataCache = new NodeCache({ stdTTL: 300, useClones: false });
 global.groupCache = groupMetadataCache;
+
+global.axionContext = async (conn, jid) => {
+    let thumbnail = null
+
+    try {
+        const url = await conn.profilePictureUrl(jid, 'image')
+        thumbnail = await (await fetch(url)).buffer()
+    } catch {
+        try {
+            thumbnail = fs.readFileSync('./media/default-avatar.png')
+        } catch {}
+    }
+
+    return {
+        mentionedJid: [jid],
+        externalAdReply: {
+            body: ' ',
+            thumbnail,
+            mediaType: 1,
+            renderLargerThumbnail: false,
+            showAdAttribution: false
+        }
+    }
+}
+
 const logger = pino({
     level: 'silent',
 });

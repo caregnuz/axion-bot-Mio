@@ -16,9 +16,8 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ╼━━━━━━━━━━━━━━╾
 
 ╭━━━〔 👮 ᴄᴏᴍᴀɴᴅɪ 〕━⬣
-┃ 🧙‍♂️ ${usedPrefix}tagm
-┃ ⚡ ${usedPrefix}pingm
-┃ 🚫 ${usedPrefix}delm
+┃ 📢 ${usedPrefix}tagm
+┃ 🗑 ${usedPrefix}delm
 ┃ 💀 ${usedPrefix}nukegp
 ┃ ⚠️ ${usedPrefix}warnm
 ┃ ✅ ${usedPrefix}unwarnm
@@ -55,6 +54,6 @@ function clockString(ms) {
 
 handler.help = ['mod']
 handler.tags = ['menu']
-handler.command = /^(mod)$/i
+handler.command = /^(mod|moderatori)$/i
 
 export default handler

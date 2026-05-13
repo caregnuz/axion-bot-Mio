@@ -17,7 +17,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 👤 ${usedPrefix}profilo
 ┃ 📈 ${usedPrefix}stats
 ┃ 🏅 ${usedPrefix}mytop
-┃ 📷 ${usedPrefix}setig 
+┃ 📷 ${usedPrefix}setig
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 🏆 𝐂𝐋𝐀𝐒𝐒𝐈𝐅𝐈𝐂𝐇𝐄 〕━⬣
@@ -38,17 +38,17 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 🏎️ ${usedPrefix}gara
 ┃ 🎰 ${usedPrefix}slot
 ┃ 🎵 ${usedPrefix}ic
-┃ 🧞‍♂️${usedPrefix}akinator
+┃ 🧞‍♂️ ${usedPrefix}akinator
 ╰━━━━━━━━━━━━━━━━⬣
 
-╭━━━〔 🐾 𝐀𝐍𝐈𝐌𝐀𝐋𝐄 〕━⬣
+╭━━━〔 🐾 𝐀𝐍𝐈𝐌𝐀𝐋𝐈 〕━⬣
 ┃ 🐾 ${usedPrefix}animale
 ┃ 🛒 ${usedPrefix}shopanimali
 ┃ 🥫 ${usedPrefix}nutri
 ┃ 🦴 ${usedPrefix}gioca
 ┃ 🤲 ${usedPrefix}coccola
 ┃ 🪪 ${usedPrefix}profiloanimale
-┃ 🏷 ${usedPrefix}nomeanimale <nome>
+┃ 🏷️ ${usedPrefix}nomeanimale <nome>
 ┃ 💸 ${usedPrefix}vendianimale
 ┃ 🚫 ${usedPrefix}abbandona
 ╰━━━━━━━━━━━━━━━━⬣
@@ -58,10 +58,13 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 🔥 ${usedPrefix}flame <reply/tag>
 ┃ 💋 ${usedPrefix}bacia <reply/tag>
 ┃ 🤗 ${usedPrefix}abbraccia <reply/tag>
-┃ 😏 ${usedPrefix}sega <reply/tag>
+┃ 🍆 ${usedPrefix}sega <reply/tag>
 ┃ 🫦 ${usedPrefix}pompino <reply/tag>
+┃ 🥵 ${usedPrefix}scopa <reply/tag>
+┃ 🍋 ${usedPrefix}limona <reply/tag>
 ┃ 🤟 ${usedPrefix}ditalino <reply/tag>
 ┃ 💥 ${usedPrefix}bonk <reply/tag>
+┃ 🤬 ${usedPrefix}insulta <reply/tag>
 ┃ 📄 ${usedPrefix}curriculum <reply/tag>
 ┃ 🍑 ${usedPrefix}figa <reply/tag>
 ┃ ⏳ ${usedPrefix}tempo <reply/tag>
@@ -85,6 +88,21 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 👬 ${usedPrefix}cugino <reply/tag>
 ┃ 👭 ${usedPrefix}cugina <reply/tag>
 ┃ 🗑️ ${usedPrefix}delrelazione <tipo> <reply/tag>
+╰━━━━━━━━━━━━━━━━⬣
+
+╭━━━〔 💰 𝐄𝐂𝐎𝐍𝐎𝐌𝐘 〕━⬣
+┃ 👛 ${usedPrefix}wallet
+┃ 🎁 ${usedPrefix}daily
+┃ 💰 ${usedPrefix}deposita
+┃ 🏧 ${usedPrefix}prelievo
+┃ 🤝 ${usedPrefix}bonifico <reply/tag>
+┃ 🥷 ${usedPrefix}crimine
+┃ 🕵️ ${usedPrefix}ruba <reply/tag>
+┃ 😅 ${usedPrefix}elemosina
+┃ 💼 ${usedPrefix}lavora
+┃ 🏪 ${usedPrefix}shop
+┃ 🎒 ${usedPrefix}zaino
+┃ 📤 ${usedPrefix}vendioggetto <numero>
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 🆘 𝐒𝐔𝐏𝐏𝐎𝐑𝐓𝐎 〕━⬣

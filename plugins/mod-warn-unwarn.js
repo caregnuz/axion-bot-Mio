@@ -1,6 +1,6 @@
-//warn-unwarn by Bonzino
+//warn-unwarnmod by Bonzino
 
-let handler = async (m, { conn, command, text, isAdmin, isOwner, isROwner, usedPrefix }) => {
+let handler = async (m, { conn, command, text, usedPrefix }) => {
   const chatId = m.chat
   const botNumber = conn.user.jid
 
@@ -37,31 +37,31 @@ ${body}`
 
   const protectedOwners = getProtectedOwners()
 
-let mentionedJid = m.mentionedJid?.[0]
-let reason = ''
+  let mentionedJid = m.mentionedJid?.[0]
+  let reason = ''
 
-if (!mentionedJid && m.quoted?.sender && cleanJid(m.quoted.sender) !== cleanJid(botNumber)) {
-  mentionedJid = m.quoted.sender
-}
-
-if (text) {
-  const parts = text.trim().split(/\s+/)
-  const firstArg = parts[0]
-  const number = firstArg?.replace(/[^0-9]/g, '')
-
-  if (firstArg?.endsWith('@s.whatsapp.net') || firstArg?.endsWith('@c.us')) {
-    mentionedJid = firstArg
-    reason = parts.slice(1).join(' ')
-  } else if (number && number.length >= 8 && number.length <= 15) {
-    mentionedJid = number + '@s.whatsapp.net'
-    reason = parts.slice(1).join(' ')
-  } else if (mentionedJid) {
-    reason = text
-      .replace(/@\d+/g, '')
-      .replace(/[^a-zA-Z0-9À-ÿ\s]/g, ' ')
-      .trim()
+  if (!mentionedJid && m.quoted?.sender && cleanJid(m.quoted.sender) !== cleanJid(botNumber)) {
+    mentionedJid = m.quoted.sender
   }
-}
+
+  if (text) {
+    const parts = text.trim().split(/\s+/)
+    const firstArg = parts[0]
+    const number = firstArg?.replace(/[^0-9]/g, '')
+
+    if (firstArg?.endsWith('@s.whatsapp.net') || firstArg?.endsWith('@c.us')) {
+      mentionedJid = firstArg.replace('@c.us', '@s.whatsapp.net')
+      reason = parts.slice(1).join(' ')
+    } else if (number && number.length >= 8 && number.length <= 15) {
+      mentionedJid = number + '@s.whatsapp.net'
+      reason = parts.slice(1).join(' ')
+    } else if (mentionedJid) {
+      reason = text
+        .replace(/@\d+/g, '')
+        .replace(/[^a-zA-Z0-9À-ÿ\s]/g, ' ')
+        .trim()
+    }
+  }
 
   if (!mentionedJid) {
     return conn.reply(
@@ -86,9 +86,8 @@ if (text) {
   const targetParticipant = participants.find(p =>
     cleanJid(p.id || p.jid || p.lid) === targetNumber
   )
-  
-  const displayJid = targetParticipant?.jid || targetParticipant?.id || mentionedJid
 
+  const displayJid = targetParticipant?.jid || targetParticipant?.id || mentionedJid
   const targetIsAdmin = !!targetParticipant?.admin
 
   const protectedReason =
@@ -189,7 +188,7 @@ if (text) {
 
 *📊 𝐒𝐭𝐚𝐭𝐨:* *${user.warn}/𝟑 𝐰𝐚𝐫𝐧*`
       ),
-     mentions: [displayJid],
+      mentions: [displayJid],
       footer: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
       buttons: unwarnButtons(realKey),
       headerType: 1
@@ -197,9 +196,9 @@ if (text) {
   }
 }
 
-handler.command = /^(warn|unwarn)$/i
+handler.command = /^(warnmod|unwarnmod|warnm|unwarnm)$/i
 handler.group = true
 handler.botAdmin = true
-handler.admin = true
+handler.moderator = true
 
 export default handler

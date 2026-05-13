@@ -38,6 +38,8 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
   const chat = m.chat || m.key?.remoteJid
   if (!chat) return
 
+  global.db.data.hug || (global.db.data.hug = {})
+
   const sender = String(
     m.sender ||
     m.key?.participant ||
@@ -65,6 +67,17 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       mentions: [sender]
     }, { quoted: q })
   }
+
+  const previousHug = global.db.data.hug[sender]
+
+  if (previousHug && previousHug !== target) {
+    return conn.sendMessage(chat, {
+      text: `*❌ 𝐏𝐮𝐨𝐢 𝐫𝐢𝐜𝐚𝐦𝐛𝐢𝐚𝐫𝐞 𝐥’𝐚𝐛𝐛𝐫𝐚𝐜𝐜𝐢𝐨 𝐬𝐨𝐥𝐨 𝐚 𝐜𝐡𝐢 𝐭𝐢 𝐡𝐚 𝐚𝐛𝐛𝐫𝐚𝐜𝐜𝐢𝐚𝐭𝐨 🫂*`,
+      contextInfo: global.rcanal?.contextInfo || {}
+    }, { quoted: q })
+  }
+
+  global.db.data.hug[target] = sender
 
   const senderNumero = String(sender).split('@')[0].split(':')[0]
 

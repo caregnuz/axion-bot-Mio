@@ -3,7 +3,7 @@ const tag = (jid = '') => '@' + String(jid).split('@')[0].split(':')[0]
 function buildContextMsg(title) {
   return {
     key: {
-      participants: '0@s.whatsapp.net',
+      participant: '0@s.whatsapp.net',
       fromMe: false,
       id: 'CTX'
     },
@@ -22,14 +22,21 @@ function resolveTarget(m, text = '', botJid = '') {
   const numero = String(text || '').replace(/[^\d]/g, '')
   if (numero.length >= 5) return `${numero}@s.whatsapp.net`
 
-  if (String(text || '').endsWith('@s.whatsapp.net') || String(text || '').endsWith('@c.us')) {
-    return String(text).trim()
+  if (
+    String(text || '').endsWith('@s.whatsapp.net') ||
+    String(text || '').endsWith('@c.us')
+  ) {
+    return String(text).replace('@c.us', '@s.whatsapp.net').trim()
   }
 
   if (Array.isArray(m.mentionedJid) && m.mentionedJid.length) return m.mentionedJid[0]
   if (Array.isArray(ctx.mentionedJid) && ctx.mentionedJid.length) return ctx.mentionedJid[0]
 
-  const quotedSender = m.quoted?.sender || m.quoted?.participant || ctx.participant
+  const quotedSender =
+    m.quoted?.sender ||
+    m.quoted?.participant ||
+    ctx.participant
+
   if (quotedSender && quotedSender !== botJid) return quotedSender
 
   return null
@@ -38,6 +45,8 @@ function resolveTarget(m, text = '', botJid = '') {
 let handler = async (m, { conn, text, usedPrefix, command }) => {
   const chat = m.chat || m.key?.remoteJid
   if (!chat) return
+
+  global.db.data.kiss || (global.db.data.kiss = {})
 
   const sender = String(
     m.sender ||
@@ -48,18 +57,23 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
   const botJid = conn.user?.jid || conn.user?.id || ''
   const target = resolveTarget(m, text, botJid)
-  const q = buildContextMsg('*💋 𝐁𝐀𝐂𝐈𝐎*')
+
+  const q = buildContextMsg('💋 𝐁𝐀𝐂𝐈𝐎')
 
   if (!target) {
     return conn.sendMessage(chat, {
-      text: `*⚠️ 𝐃𝐞𝐯𝐢 𝐦𝐞𝐧𝐳𝐢𝐨𝐧𝐚𝐫𝐞 𝐪𝐮𝐚𝐥𝐜𝐮𝐧𝐨 𝐨 𝐫𝐢𝐬𝐩𝐨𝐧𝐝𝐞𝐫𝐞 𝐚 𝐮𝐧 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐩𝐞𝐫 𝐛𝐚𝐜𝐢𝐚𝐫𝐥𝐨 💋*\n\n*𝐄𝐬𝐞𝐦𝐩𝐢𝐨:*\n*${usedPrefix}${command} @utente*`,
+      text:
+`⚠️ 𝐃𝐞𝐯𝐢 𝐦𝐞𝐧𝐳𝐢𝐨𝐧𝐚𝐫𝐞 𝐪𝐮𝐚𝐥𝐜𝐮𝐧𝐨 𝐨 𝐫𝐢𝐬𝐩𝐨𝐧𝐝𝐞𝐫𝐞 𝐚 𝐮𝐧 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐩𝐞𝐫 𝐛𝐚𝐜𝐢𝐚𝐫𝐥𝐨 💋
+
+𝐄𝐬𝐞𝐦𝐩𝐢𝐨:
+${usedPrefix}${command} @utente`,
       contextInfo: global.rcanal?.contextInfo || {}
     }, { quoted: q })
   }
 
   if (target === sender) {
     return conn.sendMessage(chat, {
-      text: `*💋 ${tag(sender)} 𝐬𝐢 è 𝐝𝐚𝐭𝐨 𝐮𝐧 𝐛𝐚𝐜𝐢𝐨 𝐝𝐚 𝐬𝐨𝐥𝐨 😳*`,
+      text: `💋 ${tag(sender)} *𝐬𝐢 è 𝐝𝐚𝐭𝐨 𝐮𝐧 𝐛𝐚𝐜𝐢𝐨 𝐝𝐚 𝐬𝐨𝐥𝐨 😳*`,
       contextInfo: {
         ...(global.rcanal?.contextInfo || {}),
         mentionedJid: [sender]
@@ -67,6 +81,17 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       mentions: [sender]
     }, { quoted: q })
   }
+
+  const previousKiss = global.db.data.kiss[sender]
+
+  if (previousKiss && previousKiss !== target) {
+    return conn.sendMessage(chat, {
+      text: '*❌ 𝐏𝐮𝐨𝐢 𝐫𝐢𝐜𝐚𝐦𝐛𝐢𝐚𝐫𝐞 𝐢𝐥 𝐛𝐚𝐜𝐢𝐨 𝐬𝐨𝐥𝐨 𝐚 𝐜𝐡𝐢 𝐭𝐢 𝐡𝐚 𝐛𝐚𝐜𝐢𝐚𝐭𝐨 💋*',
+      contextInfo: global.rcanal?.contextInfo || {}
+    }, { quoted: q })
+  }
+
+  global.db.data.kiss[target] = sender
 
   const senderNumero = String(sender).split('@')[0].split(':')[0]
 
@@ -80,7 +105,9 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     buttons: [
       {
         buttonId: `${usedPrefix}${command} ${senderNumero}`,
-        buttonText: { displayText: '💞 Ricambia il bacio' },
+        buttonText: {
+          displayText: '💞 Ricambia il bacio'
+        },
         type: 1
       }
     ],

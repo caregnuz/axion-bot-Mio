@@ -15,7 +15,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
   ◈ *ᴄᴀᴛᴇɢᴏʀɪᴀ:* sᴛʀᴜᴍᴇɴᴛɪ
 ╼━━━━━━━━━━━━━━╾
 
-╭━━━〔 🛠️ sᴛʀᴜᴍᴇɴᴛɪ 〕━⬣
+╭━━━〔 🛠️ 𝐒𝐓𝐑𝐔𝐌𝐄𝐍𝐓𝐈 〕━⬣
 ┃ 💡 ${usedPrefix}font <numero> <messaggio>
 ┃ 🔄 ${usedPrefix}converti <reply media>
 ┃ 🎛️ ${usedPrefix}audiofx <audio>
@@ -31,7 +31,24 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 🎙 ${usedPrefix}trascrivi <audio>
 ╰━━━━━━━━━━━━━━━━⬣
 
-╭━━━〔 📌 ɪɴғᴏ 〕━⬣
+╭━━━〔 🖼️ 𝐈𝐌𝐌𝐀𝐆𝐈𝐍𝐈 〕━⬣
+┃ 🥰 ${usedPrefix}bellometro
+┃ 🌈 ${usedPrefix}gaymetro
+┃ 💖 ${usedPrefix}lesbiometro
+┃ 🍆 ${usedPrefix}masturbometro
+┃ 🍀 ${usedPrefix}fortunometro
+┃ 🧠 ${usedPrefix}intelligiometro
+┃ 💦 ${usedPrefix}sborra
+┃ ❤️ ${usedPrefix}il
+┃ 🕴 ${usedPrefix}wasted
+┃ 💂 ${usedPrefix}comunista
+┃ 👙 ${usedPrefix}bisex
+┃ 🏳️‍🌈 ${usedPrefix}gay
+┃ 🃏 ${usedPrefix}simpcard
+┃ 🏳️‍⚧️ ${usedPrefix}trans
+╰━━━━━━━━━━━━━━━━⬣
+
+╭━━━〔 📌 𝐈𝐍𝐅𝐎 〕━⬣
 ┃ ᴠᴇʀsɪᴏɴᴇ: ${global.versione}
 ┃ sᴛᴀᴛᴜs: ᴏɴʟɪɴᴇ ⚡
 ╰━━━━━━━━━━━━━━━━⬣
