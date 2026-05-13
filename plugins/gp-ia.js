@@ -11,16 +11,18 @@ const utentiRiconosciuti = {
   '393780087063': {
     nome: 'Bonzino',
     ruolo: 'creatore di Axion'
-  },
+  }
 }
 
 const config = {
   name: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
   model: 'gpt-4.1-mini',
-  fallbackModel: 'openai',
+  openRouterModel: 'openai/gpt-oss-120b:free',
+  pollinationsModel: 'openai',
   historyLimit: 15,
   maxConversazioni: 3,
   openaiTimeout: 25000,
+  openRouterTimeout: 25000,
   pollinationsTimeout: 20000
 }
 
@@ -96,7 +98,6 @@ function timeoutPromise(ms, label) {
 }
 
 async function callOpenAI(messages) {
-
   const apiKey =
     process.env.OPENAI_API_KEY ||
     global.OPENAI_API_KEY ||
@@ -116,57 +117,118 @@ async function callOpenAI(messages) {
     maxRetries: 0
   })
 
-  const request =
-    openai.chat.completions.create({
-      model: config.model,
-      messages,
-      temperature: 1,
-      presence_penalty: 0.6,
-      frequency_penalty: 0.4
-    })
+  const request = openai.chat.completions.create({
+    model: config.model,
+    messages,
+    temperature: 1,
+    presence_penalty: 0.6,
+    frequency_penalty: 0.4
+  })
 
   const res = await Promise.race([
     request,
-    timeoutPromise(
-      config.openaiTimeout,
-      'OPENAI_TIMEOUT'
-    )
+    timeoutPromise(config.openaiTimeout, 'OPENAI_TIMEOUT')
   ])
 
-  const out =
-  res.choices?.[0]?.message?.content?.trim()
-
-if (!out) {
-  throw new Error('OPENAI_RISPOSTA_VUOTA')
-}
-
-const usage = {
-  prompt_tokens:
-    res.usage?.prompt_tokens || 0,
-
-  completion_tokens:
-    res.usage?.completion_tokens || 0
-}
-
-console.log('[AI USAGE]', usage)
-
-salvaCostoAI(
-  usage,
-  config.model,
-  'openai'
-)
+  const out = res.choices?.[0]?.message?.content?.trim()
 
   if (!out) {
     throw new Error('OPENAI_RISPOSTA_VUOTA')
   }
+
+  const usage = {
+    prompt_tokens: res.usage?.prompt_tokens || 0,
+    completion_tokens: res.usage?.completion_tokens || 0
+  }
+
+  console.log('[AI USAGE]', usage)
+
+  salvaCostoAI(
+    usage,
+    config.model,
+    'openai'
+  )
 
   console.log('[AI] Risposta OpenAI ricevuta')
 
   return out
 }
 
-async function callPollinations(messages) {
+async function callOpenRouter(messages) {
+  const apiKey =
+    process.env.OPENROUTER_API_KEY ||
+    global.OPENROUTER_API_KEY ||
+    global.openRouterApiKey
 
+  if (!apiKey) {
+    throw new Error('OPENROUTER_KEY_ASSENTE')
+  }
+
+  console.log('[AI] Chiamo OpenRouter...')
+
+  const controller = new AbortController()
+
+  const timeout = setTimeout(() => {
+    controller.abort()
+  }, config.openRouterTimeout)
+
+  try {
+    const request = fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://axion.bot',
+        'X-Title': 'Axion Bot'
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: config.openRouterModel,
+        messages,
+        temperature: 1,
+        presence_penalty: 0.6,
+        frequency_penalty: 0.4
+      })
+    })
+
+    const res = await Promise.race([
+      request,
+      timeoutPromise(config.openRouterTimeout, 'OPENROUTER_TIMEOUT')
+    ])
+
+    const data = await res.json().catch(() => null)
+
+    if (!res.ok) {
+      throw new Error(`OPENROUTER_${res.status}`)
+    }
+
+    const out = data?.choices?.[0]?.message?.content?.trim()
+
+    if (!out) {
+      throw new Error('OPENROUTER_RISPOSTA_VUOTA')
+    }
+
+    const usage = {
+      prompt_tokens: data?.usage?.prompt_tokens || 0,
+      completion_tokens: data?.usage?.completion_tokens || 0
+    }
+
+    salvaCostoAI(
+      usage,
+      config.openRouterModel,
+      'openrouter'
+    )
+
+    console.log('[AI] Risposta OpenRouter ricevuta')
+
+    return out
+
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+async function callPollinations(messages) {
   console.log('[AI] Chiamo Pollinations...')
 
   const controller = new AbortController()
@@ -176,42 +238,30 @@ async function callPollinations(messages) {
   }, config.pollinationsTimeout)
 
   try {
-
-    const res = await fetch(
-      'https://text.pollinations.ai/',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        signal: controller.signal,
-        body: JSON.stringify({
-          messages,
-          model: config.fallbackModel,
-          seed: Math.floor(
-            Math.random() * 999999
-          )
-        })
-      }
-    )
+    const res = await fetch('https://text.pollinations.ai/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        messages,
+        model: config.pollinationsModel,
+        seed: Math.floor(Math.random() * 999999)
+      })
+    })
 
     const out = await res.text()
 
     if (!res.ok) {
-      throw new Error(
-        `POLLINATIONS_${res.status}`
-      )
+      throw new Error(`POLLINATIONS_${res.status}`)
     }
 
     if (!out || !out.trim()) {
-      throw new Error(
-        'POLLINATIONS_RISPOSTA_VUOTA'
-      )
+      throw new Error('POLLINATIONS_RISPOSTA_VUOTA')
     }
 
-    console.log(
-      '[AI] Risposta Pollinations ricevuta'
-    )
+    console.log('[AI] Risposta Pollinations ricevuta')
 
     return out.trim()
 
@@ -221,74 +271,58 @@ async function callPollinations(messages) {
 }
 
 async function call(messages) {
-
   try {
-
     return await callOpenAI(messages)
 
   } catch (e) {
-
-    console.log(
-      '[AI FALLBACK]',
-      e.message
-    )
+    console.log('[AI FALLBACK OPENAI]', e.message)
 
     try {
-
-      return await callPollinations(messages)
+      return await callOpenRouter(messages)
 
     } catch (err) {
+      console.log('[AI FALLBACK OPENROUTER]', err.message)
 
-      console.log(
-        '[AI ERRORE FINALE]',
-        err.message
-      )
+      try {
+        return await callPollinations(messages)
 
-      throw new Error('CORE_OFFLINE')
+      } catch (finalErr) {
+        console.log('[AI ERRORE FINALE]', finalErr.message)
+        throw new Error('CORE_OFFLINE')
+      }
     }
   }
 }
 
 function funzioneAttiva(m) {
-
   if (!m.isGroup) return true
 
-  const chat =
-    global.db?.data?.chats?.[m.chat]
+  const chat = global.db?.data?.chats?.[m.chat]
 
   return !!chat?.ai
 }
 
 function getQuotedId(m) {
-
   return (
     m.quoted?.id ||
     m.quoted?.key?.id ||
-    m.message?.extendedTextMessage
-      ?.contextInfo?.stanzaId ||
+    m.message?.extendedTextMessage?.contextInfo?.stanzaId ||
     null
   )
 }
 
 function getMap(chatId) {
-
   if (!sessioniChat.has(chatId)) {
-
-    sessioniChat.set(
-      chatId,
-      new Map()
-    )
+    sessioniChat.set(chatId, new Map())
   }
 
   return sessioniChat.get(chatId)
 }
 
 function creaSessione(chatId, sender) {
-
   const map = getMap(chatId)
 
-  const id =
-    `${chatId}|${sender}|${Date.now()}`
+  const id = `${chatId}|${sender}|${Date.now()}`
 
   map.set(id, {
     id,
@@ -297,18 +331,9 @@ function creaSessione(chatId, sender) {
     updatedAt: Date.now()
   })
 
-  while (
-    map.size >
-    config.maxConversazioni
-  ) {
-
-    const oldest =
-      [...map.entries()]
-      .sort(
-        (a, b) =>
-          a[1].updatedAt -
-          b[1].updatedAt
-      )[0]
+  while (map.size > config.maxConversazioni) {
+    const oldest = [...map.entries()]
+      .sort((a, b) => a[1].updatedAt - b[1].updatedAt)[0]
 
     if (oldest) {
       map.delete(oldest[0])
@@ -318,12 +343,7 @@ function creaSessione(chatId, sender) {
   return map.get(id)
 }
 
-function salvaMessaggio(
-  chatId,
-  key,
-  sessionId
-) {
-
+function salvaMessaggio(chatId, key, sessionId) {
   if (!key?.id) return
 
   messaggiBot.set(
@@ -333,30 +353,18 @@ function salvaMessaggio(
 }
 
 function getSessione(chatId, m) {
-
   const quotedId = getQuotedId(m)
 
   if (!quotedId) return null
 
-  const sessionId =
-    messaggiBot.get(
-      `${chatId}|${quotedId}`
-    )
+  const sessionId = messaggiBot.get(`${chatId}|${quotedId}`)
 
   if (!sessionId) return null
 
-  return (
-    getMap(chatId)
-      .get(sessionId) || null
-  )
+  return getMap(chatId).get(sessionId) || null
 }
 
-function aggiornaHistory(
-  sessione,
-  userText,
-  botText
-) {
-
+function aggiornaHistory(sessione, userText, botText) {
   sessione.history.push({
     role: 'user',
     content: userText
@@ -367,32 +375,20 @@ function aggiornaHistory(
     content: botText
   })
 
-  while (
-    sessione.history.length >
-    config.historyLimit * 2
-  ) {
-
+  while (sessione.history.length > config.historyLimit * 2) {
     sessione.history.shift()
   }
 
   sessione.updatedAt = Date.now()
 }
 
-async function rispostaAI(
-  m,
-  conn,
-  text,
-  sessione,
-  extraSystem = ''
-) {
-
+async function rispostaAI(m, conn, text, sessione, extraSystem = '') {
   const name =
     conn.getName(m.sender) ||
     m.pushName ||
     'User'
 
-  const utenteRiconosciuto =
-    riconosciUtente(m.sender)
+  const utenteRiconosciuto = riconosciUtente(m.sender)
 
   const nomeMittente =
     utenteRiconosciuto?.nome || name
@@ -402,17 +398,12 @@ async function rispostaAI(
 
   const extraIdentita =
     utenteRiconosciuto
-      ? `L'utente che sta parlando è ${utenteRiconosciuto.nome}, ${utenteRiconosciuto.ruolo}. Riconoscilo nella conversazione senza ripeterlo continuamente.`
+      ? `L'utente che sta parlando è ${utenteRiconosciuto.nome}, ${utenteRiconosciuto.ruolo}.`
       : ''
 
   await m.react('🧠')
 
   const msgs = [
-    {
-      role: 'system',
-      content: sys(nomeMittente)
-    },
-
     ...(extraIdentita
       ? [{
           role: 'system',
@@ -435,8 +426,7 @@ async function rispostaAI(
     }
   ]
 
-  const out =
-    await call(msgs)
+  const out = await call(msgs)
 
   aggiornaHistory(
     sessione,
@@ -444,14 +434,13 @@ async function rispostaAI(
     out
   )
 
-  const sent =
-    await conn.sendMessage(
-      m.chat,
-      {
-        text: out.trim()
-      },
-      { quoted: m }
-    )
+  const sent = await conn.sendMessage(
+    m.chat,
+    {
+      text: out.trim()
+    },
+    { quoted: m }
+  )
 
   salvaMessaggio(
     m.chat,
@@ -473,7 +462,6 @@ let handler = async (
 ) => {
 
   if (!funzioneAttiva(m)) {
-
     return m.reply(
 `*⚠️ 𝐋𝐚 𝐟𝐮𝐧𝐳𝐢𝐨𝐧𝐞 𝐈𝐀 è 𝐝𝐢𝐬𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐚.*
 
@@ -484,7 +472,6 @@ let handler = async (
   }
 
   if (!text) {
-
     return m.reply(
 `*╭━━━━━━━🧠━━━━━━━╮*
 *✦ 𝐈𝐀 ✦*
@@ -504,12 +491,10 @@ let handler = async (
   }
 
   try {
-
-    const sessione =
-      creaSessione(
-        m.chat,
-        m.sender
-      )
+    const sessione = creaSessione(
+      m.chat,
+      m.sender
+    )
 
     await rispostaAI(
       m,
@@ -519,11 +504,7 @@ let handler = async (
     )
 
   } catch (e) {
-
-    console.log(
-      '[AI COMMAND ERROR]',
-      e.message
-    )
+    console.log('[AI COMMAND ERROR]', e.message)
 
     await m.react('❌')
 
@@ -535,27 +516,19 @@ let handler = async (
   }
 }
 
-handler.before = async function (
-  m,
-  { conn }
-) {
-
+handler.before = async function (m, { conn }) {
   if (!m.text) return false
   if (!funzioneAttiva(m)) return false
 
-  const triggerAxion =
-    /\b(axion)\b/i.test(m.text)
+  const triggerAxion = /\b(axion)\b/i.test(m.text)
 
   if (triggerAxion) {
-
-    const sessione =
-      creaSessione(
-        m.chat,
-        m.sender
-      )
+    const sessione = creaSessione(
+      m.chat,
+      m.sender
+    )
 
     try {
-
       await rispostaAI(
         m,
         conn,
@@ -566,11 +539,7 @@ handler.before = async function (
       return true
 
     } catch (e) {
-
-      console.log(
-        '[AI TRIGGER ERROR]',
-        e.message
-      )
+      console.log('[AI TRIGGER ERROR]', e.message)
 
       await m.react('❌')
 
@@ -578,16 +547,14 @@ handler.before = async function (
     }
   }
 
-  const sessione =
-    getSessione(
-      m.chat,
-      m
-    )
+  const sessione = getSessione(
+    m.chat,
+    m
+  )
 
   if (!sessione) return false
 
   try {
-
     const extraSystem =
       sessione.owner !== m.sender
         ? `Un altro utente si è inserito nella conversazione. Rispondi in modo naturale e continua normalmente la chat.`
@@ -604,11 +571,7 @@ handler.before = async function (
     return true
 
   } catch (e) {
-
-    console.log(
-      '[AI BEFORE ERROR]',
-      e.message
-    )
+    console.log('[AI BEFORE ERROR]', e.message)
 
     await m.react('❌')
 
@@ -631,46 +594,37 @@ function salvaCostoAI(
   model = 'gpt-4.1-mini',
   provider = 'openai'
 ) {
+  const input = Number(usage.prompt_tokens || 0)
+  const output = Number(usage.completion_tokens || 0)
 
-  const input =
-    Number(usage.prompt_tokens || 0)
-
-  const output =
-    Number(usage.completion_tokens || 0)
-
-  const prezzoInput =
-    0.40 / 1000000
-
-  const prezzoOutput =
-    1.60 / 1000000
+  const prezzoInput = 0.40 / 1000000
+  const prezzoOutput = 1.60 / 1000000
 
   const cost =
-    (input * prezzoInput) +
-    (output * prezzoOutput)
+    provider === 'openai'
+      ? (input * prezzoInput) + (output * prezzoOutput)
+      : 0
 
   if (!global.db.data.aiCost) {
-
     global.db.data.aiCost = {
       totalInput: 0,
       totalOutput: 0,
       totalCost: 0,
       requests: 0,
       openai: 0,
+      openrouter: 0,
       fallback: 0,
       today: {}
     }
   }
 
-  const stats =
-    global.db.data.aiCost
+  const stats = global.db.data.aiCost
 
-  const oggi =
-    new Date()
-      .toISOString()
-      .slice(0, 10)
+  const oggi = new Date()
+    .toISOString()
+    .slice(0, 10)
 
   if (!stats.today[oggi]) {
-
     stats.today[oggi] = {
       input: 0,
       output: 0,
