@@ -9,11 +9,21 @@ function getPendingKey(sender, chat) {
 }
 
 function getRequestJid(p = {}) {
-  return p.jid || p.id || p.lid || p.phoneNumber || p.participant || ''
+  return p.jid || p.participant || p.id || p.lid || p.phoneNumber || ''
 }
 
 function getRequestNumber(p = {}) {
-  return String(getRequestJid(p)).split('@')[0].replace(/[^0-9]/g, '')
+  const raw =
+    p.phoneNumber ||
+    p.jid ||
+    p.participant ||
+    p.id ||
+    p.lid ||
+    ''
+
+  return String(raw)
+    .split('@')[0]
+    .replace(/[^0-9]/g, '')
 }
 
 function isItalianRequest(p = {}) {

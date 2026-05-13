@@ -91,7 +91,7 @@ async function inviaTopNotturna(conn, chatId, chatData, dataLabel) {
 
     testo += `
 
-*${medaglie[i]} ${i + 1}°* *@${jid.split('@')[0]}* • *${formatNumber(data?.conteggio || 0)} 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢*
+*${medaglie[i]}* *@${jid.split('@')[0]}* • *${formatNumber(data?.conteggio || 0)} 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢*`
 *💸 𝐏𝐫𝐞𝐦𝐢𝐨:* *+${formatNumber(premio)}€*`
   })
 
@@ -121,15 +121,20 @@ async function processaTopNotturnaSeNecessaria(conn, currentChatId) {
   if (ora !== 0 || minuto > 10) return
 
   const dataOggi = now.toDateString()
+
   const ieri = new Date(now)
   ieri.setDate(ieri.getDate() - 1)
+
   const dataIeri = ieri.toLocaleDateString('it-IT')
 
   const chats = global.db.data.chats || {}
-  const keys = Object.keys(chats).filter(id => id.endsWith('@g.us'))
+
+  const keys = Object.keys(chats)
+    .filter(id => id.endsWith('@g.us'))
 
   for (const chatId of keys) {
     const chat = chats[chatId]
+
     if (!chat) continue
 
     if (!chat.topNotturna) {
@@ -139,30 +144,72 @@ async function processaTopNotturnaSeNecessaria(conn, currentChatId) {
       }
     }
 
-    if (chat.topNotturna.ultimoInvio === dataOggi) continue
-    if (chat.topNotturna.inCorso) continue
+    if (chat.topNotturna.ultimoInvio === dataOggi) {
+      continue
+    }
+
+    if (chat.topNotturna.inCorso) {
+      continue
+    }
 
     const classificaVecchia = chat.classificaGiornaliera
-    if (!classificaVecchia || classificaVecchia.ultimoReset === dataOggi) continue
+
+    if (
+      !classificaVecchia ||
+      classificaVecchia.ultimoReset === dataOggi
+    ) continue
 
     if ((classificaVecchia.totali || 0) <= 0) {
+
       chat.topNotturna.ultimoInvio = dataOggi
+
       chat.classificaGiornaliera = {
         totali: 0,
         utenti: {},
         ultimoReset: dataOggi
       }
+
       continue
     }
 
     chat.topNotturna.inCorso = true
 
     try {
+
       if (chatId !== currentChatId) {
         await delay(DELAY_TRA_GRUPPI_MS)
       }
 
-      await inviaTopNotturna(conn, chatId, chat, dataIeri)
+      const metadata = await conn.groupMetadata(chatId)
+        .catch(() => null)
+
+      if (!metadata) {
+        console.log('[TOP NOTTURNA] Gruppo non trovato:', chatId)
+
+        chat.topNotturna.ultimoInvio = dataOggi
+
+        continue
+      }
+
+      const botNumero = conn.user?.id?.split(':')[0] + '@s.whatsapp.net'
+
+      const partecipa = metadata.participants
+        ?.some(p => p.id === botNumero)
+
+      if (!partecipa) {
+        console.log('[TOP NOTTURNA] Bot non presente:', chatId)
+
+        chat.topNotturna.ultimoInvio = dataOggi
+
+        continue
+      }
+
+      await inviaTopNotturna(
+        conn,
+        chatId,
+        chat,
+        dataIeri
+      )
 
       chat.classificaGiornaliera = {
         totali: 0,
@@ -171,9 +218,34 @@ async function processaTopNotturnaSeNecessaria(conn, currentChatId) {
       }
 
       chat.topNotturna.ultimoInvio = dataOggi
+
+      console.log('[TOP NOTTURNA] Inviata:', chatId)
+
     } catch (e) {
-      console.error('Errore invio top notturna:', chatId, e)
+
+      console.error(
+        '[TOP NOTTURNA ERROR]',
+        chatId,
+        e?.message || e
+      )
+
+      if (
+        String(e?.message || '').includes('item-not-found') ||
+        String(e?.message || '').includes('forbidden') ||
+        String(e?.data || '').includes('403') ||
+        String(e?.data || '').includes('404')
+      ) {
+
+        console.log(
+          '[TOP NOTTURNA] Skip gruppo rotto:',
+          chatId
+        )
+
+        chat.topNotturna.ultimoInvio = dataOggi
+      }
+
     } finally {
+
       chat.topNotturna.inCorso = false
     }
   }

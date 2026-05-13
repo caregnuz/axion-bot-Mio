@@ -14,12 +14,14 @@ import yargs from 'yargs';
 import { spawn } from 'child_process';
 import lodash from 'lodash';
 import chalk from 'chalk';
+import qrcode from 'qrcode-terminal'
 import { format } from 'util';
 import pino from 'pino';
 import fetch from 'node-fetch'
 import { makeWASocket, protoType, serialize } from './lib/simple.js';
 import { Low, JSONFile } from 'lowdb';
 import NodeCache from 'node-cache';
+
 const RESTART_FILE = './tmp/restart-state.json';
 for (const dir of ['./temp', './tmp']) {
   if (!existsSync(dir)) {
@@ -498,9 +500,13 @@ async function connectionUpdate(update) {
         global.timestamp.connect = new Date;
     }
     if (global.db.data == null) await loadDatabase();
-    if (qr && (opzione === '1' || methodCodeQR) && !global.qrGenerated) {
-        console.log(chalk.bold.yellow(`\n 🪐 SCANSIONA IL CODICE QR - SCADE TRA 45 SECONDI 🪐`));
-        global.qrGenerated = true;
+    ifif (qr && (opzione === '1' || methodCodeQR) && !global.qrGenerated) {
+    console.log('\n🪐 SCANSIONA IL CODICE QR 🪐\n')
+    qrcode.generate(qr, {
+        small: true
+    })
+    global.qrGenerated = true
+}
     }
     if (connection === 'open') {
     global.qrGenerated = false;

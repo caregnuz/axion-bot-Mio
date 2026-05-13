@@ -20,10 +20,24 @@ function getGrade(jid, participants = [], user = {}, chatId = '') {
   if (isOwner(jid)) return '👑 𝐃𝐢𝐨'
 
   const num = bare(jid)
-  const p = participants.find(x => bare(x.id || x.jid || '') === num)
+const p = participants.find(x => {
+  const ids = [
+    x.id,
+    x.jid,
+    x.lid,
+    x.participant
+  ].filter(Boolean).map(v => bare(v))
 
-  if (p?.admin === 'superadmin') return '⚜️ 𝐅𝐨𝐧𝐝𝐚𝐭𝐨𝐫𝐞'
-  if (p?.admin === 'admin') return '🛡️ 𝐀𝐝𝐦𝐢𝐧'
+  return ids.includes(num)
+})
+
+if (p?.admin === 'superadmin' || p?.isSuperAdmin) return '⚜️ 𝐅𝐨𝐧𝐝𝐚𝐭𝐨𝐫𝐞'
+
+if (
+  p?.admin === 'admin' ||
+  p?.admin === true ||
+  p?.isAdmin === true
+) return '🛡️ 𝐀𝐝𝐦𝐢𝐧'
 
   const isModerator = !!user.moderator && user.moderatorGroup === chatId
   if (isModerator) return '👮 𝐌𝐨𝐝𝐞𝐫𝐚𝐭𝐨𝐫𝐞'
