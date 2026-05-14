@@ -1,4 +1,18 @@
-let handler = m => m
+let handler = async (m, { conn, usedPrefix, command }) => {
+    let chat = global.db.data.chats[m.chat] || (global.db.data.chats[m.chat] = {})
+    
+    if (command === 'start_bot') {
+        if (chat.axionActive) return m.reply("✅ *𝛥𝐗𝐈𝚶𝐍 𝐒𝐘𝐒𝐓𝐄𝐌* è già attivo in questo gruppo.")
+        chat.axionActive = true
+        return m.reply("🚀 *𝛥𝐗𝐈𝚶𝐍 𝐒𝐘𝐒𝐓𝐄𝐌: 𝐀𝐓𝐓𝐈𝐕𝐀𝐓𝐎*\nUn owner è stato così gentile da attivare il bot nel vostro gruppo.")
+    }
+
+    if (command === 'stop_bot') {
+        if (!chat.axionActive) return m.reply("💤 *𝛥𝐗𝐈𝚶𝐍 𝐒𝐘𝐒𝐓𝐄𝐌* è già disattivato.")
+        chat.axionActive = false
+        return m.reply("🛑 *𝛥𝐗𝐈𝚶𝐍 𝐒𝐘𝐒𝐓𝐄𝐌: 𝐒𝐎𝐒𝐏𝐄𝐒𝐎*\nIl bot è stato disattivato per questo gruppo.")
+    }
+}
 
 handler.before = async (m, { conn }) => {
     if (!m.isGroup) return false
@@ -14,23 +28,10 @@ handler.before = async (m, { conn }) => {
     return false
 }
 
-handler.all = async (m, { conn, usedPrefix }) => {
-    if (!m.isGroup) return
-    
-    let isOwner = global.owner.some(owner => owner[0] + '@s.whatsapp.net' === m.sender)
-    if (!isOwner) return
-
-    let chat = global.db.data.chats[m.chat] || (global.db.data.chats[m.chat] = {})
-
-    if (m.text === `${usedPrefix}start_bot`) {
-        chat.axionActive = true
-        return m.reply("✅ *𝛥𝐗𝐈𝚶𝐍 𝐒𝐘𝐒𝐓𝐄𝐌: 𝐀𝐓𝐓𝐈𝐕𝐀𝐓𝐎*\nIl bot è ora operativo in questo gruppo.")
-    }
-
-    if (m.text === `${usedPrefix}stop_bot`) {
-        chat.axionActive = false
-        return m.reply("💤 *𝛥𝐗𝐈𝚶𝐍 𝐒𝐘𝐒𝐓𝐄𝐌: 𝐒𝐎𝐒𝐏𝐄𝐒𝐎*\nIl bot è stato disattivato per questo gruppo.")
-    }
-}
+handler.help = ['start_bot', 'stop_bot']
+handler.tags = ['owner']
+handler.command = ['start_bot', 'stop_bot']
+handler.group = true
+handler.owner = true
 
 export default handler
