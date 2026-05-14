@@ -2,9 +2,8 @@
 
 import fs from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
 
-const pluginsDir = path.join(__dirname, '../plugins')
+const pluginsDir = path.join(process.cwd(), 'plugins')
 const files = fs.readdirSync(pluginsDir)
 
 let handler = async (m, { conn, usedPrefix }) => {
