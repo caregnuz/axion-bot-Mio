@@ -1,11 +1,21 @@
-// Plugin menu gestione plugin by Bonzino
+// menu gestione plugin by Bonzino
+
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const pluginsDir = path.join(__dirname, '../plugins')
+const files = fs.readdirSync(pluginsDir)
 
 let handler = async (m, { conn, usedPrefix }) => {
+
   return conn.sendMessage(m.chat, {
     text:
-`*╭━━━━━━━🧩━━━━━━━╮*
+`*╭━━━━━━━⚙️━━━━━━━╮*
 *✦ 𝐆𝐄𝐒𝐓𝐈𝐎𝐍𝐄 𝐏𝐋𝐔𝐆𝐈𝐍 ✦*
-*╰━━━━━━━🧩━━━━━━━╯*
+*╰━━━━━━⚙️━━━━━━━╯*
+
+*📦 𝐏𝐥𝐮𝐠𝐢𝐧 𝐭𝐫𝐨𝐯𝐚𝐭𝐢:* *${files.length}*
 
 *𝐒𝐜𝐞𝐠𝐥𝐢 𝐜𝐨𝐬𝐚 𝐯𝐮𝐨𝐢 𝐟𝐚𝐫𝐞:*`,
 

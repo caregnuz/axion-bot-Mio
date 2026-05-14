@@ -47,8 +47,6 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 🔃 ${usedPrefix}idtolink <id>
 ┃ 🗃 ${usedPrefix}gruppi
 ┃ 🚪 ${usedPrefix}esci <numero>
-┃ 📢 ${usedPrefix}tuttigp
-┃ ‼️ ${usedPrefix}tagallgp
 ┃ 👋 ${usedPrefix}out 
 ┃ 🚫 ${usedPrefix}bangp <link/id>
 ┃ ✅️ ${usedPrefix}unbangp <link/id>
@@ -66,6 +64,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 🏷 ${usedPrefix}setnomebot
 ┃ 🔄 ${usedPrefix}prefisso/.resetprefisso
 ┃ 🖼 ${usedPrefix}setpicbot
+┃ 🗄 ${usedPrefix}backupbot
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 📦 ɢᴇsᴛɪᴏɴᴇ ᴘᴀᴄᴄʜᴇᴛᴛɪ 〕━⬣
@@ -98,6 +97,8 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ ⚠️ ${usedPrefix}bigtag
 ┃ ✋ ${usedPrefix}stop
 ┃ 👑 ${usedPrefix}godmode
+┃ 📢 ${usedPrefix}tuttigp
+┃ ‼️ ${usedPrefix}tagallgp
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 📌 ɪɴғᴏ 〕━⬣
