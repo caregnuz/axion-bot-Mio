@@ -1,7 +1,7 @@
-import { createILoveImage, getTarget, getTargetName } from '../lib/fun-canvas.js'
+import { createILoveImage, getTargetJid, getTargetName } from '../lib/fun-canvas.js'
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
-  const who = getTarget(m)
+  const who = getTargetJid(m)
 
   let name = text?.trim()
 

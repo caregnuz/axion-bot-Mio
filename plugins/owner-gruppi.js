@@ -84,7 +84,7 @@ https://whatsapp.com/channel/0029Vb8MQ3U1CYoMEtU1832d
       await conn.reply(targetGroup.id,
 `*👋 𝐀𝐝𝐝𝐢𝐨 𝐬𝐟𝐢𝐠𝐚𝐭𝐢!*
 
-> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
+> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`)
 
       await conn.groupLeave(targetGroup.id)
 

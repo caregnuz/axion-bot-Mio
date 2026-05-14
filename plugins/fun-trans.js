@@ -1,14 +1,19 @@
-import { applyPrideEffect, getTarget, getTargetName, getProfilePicture } from '../lib/fun-canvas.js'
+import {
+  applyPrideEffect,
+  getTargetJid,
+  getTargetName,
+  getProfileBuffer
+} from '../lib/fun-canvas.js'
 
 let handler = async (m, { conn, usedPrefix, command }) => {
-  const who = getTarget(m)
+  const who = getTargetJid(m)
 
   if (!who) {
     return m.reply(`*Esempio:* ${usedPrefix + command} @utente`)
   }
 
   try {
-    const buffer = await getProfilePicture(conn, who)
+    const buffer = await getProfileBuffer(conn, who)
     const finalBuffer = await applyPrideEffect(buffer, 'trans')
 
     const nome = await getTargetName(conn, who)
