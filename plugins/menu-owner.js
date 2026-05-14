@@ -17,7 +17,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
   ◈ *ᴀᴄᴄᴇssᴏ:* ᴏᴡɴᴇʀ
 ╼━━━━━━━━━━━━━━╾
 
-╭━━━〔 👤 ɢᴇsᴛɪᴏɴᴇ ᴜᴛᴇɴᴛɪ 〕━⬣
+╭━〔 👤 ɢᴇsᴛɪᴏɴᴇ ᴜᴛᴇɴᴛɪ 〕━⬣
 ┃ 👮‍♂️ ${usedPrefix}addmod
 ┃ ❌ ${usedPrefix}delmod
 ┃ 🗑️ ${usedPrefix}resetmod
@@ -27,7 +27,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ ❌️${usedPrefix}delowner <user> <numero>
 ╰━━━━━━━━━━━━━━━━⬣
 
-╭━━━〔 📊 sᴛᴀᴛɪsᴛɪᴄʜᴇ ᴜᴛᴇɴᴛɪ 〕━⬣
+╭━〔 📊 sᴛᴀᴛɪsᴛɪᴄʜᴇ ᴜᴛᴇɴᴛɪ 〕━⬣
 ┃ ➕️ ${usedPrefix}addmoney <quantità> <user>
 ┃ ➖️ ${usedPrefix}removemoney <quantità> <user>
 ┃ 🗑 ${usedPrefix}azzerasoldi <quantità> <user>
@@ -38,7 +38,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 💸 ${usedPrefix}resetallmoney
 ╰━━━━━━━━━━━━━━━━⬣
 
-╭━━━〔 👥 ɢᴇsᴛɪᴏɴᴇ ɢʀᴜᴘᴘɪ 〕━⬣
+╭━〔 👥 ɢᴇsᴛɪᴏɴᴇ ɢʀᴜᴘᴘɪ 〕━⬣
 ┃ ➕ ${usedPrefix}adduser <utente> <link/id>
 ┃ ➖ ${usedPrefix}kickuser <utente> <link/id>
 ┃ 📥 ${usedPrefix}join <link>
@@ -52,11 +52,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ ✅️ ${usedPrefix}unbangp <link/id>
 ╰━━━━━━━━━━━━━━━━⬣
 
-╭━━━〔 🛡️ ɢᴇsᴛɪᴏɴᴇ ᴀᴅᴍɪɴ 〕━⬣
-┃ 👑 ${usedPrefix}godmode
-╰━━━━━━━━━━━━━━━━⬣
-
-╭━━━〔 🤖 ɢᴇsᴛɪᴏɴᴇ ʙᴏᴛ 〕━⬣
+╭━〔 🤖 ɢᴇsᴛɪᴏɴᴇ ʙᴏᴛ 〕━⬣
 ┃ 🌐 ${usedPrefix}aggiorna 
 ┃ 🔄 ${usedPrefix}restart
 ┃ 💾 ${usedPrefix}backupdb
@@ -67,7 +63,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 🗄 ${usedPrefix}backupbot
 ╰━━━━━━━━━━━━━━━━⬣
 
-╭━━━〔 📦 ɢᴇsᴛɪᴏɴᴇ ᴘᴀᴄᴄʜᴇᴛᴛɪ 〕━⬣
+╭━〔 📦 ɢᴇsᴛɪᴏɴᴇ ᴘᴀᴄᴄʜᴇᴛᴛɪ 〕━⬣
 ┃ 📂 ${usedPrefix}pacchetti
 ┃ 📥 ${usedPrefix}installa <nome>
 ┃ 🚀 ${usedPrefix}installapush <nome>
@@ -82,7 +78,7 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 📜 ${usedPrefix}npmdl
 ╰━━━━━━━━━━━━━━━━⬣
 
-╭━━━〔 ⚙️ ɢᴇsᴛɪᴏɴᴇ ᴘʟᴜɢɪɴ 〕━⬣
+╭━〔 ⚙️ ɢᴇsᴛɪᴏɴᴇ ᴘʟᴜɢɪɴ 〕━⬣
 ┃ 🧩 ${usedPrefix}plugin
 ┃ 📃 ${usedPrefix}listaplugin
 ┃ 🗂️ ${usedPrefix}pluginlist

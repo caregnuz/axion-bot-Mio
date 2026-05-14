@@ -8,6 +8,5 @@ auth_info_baileys/
 node_modules/
 private.js
 plugins/owner-purge.js
-plugins/cucciole.js
 private.js
 plugins/gp-ia.js
