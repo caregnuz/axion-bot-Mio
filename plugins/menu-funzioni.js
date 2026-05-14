@@ -62,6 +62,7 @@ let handler = async (m, { conn, usedPrefix }) => {
 
 *🧠 𝐀𝐢 & 𝐀𝐮𝐭𝐨𝐦𝐚𝐳𝐢𝐨𝐧𝐞*
 *◈ 𝐈𝐀:* ${stato(chat.ai)}
+*◈ 𝐁𝐚𝐜𝐤𝐮𝐩𝐃𝐁:* ${stato(bot.autoDbBackup)}
 
 *🔒 𝐏𝐫𝐢𝐯𝐚𝐭𝐨*
 *◈ 𝐀𝐧𝐭𝐢𝐩𝐫𝐢𝐯𝐚𝐭𝐨:* ${stato(bot.antiprivato)}

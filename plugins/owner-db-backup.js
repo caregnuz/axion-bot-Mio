@@ -52,21 +52,9 @@ function getSettingsKey(conn) {
 }
 
 function isAutoEnabled(conn) {
-
   const key = getSettingsKey(conn)
-
   global.db.data.settings[key] ??= {}
-
-  return !!global.db.data.settings[key].autoDbBackup
-}
-
-function setAutoEnabled(conn, value) {
-
-  const key = getSettingsKey(conn)
-
-  global.db.data.settings[key] ??= {}
-
-  global.db.data.settings[key].autoDbBackup = !!value
+  return !!global.db.data.settings[key].autodb
 }
 
 function cleanupOldBackups() {
@@ -166,17 +154,10 @@ let handler = async (
   {
     conn,
     command,
-    args,
     isOwner,
     usedPrefix
   }
 ) => {
-
-  if (!isOwner) {
-    return m.reply(
-`*𝐒𝐨𝐥𝐨 𝐢𝐥 𝐩𝐫𝐨𝐩𝐫𝐢𝐞𝐭𝐚𝐫𝐢𝐨 può 𝐮𝐬𝐚𝐫𝐞 𝐪𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨.*`
-    )
-  }
 
   const intervalLabel =
     getIntervalLabel()
@@ -211,19 +192,10 @@ let handler = async (
     }
   }
 
-  if (/^autodb$/i.test(command)) {
+if (/^autodb$/i.test(command)) {
+  const enabled = isAutoEnabled(conn)
 
-    const input =
-      String(args[0] || '')
-        .toLowerCase()
-        .trim()
-
-    if (!input) {
-
-      const enabled =
-        isAutoEnabled(conn)
-
-      return m.reply(
+  return m.reply(
 `*🗂️ 𝐒𝐭𝐚𝐭𝐨 𝐀𝐮𝐭𝐨𝐁𝐚𝐜𝐤𝐮𝐩*
 
 *⚙️ 𝐒𝐭𝐚𝐭𝐨:* *${enabled ? '𝐀𝐭𝐭𝐢𝐯𝐨' : '𝐃𝐢𝐬𝐚𝐭𝐭𝐢𝐯𝐨'}*
@@ -231,67 +203,14 @@ let handler = async (
 *📁 𝐂𝐚𝐫𝐭𝐞𝐥𝐥𝐚:* *db-backup*
 *♻️ 𝐌𝐚𝐱 𝐛𝐚𝐜𝐤𝐮𝐩:* *${MAX_BACKUPS}*
 
-*📌 𝐔𝐬𝐨:*
-*${usedPrefix}autodb 1*
-*${usedPrefix}autodb 0*
+*📌 𝐆𝐞𝐬𝐭𝐢𝐨𝐧𝐞:*
+*${usedPrefix}1 autodb*
+*${usedPrefix}0 autodb*
 
 > *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
-      )
-    }
+  )
+}
 
-    if ([
-      '1',
-      'on',
-      'attiva',
-      'enable',
-      'start'
-    ].includes(input)) {
-
-      setAutoEnabled(conn, true)
-
-      startAutoBackupLoop(conn)
-
-      return m.reply(
-`*✅ 𝐀𝐮𝐭𝐨𝐁𝐚𝐜𝐤𝐮𝐩 𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐨.*
-
-*📦 𝐈𝐥 𝐩𝐫𝐢𝐦𝐨 𝐛𝐚𝐜𝐤𝐮𝐩 𝐯𝐞𝐫𝐫à 𝐜𝐫𝐞𝐚𝐭𝐨 𝐬𝐮𝐛𝐢𝐭𝐨.*
-*⏱️ 𝐁𝐚𝐜𝐤𝐮𝐩 𝐨𝐠𝐧𝐢:* *${intervalLabel}*
-*📁 𝐂𝐚𝐫𝐭𝐞𝐥𝐥𝐚:* *db-backup*
-*♻️ 𝐕𝐞𝐫𝐫𝐚𝐧𝐧𝐨 𝐦𝐚𝐧𝐭𝐞𝐧𝐮𝐭𝐢:* *${MAX_BACKUPS} 𝐛𝐚𝐜𝐤𝐮𝐩*
-
-> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
-      )
-    }
-
-    if ([
-      '0',
-      'off',
-      'disattiva',
-      'disable',
-      'stop'
-    ].includes(input)) {
-
-      setAutoEnabled(conn, false)
-
-      return m.reply(
-`*❌ 𝐀𝐮𝐭𝐨𝐁𝐚𝐜𝐤𝐮𝐩 𝐝𝐢𝐬𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐨.*
-
-*📁 𝐈 𝐛𝐚𝐜𝐤𝐮𝐩 𝐞𝐬𝐢𝐬𝐭𝐞𝐧𝐭𝐢 𝐫𝐞𝐬𝐭𝐚𝐧𝐨 𝐢𝐧:* *db-backup*
-
-> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
-      )
-    }
-
-    return m.reply(
-`*⚠️ 𝐎𝐩𝐳𝐢𝐨𝐧𝐞 𝐧𝐨𝐧 𝐯𝐚𝐥𝐢𝐝𝐚.*
-
-*📌 𝐔𝐬𝐚:*
-*${usedPrefix}autodb 1*
-*${usedPrefix}autodb 0*
-
-> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
-    )
-  }
 }
 
 handler.before = async function (
@@ -316,10 +235,6 @@ handler.help = [
 ]
 
 handler.tags = ['owner']
-
-handler.command =
-  /^(backupdb|dbbackup|autodb)$/i
-
+handler.command = /^(backupdb|dbbackup|autodb)$/i
 handler.owner = true
-
 export default handler

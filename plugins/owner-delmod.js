@@ -1,4 +1,4 @@
-// Plugin dell'odore by Bonzino
+// Plugin delmod by Bonzino
 
 const handler = async (m, { conn, text }) => {
 

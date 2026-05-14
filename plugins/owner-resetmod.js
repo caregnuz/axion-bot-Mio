@@ -2,26 +2,25 @@ import fetch from 'node-fetch'
 
 const handler = async (m, { conn }) => {
 
-  if (!m.isGroup)
-    return m.reply('❌ Questo comando funziona solo nei gruppi.')
+  const users = global.db.data.users || {}
+  const removed = []
 
-  const users = global.db.data.users
-  let removed = []
-
-  // rimuove solo i MOD di questo gruppo
-  for (let jid in users) {
-    if (users[jid].premium && users[jid].moderatorGroup === m.chat) {
-      users[jid].premium = false
+  for (const jid in users) {
+    if (users[jid].moderator && users[jid].moderatorGroup === m.chat) {
+      users[jid].moderator = false
       delete users[jid].moderatorGroup
       removed.push(jid)
     }
   }
 
-  if (removed.length === 0)
-    return m.reply('ℹ️ Non ci sono moderatori da rimuovere in questo gruppo.')
+  if (!removed.length) {
+    return m.reply(`*ℹ️ 𝐍𝐨𝐧 𝐜𝐢 𝐬𝐨𝐧𝐨 𝐦𝐨𝐝𝐞𝐫𝐚𝐭𝐨𝐫𝐢 𝐝𝐚 𝐫𝐢𝐦𝐮𝐨𝐯𝐞𝐫𝐞 𝐢𝐧 𝐪𝐮𝐞𝐬𝐭𝐨 𝐠𝐫𝐮𝐩𝐩𝐨.*
 
-  // thumbnail del gruppo
+> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`)
+  }
+
   let thumb = null
+
   try {
     const pp = await conn.profilePictureUrl(m.chat, 'image')
     const res = await fetch(pp)
@@ -29,11 +28,16 @@ const handler = async (m, { conn }) => {
   } catch {}
 
   const list = removed
-    .map((jid, i) => `☠️ ${i + 1}. @${jid.split('@')[0]}`)
+    .map((jid, i) => `*☠️ ${i + 1}. @${jid.split('@')[0]}*`)
     .join('\n')
 
-  // messaggio semplice
-  const caption = `Tutti i moderatori di questo gruppo sono stati rimossi.\n\nUtenti rimossi:\n${list}`
+  const caption =
+`*✅ 𝐓𝐮𝐭𝐭𝐢 𝐢 𝐦𝐨𝐝𝐞𝐫𝐚𝐭𝐨𝐫𝐢 𝐝𝐢 𝐪𝐮𝐞𝐬𝐭𝐨 𝐠𝐫𝐮𝐩𝐩𝐨 𝐬𝐨𝐧𝐨 𝐬𝐭𝐚𝐭𝐢 𝐫𝐢𝐦𝐨𝐬𝐬𝐢.*
+
+*𝐔𝐭𝐞𝐧𝐭𝐢 𝐫𝐢𝐦𝐨𝐬𝐬𝐢:*
+${list}
+
+> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`
 
   await conn.sendMessage(
     m.chat,

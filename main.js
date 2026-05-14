@@ -105,6 +105,8 @@ global.loadDatabase = async function loadDatabase() {
 };
 loadDatabase();
 
+global.botname = global.db?.data?.settings?.botName || '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓'
+
 global.creds = 'creds.json';
 global.authFile = 'session';
 
@@ -500,13 +502,9 @@ async function connectionUpdate(update) {
         global.timestamp.connect = new Date;
     }
     if (global.db.data == null) await loadDatabase();
-    ifif (qr && (opzione === '1' || methodCodeQR) && !global.qrGenerated) {
-    console.log('\n🪐 SCANSIONA IL CODICE QR 🪐\n')
-    qrcode.generate(qr, {
-        small: true
-    })
-    global.qrGenerated = true
-}
+    if (qr && (opzione === '1' || methodCodeQR) && !global.qrGenerated) {
+        console.log(chalk.bold.yellow(`\n 🪐 SCANSIONA IL CODICE QR - SCADE TRA 45 SECONDI 🪐`));
+        global.qrGenerated = true;
     }
     if (connection === 'open') {
     global.qrGenerated = false;
@@ -586,7 +584,7 @@ global.isLogoPrinted = true;
             await global.reloadHandler(true).catch(console.error);
         }
     }
-}
+  }
 process.on('uncaughtException', async (err) => {
     console.error(err);
     await global.sendPluginErrorToChat?.('Uncaught Exception', err);

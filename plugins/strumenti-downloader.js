@@ -1,4 +1,4 @@
-// by Bonzino - <Universal downloader>
+// plugin Downloader by Bonzino 
 
 import fs from 'fs'
 import path from 'path'
@@ -19,8 +19,8 @@ const DOWNLOAD_CONFIG = {
   MAX_VIDEO_MB: Number(process.env.DW_MAX_VIDEO_MB || 1000),
   MAX_AUDIO_MB: Number(process.env.DW_MAX_AUDIO_MB || 1000),
 
-  MAX_VIDEO_SECONDS: Number(process.env.DW_MAX_VIDEO_SECONDS || 60 * 60), // 1h
-  MAX_AUDIO_SECONDS: Number(process.env.DW_MAX_AUDIO_SECONDS || 2 * 60 * 60), // 2h
+  MAX_VIDEO_SECONDS: Number(process.env.DW_MAX_VIDEO_SECONDS || 60 * 60), 
+  MAX_AUDIO_SECONDS: Number(process.env.DW_MAX_AUDIO_SECONDS || 2 * 60 * 60), 
 
   TMP_PREFIX: 'dw-',
   AXIOS_TIMEOUT: 60000,
@@ -35,8 +35,6 @@ const DOWNLOAD_CONFIG = {
   ALLOW_TIKTOK_FALLBACK: true,
   ALLOW_DIRECT_MEDIA: true
 }
-
-// Sistema coda per utenti
 
 if (!globalThis.__axionDownloadQueue) {
   globalThis.__axionDownloadQueue = {
@@ -89,8 +87,6 @@ function getQueuePosition(chatId) {
   const ahead = queueState.jobs.filter(item => item.job.chatId !== chatId).length
   return ahead + queueState.running + 1
 }
-
-// Interfaccia
 
 async function editMessage(conn, chatId, key, text) {
   await conn.relayMessage(
@@ -171,8 +167,6 @@ async function animateProgress(conn, chatId, key, state) {
     `*𝐃𝐨𝐰𝐧𝐥𝐨𝐚𝐝 𝐜𝐨𝐦𝐩𝐥𝐞𝐭𝐚𝐭𝐨* ✅\n\n*100%*`
   )
 }
-
-//Helpers
 
 function cleanText(text = '') {
   return String(text).replace(/\s+/g, ' ').trim()
@@ -366,8 +360,6 @@ function assertMediaWithinLimits(info, mode) {
   }
 }
 
-// Check generali
-
 async function hasBinary(bin) {
   try {
     await execFileAsync(bin, ['--version'], { timeout: 10000 })
@@ -534,8 +526,6 @@ async function runFfmpegConvertWithProgress(inputPath, outputPath, onProgress, t
   })
 }
 
-//Link diretti
-
 async function getDirectMediaInfo(url) {
   try {
     const res = await axios.head(url, {
@@ -625,8 +615,6 @@ async function downloadDirectMedia(url, mode, tmpDir, onProgress = null) {
   return { filePath }
 }
 
-//Analisi contenuti
-
 async function getMediaInfo(url) {
   if (DOWNLOAD_CONFIG.ALLOW_DIRECT_MEDIA && isDirectMediaUrl(url)) {
     return await getDirectMediaInfo(url)
@@ -698,8 +686,6 @@ async function getMediaInfo(url) {
   }
 }
 
-// Fallback x tiktok
-
 async function tiktokFallback(url, mode, tmpDir, onProgress = null) {
   const endpoints = [
     `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`,
@@ -755,8 +741,6 @@ async function tiktokFallback(url, mode, tmpDir, onProgress = null) {
   throw new Error('Fallback TikTok fallito.')
 }
 
-//Conversione media per compatibilità 
-
 async function probeVideoCodecs(filePath) {
   try {
     const { stdout } = await execFileAsync('ffprobe', [
@@ -810,8 +794,6 @@ async function convertToMp4(inputPath, tmpDir, onProgress = null) {
 
   return outputPath
 }
-
-//Downloaders
 
 async function downloadVideo(url, tmpDir, onProgress = null, onPhaseChange = null, onNote = null) {
   if (DOWNLOAD_CONFIG.ALLOW_DIRECT_MEDIA && isDirectMediaUrl(url)) {
@@ -916,8 +898,6 @@ async function downloadAudio(url, tmpDir, onProgress = null, onNote = null) {
 
   return { filePath: path.join(tmpDir, file) }
 }
-
-//Handler principale
 
 let handler = async (m, { conn, args, usedPrefix }) => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), DOWNLOAD_CONFIG.TMP_PREFIX))

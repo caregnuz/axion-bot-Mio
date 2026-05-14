@@ -1,4 +1,4 @@
-// Plugin tuttigp by Bonzino
+// Plugin tagallgp by Bonzino
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -21,7 +21,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 > *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`)
   }
 
-  await m.reply(`*📢 𝐈𝐧𝐯𝐢𝐨 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐢𝐧 ${chats.length} 𝐠𝐫𝐮𝐩𝐩𝐢...*
+  await m.reply(`*📢 𝐈𝐧𝐯𝐢𝐨 𝐭𝐚𝐠 𝐠𝐥𝐨𝐛𝐚𝐥𝐞 𝐢𝐧 ${chats.length} 𝐠𝐫𝐮𝐩𝐩𝐢...*
 
 > *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`)
 
@@ -34,26 +34,20 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       const participants = metadata.participants.map(p => p.id)
 
       await conn.sendMessage(jid, {
-        text:
-`*╭━━━━━━━📢━━━━━━━╮*
-*✦ 𝐁𝐑𝐎𝐀𝐃𝐂𝐀𝐒𝐓 ✦*
-*╰━━━━━━━📢━━━━━━━╯*
-
-${text}
-
-> *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`,
+        text,
         mentions: participants
       })
 
       inviati++
       await delay(1500)
+
     } catch (e) {
       falliti++
-      console.log(`[TUTTIGP ERROR] ${jid}`, e)
+      console.log(`[TAGALLGP ERROR] ${jid}`, e)
     }
   }
 
-  return m.reply(`*✅ 𝐁𝐫𝐨𝐚𝐝𝐜𝐚𝐬𝐭 𝐜𝐨𝐦𝐩𝐥𝐞𝐭𝐚𝐭𝐨.*
+  return m.reply(`*✅ 𝐓𝐚𝐠 𝐠𝐥𝐨𝐛𝐚𝐥𝐞 𝐜𝐨𝐦𝐩𝐥𝐞𝐭𝐚𝐭𝐨.*
 
 *📤 𝐈𝐧𝐯𝐢𝐚𝐭𝐢:* *${inviati}*
 *❌ 𝐅𝐚𝐥𝐥𝐢𝐭𝐢:* *${falliti}*
@@ -61,9 +55,9 @@ ${text}
 > *𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓*`)
 }
 
-handler.help = ['tuttigp <messaggio>']
+handler.help = ['tagallgp <messaggio>']
 handler.tags = ['owner']
-handler.command = /^(tuttigp)$/i
+handler.command = /^(tagallgp|pingallgp)$/i
 handler.owner = true
 
 export default handler

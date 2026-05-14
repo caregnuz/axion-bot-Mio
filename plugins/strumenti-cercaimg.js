@@ -1,6 +1,6 @@
 // by Bonzino
 
-import gis from 'g-i-s'
+import axios from 'axios'
 
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -13,22 +13,35 @@ function cleanQuery(text = '') {
   return String(text).replace(/\s+/g, ' ').trim()
 }
 
-function pickImageUrl(item = {}) {
-  return item.url || item.image || item.thumbnail || null
-}
+async function cercaImmagini(query) {
+  const url = `https://www.bing.com/images/search?q=${encodeURIComponent(query)}&safeSearch=off`
 
-function cercaImmagini(query) {
-  return new Promise((resolve, reject) => {
-    gis(query, (error, results) => {
-      if (error) reject(error)
-      else resolve(results || [])
-    })
+  const { data } = await axios.get(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0'
+    },
+    timeout: 20000
   })
+
+  const matches = [
+    ...data.matchAll(/murl&quot;:&quot;(.*?)&quot;/g)
+  ]
+
+  return matches.map(v => ({
+    image: v[1]
+      .replace(/\\u002f/g, '/')
+      .replace(/\\/g, '')
+  }))
 }
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
   try {
-    const searchTerm = cleanQuery(text || m.quoted?.text || m.quoted?.caption || '')
+    const searchTerm = cleanQuery(
+      text ||
+      m.quoted?.text ||
+      m.quoted?.caption ||
+      ''
+    )
 
     if (!searchTerm) {
       return conn.sendMessage(m.chat, {
@@ -47,7 +60,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
     const results = await cercaImmagini(searchTerm)
 
-    if (!results || !results.length) {
+    if (!results.length) {
       await conn.sendMessage(m.chat, {
         react: { text: '❌', key: m.key }
       })
@@ -60,67 +73,28 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       }, { quoted: m })
     }
 
-    const validResults = []
+    shuffle(results)
 
-    for (const item of results) {
-      const imageUrl = pickImageUrl(item)
-      if (!imageUrl || typeof imageUrl !== 'string') continue
-      if (!/^https?:\/\//i.test(imageUrl)) continue
-
-      validResults.push({
-        image: imageUrl,
-        title: cleanQuery(item.title || searchTerm),
-        source: cleanQuery(item.source || item.domain || 'Google Images'),
-        pageUrl: item.url || imageUrl
-      })
-    }
-
-    if (!validResults.length) {
-      await conn.sendMessage(m.chat, {
-        react: { text: '❌', key: m.key }
-      })
-
-      return conn.sendMessage(m.chat, {
-        text:
-`*❌ 𝐍𝐞𝐬𝐬𝐮𝐧𝐚 𝐢𝐦𝐦𝐚𝐠𝐢𝐧𝐞 𝐯𝐚𝐥𝐢𝐝𝐚 𝐭𝐫𝐨𝐯𝐚𝐭𝐚 𝐩𝐞𝐫:*
-*${searchTerm}*`,
-        contextInfo: global.rcanal?.contextInfo || {}
-      }, { quoted: m })
-    }
-
-    shuffle(validResults)
-
-    const item = validResults[0]
+    const item = results[0]
 
     await conn.sendMessage(m.chat, {
-      image: { url: item.image },
+      image: { url: item.image || item.url },
       caption:
 `*📸 𝐑𝐢𝐬𝐮𝐥𝐭𝐚𝐭𝐨 𝐭𝐫𝐨𝐯𝐚𝐭𝐨*
 
-*🔎 𝐑𝐢𝐜𝐞𝐫𝐜𝐚:* *${searchTerm}*
-*🖼️ 𝐓𝐢𝐭𝐨𝐥𝐨:* *${item.title}*
-*🌐 𝐅𝐨𝐧𝐭𝐞:* *${item.source}*`,
+*🔎 𝐑𝐢𝐜𝐞𝐫𝐜𝐚:* *${searchTerm}*`,
       footer: '𝛥𝐗𝐈𝚶𝐍 𝚩𝚯𝐓',
       buttons: [
         {
           buttonId: `${usedPrefix}cercaimmagine ${searchTerm}`,
-          buttonText: { displayText: '🔄 𝐀𝐥𝐭𝐫𝐞 𝐢𝐦𝐦𝐚𝐠𝐢𝐧𝐢' },
+          buttonText: {
+            displayText: '🔄 𝐀𝐥𝐭𝐫𝐞 𝐢𝐦𝐦𝐚𝐠𝐢𝐧𝐢'
+          },
           type: 1
         }
       ],
       headerType: 4,
-      contextInfo: {
-        ...(global.rcanal?.contextInfo || {}),
-        externalAdReply: {
-          title: item.title,
-          body: searchTerm,
-          thumbnailUrl: item.image,
-          sourceUrl: item.pageUrl,
-          mediaType: 1,
-          renderLargerThumbnail: true,
-          showAdAttribution: false
-        }
-      }
+      contextInfo: global.rcanal?.contextInfo || {}
     }, { quoted: m })
 
     await conn.sendMessage(m.chat, {
@@ -138,7 +112,9 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       text:
 `*❌ 𝐄𝐫𝐫𝐨𝐫𝐞 𝐧𝐞𝐥𝐥𝐚 𝐫𝐢𝐜𝐞𝐫𝐜𝐚 𝐢𝐦𝐦𝐚𝐠𝐢𝐧𝐢*
 
-*𝐑𝐢𝐩𝐫𝐨𝐯𝐚 𝐭𝐫𝐚 𝐩𝐨𝐜𝐨.*`,
+\`\`\`
+${e?.message || e}
+\`\`\``,
       contextInfo: global.rcanal?.contextInfo || {}
     }, { quoted: m })
   }

@@ -9,15 +9,15 @@ let handler = async (m, { conn, usedPrefix, command }) => {
 
   try {
     const buffer = await getProfilePicture(conn, who)
-    const finalBuffer = await applyPrideEffect(buffer, 'gay')
+    const finalBuffer = await applyPrideEffect(buffer, 'trans')
 
     const nome = await getTargetName(conn, who)
 
     await conn.sendFile(
       m.chat,
       finalBuffer,
-      'gay.jpg',
-      `*🏳️‍🌈 @${who.split('@')[0]} (${nome}) è diventato gay*`,
+      'trans.jpg',
+      `*🏳️‍⚧️ @${who.split('@')[0]} (${nome}) è diventato trans*`,
       m,
       false,
       {
@@ -31,8 +31,8 @@ let handler = async (m, { conn, usedPrefix, command }) => {
   }
 }
 
-handler.help = ['gay @utente']
+handler.help = ['trans @utente']
 handler.tags = ['fun']
-handler.command = /^gay$/i
+handler.command = /^trans$/i
 
 export default handler

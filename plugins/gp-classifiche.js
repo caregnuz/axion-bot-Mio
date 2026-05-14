@@ -91,7 +91,7 @@ async function inviaTopNotturna(conn, chatId, chatData, dataLabel) {
 
     testo += `
 
-*${medaglie[i]}* *@${jid.split('@')[0]}* • *${formatNumber(data?.conteggio || 0)} 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢*`
+*${medaglie[i]}* *@${jid.split('@')[0]}* • *${formatNumber(data?.conteggio || 0)} 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢*
 *💸 𝐏𝐫𝐞𝐦𝐢𝐨:* *+${formatNumber(premio)}€*`
   })
 

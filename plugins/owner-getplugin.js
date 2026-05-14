@@ -165,7 +165,7 @@ ${SIGN}`
 
 handler.help = ['getpl']
 handler.tags = ['tools']
-handler.command = /^getpl$/i
+handler.command = /^getpl|getplugin$/i
 handler.owner = true
 
 export default handler

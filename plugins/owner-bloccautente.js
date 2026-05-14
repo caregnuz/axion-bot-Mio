@@ -52,10 +52,6 @@ let handler = async (m, { conn, command, isOwner, isROwner }) => {
   global.db.data.settings ??= {}
   global.db.data.settings.blockedUsers ??= {}
 
-  if (!isOwner && !isROwner) {
-    throw box('𝐀𝐂𝐂𝐄𝐒𝐒𝐎 𝐍𝐄𝐆𝐀𝐓𝐎', '❌ 𝐅𝐮𝐧𝐳𝐢𝐨𝐧𝐞 𝐫𝐢𝐬𝐞𝐫𝐯𝐚𝐭𝐚 𝐚𝐥𝐥’𝐨𝐰𝐧𝐞𝐫')
-  }
-
   const target = getTarget(m)
   if (!target) {
     throw box(

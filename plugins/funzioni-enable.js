@@ -46,7 +46,7 @@ ${desc}`
 *antiinsta, antitelegram, antitiktok*
 
 *⚙️ 𝐆𝐞𝐬𝐭𝐢𝐨𝐧𝐞:*
-*soloadmin, modoadmin, benvenuto, addio, ia*`
+*soloadmin, modoadmin, benvenuto, addio, *autodb* ia*`
   }
 
   let feature = args[0].toLowerCase()
@@ -154,6 +154,17 @@ ${desc}`
       thumbFeature = 'ia'
       result = box('𝐈𝐀', `*${isEnable ? '✅' : '❌'} 𝐈𝐧𝐭𝐞𝐥𝐥𝐢𝐠𝐞𝐧𝐳𝐚 𝐚𝐫𝐭𝐢𝐟𝐢𝐜𝐢𝐚𝐥𝐞 ${isEnable ? '𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐚' : '𝐝𝐢𝐬𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐚'}*`)
       break
+      
+      case 'autodb':
+      case 'backupauto':
+  requireOwner()
+  bot.autoDbBackup = isEnable
+  thumbFeature = 'system'
+  result = box(
+    '𝐁𝐀𝐂𝐊𝐔𝐏 𝐃𝐀𝐓𝐀𝐁𝐀𝐒𝐄',
+    `*${isEnable ? '✅' : '❌'} 𝐁𝐚𝐜𝐤𝐮𝐩 𝐚𝐮𝐭𝐨𝐦𝐚𝐭𝐢𝐜𝐨 𝐝𝐞𝐥 𝐝𝐚𝐭𝐚𝐛𝐚𝐬𝐞 ${isEnable ? '𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐨' : '𝐝𝐢𝐬𝐚𝐭𝐭𝐢𝐯𝐚𝐭𝐨'}*`
+  )
+  break
 
     case 'antiprivato':
       requireOwner()
@@ -224,6 +235,9 @@ ${desc}`
       chat.antiTelegram = isEnable
       chat.antiTiktok = isEnable
       chat.antivoip = isEnable
+      chat.welcome = isEnable
+      chat.goodbye = isEnable
+      bot.autoDbBackup = isEnable
 
       thumbFeature = 'system'
 

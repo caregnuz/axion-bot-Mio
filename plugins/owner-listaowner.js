@@ -1,32 +1,31 @@
-// Plugin listamod by Bonzino
+// Plugin listaowner by Bonzino
 
 import fetch from 'node-fetch'
 import fs from 'fs'
 
-const S = v => String(v || '')
-
 const handler = async (m, { conn }) => {
+  global.owner = global.owner || []
 
-  const users = global.db.data.users || {}
-  const groupMods = []
+  const owners = [...new Set(
+    global.owner
+      .map(v => Array.isArray(v) ? v[0] : v)
+      .map(v => String(v || '').replace(/\D/g, ''))
+      .filter(Boolean)
+  )]
 
-  for (let jid in users) {
-    if (users[jid]?.moderator) {
-      groupMods.push(jid)
-    }
+  if (!owners.length) {
+    return m.reply('*⚠️ 𝐍𝐞𝐬𝐬𝐮𝐧 𝐨𝐰𝐧𝐞𝐫 𝐭𝐫𝐨𝐯𝐚𝐭𝐨.*')
   }
 
-  if (groupMods.length === 0) {
-    return m.reply('*⚠️ 𝐍𝐨𝐧 𝐜𝐢 𝐬𝐨𝐧𝐨 𝐦𝐨𝐝𝐞𝐫𝐚𝐭𝐨𝐫𝐢 𝐢𝐧 𝐪𝐮𝐞𝐬𝐭𝐨 𝐠𝐫𝐮𝐩𝐩𝐨.*')
-  }
+  const ownerJids = owners.map(num => `${num}@s.whatsapp.net`)
 
-const list = groupMods
-  .map(jid => `➤ @${jid.split('@')[0]}`)
-  .join('\n')
+  const list = owners
+    .map(num => `➤ @${num}`)
+    .join('\n')
 
-  const text = `*╭━━━━━━━🛡️━━━━━━━╮*
-*✦ 𝐌𝐎𝐃𝐄𝐑𝐀𝐓𝐎𝐑𝐈 ✦*
-*╰━━━━━━━🛡️━━━━━━━╯*
+  const text = `*╭━━━━━━━👑━━━━━━━╮*
+*✦ 𝐎𝐖𝐍𝐄𝐑 ✦*
+*╰━━━━━━━👑━━━━━━━╯*
 
 ${list}`
 
@@ -70,13 +69,13 @@ END:VCARD`,
 
   await conn.sendMessage(m.chat, {
     text,
-    mentions: groupMods
+    mentions: ownerJids
   }, { quoted: fakeContact })
 }
 
-handler.help = ['mods', 'listamod']
-handler.tags = ['group']
-handler.command = /^(mods|listamod)$/i
-handler.group = true
+handler.help = ['listaowner']
+handler.tags = ['owner']
+handler.command = /^(listaowner|owners|ownerlist)$/i
+handler.owner = true
 
 export default handler

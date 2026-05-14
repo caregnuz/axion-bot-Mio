@@ -18,14 +18,24 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ╼━━━━━━━━━━━━━━╾
 
 ╭━━━〔 👤 ɢᴇsᴛɪᴏɴᴇ ᴜᴛᴇɴᴛɪ 〕━⬣
-┃ 🛡️ ${usedPrefix}addmod
+┃ 👮‍♂️ ${usedPrefix}addmod
 ┃ ❌ ${usedPrefix}delmod
 ┃ 🗑️ ${usedPrefix}resetmod
 ┃ 🚫 ${usedPrefix}blocca/sblocca <utente>
+┃ 📃 ${usedPrefix}blocklist
+┃ ➕️ ${usedPrefix}addowner <user> <numero>
+┃ ❌️${usedPrefix}delowner <user> <numero>
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 📊 sᴛᴀᴛɪsᴛɪᴄʜᴇ ᴜᴛᴇɴᴛɪ 〕━⬣
-┃ 💰 ${usedPrefix}add <quantità>
+┃ ➕️ ${usedPrefix}addmoney <quantità> <user>
+┃ ➖️ ${usedPrefix}removemoney <quantità> <user>
+┃ 🗑 ${usedPrefix}azzerasoldi <quantità> <user>
+┃ ➕️ ${usedPrefix}addmsg <quantità> <user>
+┃ ➖️ ${usedPrefix}removemsg <quantità> <user>
+┃ 🗑 ${usedPrefix}azzeramsg <user>
+┃ 💬 ${usedPrefix}resetallmsg
+┃ 💸 ${usedPrefix}resetallmoney
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 👥 ɢᴇsᴛɪᴏɴᴇ ɢʀᴜᴘᴘɪ 〕━⬣
@@ -34,12 +44,14 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 📥 ${usedPrefix}join <link>
 ┃ 🆔 ${usedPrefix}getid <link>
 ┃ 🔗 ${usedPrefix}linktoid <link>
-┃ 🧩 ${usedPrefix}idtolink <id>
-┃ 📂 ${usedPrefix}gruppi
+┃ 🔃 ${usedPrefix}idtolink <id>
+┃ 🗃 ${usedPrefix}gruppi
 ┃ 🚪 ${usedPrefix}esci <numero>
-┃ 👋 ${usedPrefix}out
-┃ 🌙 ${usedPrefix}bangp <link/id>
-┃ ☀️ ${usedPrefix}unbangp <link/id>
+┃ 📢 ${usedPrefix}tuttigp
+┃ ‼️ ${usedPrefix}tagallgp
+┃ 👋 ${usedPrefix}out 
+┃ 🚫 ${usedPrefix}bangp <link/id>
+┃ ✅️ ${usedPrefix}unbangp <link/id>
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 🛡️ ɢᴇsᴛɪᴏɴᴇ ᴀᴅᴍɪɴ 〕━⬣
@@ -47,11 +59,13 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 🤖 ɢᴇsᴛɪᴏɴᴇ ʙᴏᴛ 〕━⬣
-┃ 📢 ${usedPrefix}tuttigp
-┃ 🌐 ${usedPrefix}aggiorna
+┃ 🌐 ${usedPrefix}aggiorna 
 ┃ 🔄 ${usedPrefix}restart
 ┃ 💾 ${usedPrefix}backupdb
-┃ ♻️ ${usedPrefix}autodb
+┃ 🤖 ${usedPrefix}nomebot
+┃ 🏷 ${usedPrefix}setnomebot
+┃ 🔄 ${usedPrefix}prefisso/.resetprefisso
+┃ 🖼 ${usedPrefix}setpicbot
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 📦 ɢᴇsᴛɪᴏɴᴇ ᴘᴀᴄᴄʜᴇᴛᴛɪ 〕━⬣
@@ -69,15 +83,21 @@ const handler = async (message, { conn, usedPrefix = '.' }) => {
 ┃ 📜 ${usedPrefix}npmdl
 ╰━━━━━━━━━━━━━━━━⬣
 
-╭━━━〔 🧩 ɢᴇsᴛɪᴏɴᴇ ᴘʟᴜɢɪɴ 〕━⬣
-┃ 🗂️ ${usedPrefix}getpl
-┃ 🐞 ${usedPrefix}debugplugin <id>
-┃ 🧪 ${usedPrefix}db <id>
+╭━━━〔 ⚙️ ɢᴇsᴛɪᴏɴᴇ ᴘʟᴜɢɪɴ 〕━⬣
+┃ 🧩 ${usedPrefix}plugin
+┃ 📃 ${usedPrefix}listaplugin
+┃ 🗂️ ${usedPrefix}pluginlist
+┃ 📥 ${usedPrefix}getpl
+┃ 🆕 ${usedPrefix}nuovoplugin
+┃ 💾 ${usedPrefix}salvaplugin
+┃ ✏️ ${usedPrefix}modificaplugin
+┃ 🗑️ ${usedPrefix}eliminaplugin
 ╰━━━━━━━━━━━━━━━━⬣
 
-╭━━━〔 🛠️ sᴛʀᴜᴍᴇɴᴛɪ ᴏᴡɴᴇʀ 〕━⬣
-┃ 🏹 ${usedPrefix}bigtag
+╭━━━〔 ⚡ ғᴜɴᴢɪᴏɴɪ sᴘᴇᴄɪᴀʟɪ 〕━⬣
+┃ ⚠️ ${usedPrefix}bigtag
 ┃ ✋ ${usedPrefix}stop
+┃ 👑 ${usedPrefix}godmode
 ╰━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 📌 ɪɴғᴏ 〕━⬣
