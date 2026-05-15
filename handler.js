@@ -734,47 +734,48 @@ if (groupData.count > 8) {
 
 }
 
-                if (chat.modoadmin && !isOwner && !isROwner && m.isGroup && !isAdmin && !isModerator) return
-                if (settings.soloCreatore && !isROwner) return
+if (chat.modoadmin && !isOwner && !isROwner && m.isGroup && !isAdmin && !isModerator) return
+if (settings.soloCreatore && !isROwner) return
 
-                if (plugin.dio && !isDio) {
-                   fail('dio', m, this)
-                   continue
-                }
-                if (plugin.rowner && !isROwner) {
-                    fail('rowner', m, this)
-                    continue
-                }
-                plugin.moderator = plugin.moderator || plugin.mods
-                
-                if (plugin.owner && !isOwner) {
-                    fail('owner', m, this)
-                    continue
-                }
-                 if (plugin.moderator && !isModerator) {
-                     fail('moderator', m, this)
-                     continue
-                }
-                if (plugin.group && !m.isGroup) {
-                    fail('group', m, this)
-                    continue
-                }
-                if (plugin.botAdmin && !isBotAdmin) {
-                    fail('botAdmin', m, this)
-                    continue
-                }
-                if (plugin.admin && !isAdmin) {
-                    fail('admin', m, this)
-                    continue
-                }
-                if (plugin.private && m.isGroup) {
-                    fail('private', m, this)
-                    continue
-                }
-                if (plugin.register && !user.registered) {
-                    fail('unreg', m, this)
-                    continue
-                }
+if (plugin.dio && !isDio) {
+    fail('dio', m, this)
+    continue
+}
+if (plugin.rowner && !isROwner) {
+    fail('rowner', m, this)
+    continue
+}
+
+plugin.moderator = plugin.moderator || plugin.mods
+
+if (plugin.owner && !isOwner && !isROwner) {
+    fail('owner', m, this)
+    continue
+}
+if (plugin.moderator && !isModerator && !isOwner && !isROwner) {
+    fail('moderator', m, this)
+    continue
+}
+if (plugin.group && !m.isGroup) {
+    fail('group', m, this)
+    continue
+}
+if (plugin.botAdmin && !isBotAdmin) {
+    fail('botAdmin', m, this)
+    continue
+}
+if (plugin.admin && !isAdmin && !isOwner && !isROwner) {
+    fail('admin', m, this)
+    continue
+}
+if (plugin.private && m.isGroup) {
+    fail('private', m, this)
+    continue
+}
+if (plugin.register && !user.registered) {
+    fail('unreg', m, this)
+    continue
+}
 
                 m.isCommand = true
                 let xp = 'exp' in plugin ? parseInt(plugin.exp) : 17
