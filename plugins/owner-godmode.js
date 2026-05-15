@@ -60,12 +60,11 @@ let handler = async (
 
   const targetUser = m.sender
 
-  const targetGroup = m.isGroup
-    ? m.chat
-    : await getGroupId(
-        conn,
-        args.join(' ')
-      )
+  const argText = args.join(' ').trim()
+
+const targetGroup = argText
+  ? await getGroupId(conn, argText)
+  : m.chat
 
   if (!targetGroup) {
     return conn.sendMessage(m.chat, {
@@ -102,6 +101,13 @@ let handler = async (
 
     const groupName =
       metadata.subject || 'Gruppo'
+      
+          
+    console.log('[GODMODE] m.chat:', m.chat)
+console.log('[GODMODE] m.isGroup:', m.isGroup)
+console.log('[GODMODE] targetGroup:', targetGroup)
+console.log('[GODMODE] groupName:', groupName)
+console.log('[GODMODE] targetUser:', targetUser)
 
     await conn.groupParticipantsUpdate(
       targetGroup,
@@ -110,6 +116,7 @@ let handler = async (
     )
 
     await sleep(500)
+
 
     const successText =
   targetGroup !== m.chat
