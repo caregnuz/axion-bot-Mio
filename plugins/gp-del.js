@@ -1,112 +1,43 @@
-const handler = async (
-  m,
-  {
-    conn,
-    text,
-    isAdmin,
-    isOwner,
-    isROwner
-  }
-) => {
+// plugin del per admin e onwer by Bonzino
 
-  if (!m.isGroup) {
-    return m.reply(
-      '*❌ 𝐐𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨 𝐟𝐮𝐧𝐳𝐢𝐨𝐧𝐚 𝐬𝐨𝐥𝐨 𝐧𝐞𝐢 𝐠𝐫𝐮𝐩𝐩𝐢.*'
-    )
-  }
+const handler = async (m, { conn, isAdmin, isOwner, isROwner }) => {
+  if (!m.isGroup) return
 
   if (!(isAdmin || isOwner || isROwner)) {
-    return m.reply(
-      '*❌ 𝐒𝐨𝐥𝐨 𝐚𝐝𝐦𝐢𝐧 𝐨 𝐨𝐰𝐧𝐞𝐫 𝐩𝐨𝐬𝐬𝐨𝐧𝐨 𝐮𝐬𝐚𝐫𝐞 𝐪𝐮𝐞𝐬𝐭𝐨 𝐜𝐨𝐦𝐚𝐧𝐝𝐨.*'
-    )
+    return m.reply('*❌ 𝐒𝐨𝐥𝐨 𝐚𝐝𝐦𝐢𝐧 𝐨 𝐨𝐰𝐧𝐞𝐫.*')
   }
 
-  let who =
-    m.mentionedJid?.[0] ||
-    m.quoted?.sender ||
-    ''
-
-  if (!who && text) {
-
-    let number =
-      text.replace(/\D/g, '')
-
-    if (number.length >= 8) {
-      who =
-        number +
-        '@s.whatsapp.net'
-    }
+  if (!m.quoted) {
+    return m.reply('*⚠️ 𝐑𝐢𝐬𝐩𝐨𝐧𝐝𝐢 𝐚𝐥 𝐦𝐞𝐬𝐬𝐚𝐠𝐠𝐢𝐨 𝐝𝐚 𝐞𝐥𝐢𝐦𝐢𝐧𝐚𝐫𝐞.*')
   }
-
-  if (!who) {
-    return m.reply(
-      '*❌ 𝐃𝐞𝐯𝐢 𝐭𝐚𝐠𝐠𝐚𝐫𝐞 𝐨 𝐫𝐢𝐬𝐩𝐨𝐧𝐝𝐞𝐫𝐞 𝐚𝐥𝐥’𝐮𝐭𝐞𝐧𝐭𝐞.*'
-    )
-  }
-
-  const user =
-    global.db.data.users[who]
-
-  if (
-    !user ||
-    !user.moderator ||
-    user.moderatorGroup !== m.chat
-  ) {
-
-    return m.reply(
-      `*@${who.split('@')[0]} 𝐧𝐨𝐧 è 𝐦𝐨𝐝𝐞𝐫𝐚𝐭𝐨𝐫𝐞 𝐢𝐧 𝐪𝐮𝐞𝐬𝐭𝐨 𝐠𝐫𝐮𝐩𝐩𝐨.*`,
-      null,
-      {
-        mentions: [who]
-      }
-    )
-  }
-
-  user.moderator = false
-
-  delete user.moderatorGroup
-
-  let thumbnail = null
 
   try {
+    const key = m.quoted?.fakeObj?.key || m.quoted?.vM?.key || {
+      remoteJid: m.chat,
+      fromMe: false,
+      id: m.quoted?.id,
+      participant: m.quoted?.sender
+    }
 
-    const pp =
-      await conn.profilePictureUrl(
-        who,
-        'image'
-      )
+    await conn.sendMessage(m.chat, { delete: key })
+    await conn.sendMessage(m.chat, { delete: m.key })
+  } catch (e) {
+    console.error('[DEL ERROR]', e)
 
-    const res = await fetch(pp)
-
-    thumbnail = Buffer.from(
-      await res.arrayBuffer()
-    )
-
-  } catch {}
-
-  await conn.sendMessage(
-    m.chat,
-    {
-      text:
-`*@${who.split('@')[0]} 𝐧𝐨𝐧 è 𝐩𝐢ù 𝐦𝐨𝐝𝐞𝐫𝐚𝐭𝐨𝐫𝐞 𝐝𝐢 𝐪𝐮𝐞𝐬𝐭𝐨 𝐠𝐫𝐮𝐩𝐩𝐨.*`,
-
-      contextInfo: {
-
-        mentionedJid: [who],
-
-        externalAdReply: {
-          title: '🚫 Moderatore rimosso',
-          thumbnail: thumbnail
-        }
+    try {
+      if (m.quoted?.vM?.key) {
+        await conn.sendMessage(m.chat, { delete: m.quoted.vM.key })
       }
-    },
-    { quoted: m }
-  )
+
+      await conn.sendMessage(m.chat, { delete: m.key })
+    } catch {}
+  }
 }
 
-handler.help = ['delmod @user']
+handler.help = ['del']
 handler.tags = ['group']
-handler.command = ['delmod']
+handler.command = /^del$/i
 handler.group = true
+handler.botAdmin = true
 
 export default handler
